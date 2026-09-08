@@ -14,8 +14,6 @@
     "db:migrate": "ts-node -r tsconfig-paths/register src/database/ensure-db.ts && drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "ts-node -r tsconfig-paths/register src/database/seed.ts",
-    "db:seed-catalog": "ts-node -r tsconfig-paths/register src/database/seed-catalog.ts",
-    "db:seed-products": "ts-node -r tsconfig-paths/register src/database/seed-products.ts",
     "db:init": "ts-node -r tsconfig-paths/register src/database/init-db.ts",
     "db:setup": "ts-node -r tsconfig-paths/register src/database/init-db.ts",
     "start:dev": "nest start --watch",

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "9172c987-1cdb-493d-ae30-3c6f0ade7598",
+  "id": "ced79acb-609d-466a-ba7f-9cbf72fffdde",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "password_reset_tokens": {
@@ -520,6 +520,21 @@
           "notNull": false,
           "autoincrement": false
         },
+        "image": {
+          "name": "image",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "show_image": {
+          "name": "show_image",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
         "attribute_id": {
           "name": "attribute_id",
           "type": "bigint unsigned",
@@ -887,6 +902,34 @@
           "autoincrement": false,
           "default": false
         },
+        "hsn": {
+          "name": "hsn",
+          "type": "varchar(15)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cgst": {
+          "name": "cgst",
+          "type": "decimal(5,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sgst": {
+          "name": "sgst",
+          "type": "decimal(5,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "igst": {
+          "name": "igst",
+          "type": "decimal(5,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -1078,6 +1121,38 @@
           "notNull": true,
           "autoincrement": false
         },
+        "is_cod_allowed": {
+          "name": "is_cod_allowed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "is_returnable": {
+          "name": "is_returnable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "return_window_days": {
+          "name": "return_window_days",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 7
+        },
+        "shipping_charges": {
+          "name": "shipping_charges",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'0.00'"
+        },
         "status": {
           "name": "status",
           "type": "boolean",
@@ -1188,8 +1263,9 @@
           "name": "price",
           "type": "decimal(10,2)",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'0.00'"
         },
         "selected_attributes": {
           "name": "selected_attributes",
@@ -1327,6 +1403,108 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "hsn": {
+          "name": "hsn",
+          "type": "varchar(15)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_rate": {
+          "name": "tax_rate",
+          "type": "decimal(5,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "taxable_amount": {
+          "name": "taxable_amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_amount": {
+          "name": "tax_amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cgst_rate": {
+          "name": "cgst_rate",
+          "type": "decimal(5,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cgst_amount": {
+          "name": "cgst_amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sgst_rate": {
+          "name": "sgst_rate",
+          "type": "decimal(5,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sgst_amount": {
+          "name": "sgst_amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "igst_rate": {
+          "name": "igst_rate",
+          "type": "decimal(5,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "igst_amount": {
+          "name": "igst_amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_cod_allowed": {
+          "name": "is_cod_allowed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": true
+        },
+        "is_returnable": {
+          "name": "is_returnable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": true
+        },
+        "return_window_days": {
+          "name": "return_window_days",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 7
+        },
+        "shipping_charge": {
+          "name": "shipping_charge",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'0.00'"
         },
         "created_at": {
           "name": "created_at",
@@ -1737,6 +1915,1254 @@
           ]
         }
       },
+      "checkConstraint": {}
+    },
+    "return_request_items": {
+      "name": "return_request_items",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "return_request_id": {
+          "name": "return_request_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order_item_id": {
+          "name": "order_item_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "variant_id": {
+          "name": "variant_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "price": {
+          "name": "price",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "exchange_variant_id": {
+          "name": "exchange_variant_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "qc_status": {
+          "name": "qc_status",
+          "type": "enum('pending','passed','failed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "qc_remarks": {
+          "name": "qc_remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "return_request_items_return_request_id_return_requests_id_fk": {
+          "name": "return_request_items_return_request_id_return_requests_id_fk",
+          "tableFrom": "return_request_items",
+          "tableTo": "return_requests",
+          "columnsFrom": [
+            "return_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "return_request_items_order_item_id_order_items_id_fk": {
+          "name": "return_request_items_order_item_id_order_items_id_fk",
+          "tableFrom": "return_request_items",
+          "tableTo": "order_items",
+          "columnsFrom": [
+            "order_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "return_request_items_product_id_products_id_fk": {
+          "name": "return_request_items_product_id_products_id_fk",
+          "tableFrom": "return_request_items",
+          "tableTo": "products",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "return_request_items_variant_id_variants_id_fk": {
+          "name": "return_request_items_variant_id_variants_id_fk",
+          "tableFrom": "return_request_items",
+          "tableTo": "variants",
+          "columnsFrom": [
+            "variant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "return_request_items_exchange_variant_id_variants_id_fk": {
+          "name": "return_request_items_exchange_variant_id_variants_id_fk",
+          "tableFrom": "return_request_items",
+          "tableTo": "variants",
+          "columnsFrom": [
+            "exchange_variant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "return_request_items_id": {
+          "name": "return_request_items_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "return_requests": {
+      "name": "return_requests",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "return_number": {
+          "name": "return_number",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('requested','approved','rejected','pickup_scheduled','picked_up','in_transit','received_at_warehouse','qc_pending','qc_passed','qc_failed','refund_pending','refund_processing','refunded','exchange_processing','completed','cancelled')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'requested'"
+        },
+        "return_type": {
+          "name": "return_type",
+          "type": "enum('return','exchange')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'return'"
+        },
+        "reason": {
+          "name": "reason",
+          "type": "enum('defective_damaged','wrong_item_received','size_fit_issue','quality_not_expected','different_from_description','missing_parts','product_not_as_expected','other')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'defective_damaged'"
+        },
+        "reason_details": {
+          "name": "reason_details",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "customer_images": {
+          "name": "customer_images",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refund_mode": {
+          "name": "refund_mode",
+          "type": "enum('original_source','bank_transfer_upi','store_credit','manual_cash')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'original_source'"
+        },
+        "refund_status": {
+          "name": "refund_status",
+          "type": "enum('not_applicable','pending','processing','processed','failed','cancelled')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "bank_details": {
+          "name": "bank_details",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pickup_address": {
+          "name": "pickup_address",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reverse_waybill": {
+          "name": "reverse_waybill",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reverse_courier_name": {
+          "name": "reverse_courier_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'Delhivery Reverse'"
+        },
+        "reverse_pickup_date": {
+          "name": "reverse_pickup_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refund_amount": {
+          "name": "refund_amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'0.00'"
+        },
+        "refund_transaction_id": {
+          "name": "refund_transaction_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refund_failure_reason": {
+          "name": "refund_failure_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refund_attempts": {
+          "name": "refund_attempts",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "refunded_at": {
+          "name": "refunded_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "qc_status": {
+          "name": "qc_status",
+          "type": "enum('pending','passed','failed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "qc_remarks": {
+          "name": "qc_remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "qc_passed_at": {
+          "name": "qc_passed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "qc_failed_at": {
+          "name": "qc_failed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "exchange_requested": {
+          "name": "exchange_requested",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "replacement_order_id": {
+          "name": "replacement_order_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "admin_notes": {
+          "name": "admin_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rejection_reason": {
+          "name": "rejection_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "return_requests_order_id_orders_id_fk": {
+          "name": "return_requests_order_id_orders_id_fk",
+          "tableFrom": "return_requests",
+          "tableTo": "orders",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "return_requests_user_id_users_id_fk": {
+          "name": "return_requests_user_id_users_id_fk",
+          "tableFrom": "return_requests",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "return_requests_replacement_order_id_orders_id_fk": {
+          "name": "return_requests_replacement_order_id_orders_id_fk",
+          "tableFrom": "return_requests",
+          "tableTo": "orders",
+          "columnsFrom": [
+            "replacement_order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "return_requests_id": {
+          "name": "return_requests_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "return_requests_return_number_unique": {
+          "name": "return_requests_return_number_unique",
+          "columns": [
+            "return_number"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "return_tracking_events": {
+      "name": "return_tracking_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "return_request_id": {
+          "name": "return_request_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "waybill": {
+          "name": "waybill",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status_code": {
+          "name": "status_code",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "event_time": {
+          "name": "event_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "raw_response": {
+          "name": "raw_response",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "return_tracking_events_return_request_id_return_requests_id_fk": {
+          "name": "return_tracking_events_return_request_id_return_requests_id_fk",
+          "tableFrom": "return_tracking_events",
+          "tableTo": "return_requests",
+          "columnsFrom": [
+            "return_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "return_tracking_events_id": {
+          "name": "return_tracking_events_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "rto_cases": {
+      "name": "rto_cases",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "rto_number": {
+          "name": "rto_number",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "waybill": {
+          "name": "waybill",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('ndr','reattempt_requested','rto_initiated','rto_in_transit','rto_received','qc_pending','qc_passed','qc_failed','restocked','completed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ndr'"
+        },
+        "ndr_attempts": {
+          "name": "ndr_attempts",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "first_ndr_at": {
+          "name": "first_ndr_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "last_ndr_at": {
+          "name": "last_ndr_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "next_reattempt_at": {
+          "name": "next_reattempt_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ndr_action_taken": {
+          "name": "ndr_action_taken",
+          "type": "enum('reattempt_requested','address_updated','phone_updated','rto_approved','rescheduled')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rto_reason": {
+          "name": "rto_reason",
+          "type": "enum('customer_refused','customer_unreachable','incorrect_address','door_locked','pincode_unserviceable','fake_delivery_attempt','customer_not_available','other')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'customer_unreachable'"
+        },
+        "courier_status": {
+          "name": "courier_status",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "courier_remarks": {
+          "name": "courier_remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rto_initiated_at": {
+          "name": "rto_initiated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rto_received_at": {
+          "name": "rto_received_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "warehouse_qc_status": {
+          "name": "warehouse_qc_status",
+          "type": "enum('pending','passed','failed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "warehouse_qc_remarks": {
+          "name": "warehouse_qc_remarks",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "inventory_action": {
+          "name": "inventory_action",
+          "type": "enum('pending','restocked','damaged')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "inventory_action_at": {
+          "name": "inventory_action_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "admin_notes": {
+          "name": "admin_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "rto_cases_order_id_orders_id_fk": {
+          "name": "rto_cases_order_id_orders_id_fk",
+          "tableFrom": "rto_cases",
+          "tableTo": "orders",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "rto_cases_id": {
+          "name": "rto_cases_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "rto_cases_rto_number_unique": {
+          "name": "rto_cases_rto_number_unique",
+          "columns": [
+            "rto_number"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "rto_tracking_events": {
+      "name": "rto_tracking_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "rto_case_id": {
+          "name": "rto_case_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "waybill": {
+          "name": "waybill",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "event_time": {
+          "name": "event_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "rto_tracking_events_rto_case_id_rto_cases_id_fk": {
+          "name": "rto_tracking_events_rto_case_id_rto_cases_id_fk",
+          "tableFrom": "rto_tracking_events",
+          "tableTo": "rto_cases",
+          "columnsFrom": [
+            "rto_case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "rto_tracking_events_id": {
+          "name": "rto_tracking_events_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "inventory_transactions": {
+      "name": "inventory_transactions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "variant_id": {
+          "name": "variant_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "return_request_id": {
+          "name": "return_request_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rto_case_id": {
+          "name": "rto_case_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "transaction_type": {
+          "name": "transaction_type",
+          "type": "enum('sale','cancelled_order','rto_restock','return_restock','return_damaged','rto_damaged','manual_adjustment')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "previous_quantity": {
+          "name": "previous_quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "new_quantity": {
+          "name": "new_quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "inventory_transactions_product_id_products_id_fk": {
+          "name": "inventory_transactions_product_id_products_id_fk",
+          "tableFrom": "inventory_transactions",
+          "tableTo": "products",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "inventory_transactions_variant_id_variants_id_fk": {
+          "name": "inventory_transactions_variant_id_variants_id_fk",
+          "tableFrom": "inventory_transactions",
+          "tableTo": "variants",
+          "columnsFrom": [
+            "variant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "inventory_transactions_order_id_orders_id_fk": {
+          "name": "inventory_transactions_order_id_orders_id_fk",
+          "tableFrom": "inventory_transactions",
+          "tableTo": "orders",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "inventory_transactions_return_request_id_return_requests_id_fk": {
+          "name": "inventory_transactions_return_request_id_return_requests_id_fk",
+          "tableFrom": "inventory_transactions",
+          "tableTo": "return_requests",
+          "columnsFrom": [
+            "return_request_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "inventory_transactions_rto_case_id_rto_cases_id_fk": {
+          "name": "inventory_transactions_rto_case_id_rto_cases_id_fk",
+          "tableFrom": "inventory_transactions",
+          "tableTo": "rto_cases",
+          "columnsFrom": [
+            "rto_case_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "inventory_transactions_created_by_users_id_fk": {
+          "name": "inventory_transactions_created_by_users_id_fk",
+          "tableFrom": "inventory_transactions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "inventory_transactions_id": {
+          "name": "inventory_transactions_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "admin_audit_logs": {
+      "name": "admin_audit_logs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "admin_id": {
+          "name": "admin_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "old_value": {
+          "name": "old_value",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "new_value": {
+          "name": "new_value",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "admin_audit_logs_admin_id_users_id_fk": {
+          "name": "admin_audit_logs_admin_id_users_id_fk",
+          "tableFrom": "admin_audit_logs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "admin_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "admin_audit_logs_id": {
+          "name": "admin_audit_logs_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "courier_webhook_events": {
+      "name": "courier_webhook_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "courier": {
+          "name": "courier",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Delhivery'"
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "waybill": {
+          "name": "waybill",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "processed": {
+          "name": "processed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "courier_event_idx": {
+          "name": "courier_event_idx",
+          "columns": [
+            "courier",
+            "event_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "courier_webhook_events_id": {
+          "name": "courier_webhook_events_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
       "checkConstraint": {}
     },
     "contact_messages": {
@@ -2984,6 +4410,59 @@
       "compositePrimaryKeys": {
         "states_id": {
           "name": "states_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "topbar_announcements": {
+      "name": "topbar_announcements",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "link_url": {
+          "name": "link_url",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('inactive','active')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "topbar_announcements_id": {
+          "name": "topbar_announcements_id",
           "columns": [
             "id"
           ]
