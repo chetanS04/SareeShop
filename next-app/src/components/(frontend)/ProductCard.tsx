@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import imgPlaceholder from "@/public/imagePlaceholder.png";
 import { extractProductPricing } from "@/utils/pricing";
 import { getProductSlug } from "../../../utils/slugUtils";
-import { Star, Truck, CheckCircle2, Layers, ShieldCheck, Tag, Heart, ChevronDown } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import { useLike } from "@/context/LikeContext";
 import { useAuth } from "@/context/AuthContext";
 
@@ -16,6 +16,8 @@ export interface ProductCardProps {
   isNew?: boolean;
   isBestseller?: boolean;
   hideMetadata?: boolean;
+  /** Denser catalog card for Collections grid */
+  compact?: boolean;
 }
 
 export default function ProductCard({
@@ -25,6 +27,7 @@ export default function ProductCard({
   isNew,
   isBestseller,
   hideMetadata = false,
+  compact = false,
 }: ProductCardProps) {
   const router = useRouter();
   const { isLiked, toggleLike } = useLike();
@@ -48,28 +51,17 @@ export default function ProductCard({
 
   const uploadUrl = process.env.NEXT_PUBLIC_UPLOAD_BASE ?? "https://api.zelton.co.in";
 
-  // Determine variant for card: First in-stock variant, or fallback to first variant
-  const rawVariants = product.variants;
-  let activeCardVariant = null;
-  if (Array.isArray(rawVariants) && rawVariants.length > 0) {
-    const activeVariants = rawVariants.filter(
-      (v: any) => v?.status === true || v?.status === 1 || v?.status === undefined
-    );
-    const inStock = activeVariants.find((v: any) => Number(v.stock ?? 0) > 0);
-    activeCardVariant = inStock || activeVariants[0] || rawVariants[0];
-  }
-  if (!activeCardVariant) {
-    activeCardVariant = product.best_variant || product.bestVariant || null;
-  }
-
-  // Determine Image URL safely (prioritize product primary image, then active card variant image, then first variant with image)
   let rawImg = product.image_url || product.imageUrl;
-  if (!rawImg && activeCardVariant) {
-    rawImg = activeCardVariant.image_url || activeCardVariant.imageUrl;
+  if (!rawImg && product.variants && product.variants.length > 0) {
+    const firstWithImg = product.variants.find((v: any) => v?.image_url || v?.imageUrl);
+    rawImg =
+      firstWithImg?.image_url ||
+      firstWithImg?.imageUrl ||
+      product.variants[0]?.image_url ||
+      product.variants[0]?.imageUrl;
   }
-  if (!rawImg && Array.isArray(rawVariants) && rawVariants.length > 0) {
-    const firstWithImg = rawVariants.find((v: any) => v?.image_url || v?.imageUrl);
-    rawImg = firstWithImg?.image_url || firstWithImg?.imageUrl;
+  if (!rawImg) {
+    rawImg = product.best_variant?.image_url || product.best_variant?.imageUrl;
   }
 
   const imgSrc = rawImg
@@ -78,17 +70,20 @@ export default function ProductCard({
       : `${uploadUrl}${rawImg.startsWith("/") ? "" : "/"}${rawImg}`
     : imgPlaceholder.src;
 
-  // Extract Pricing (SP = BP, MRP = Original, Discount = % OFF)
-  const { sp, mrp, discountPct, hasDiscount, formattedSp, formattedMrp } =
-    extractProductPricing(product);
+  const { discountPct, hasDiscount, formattedSp, formattedMrp } = extractProductPricing(product);
 
-  // Metadata Extraction
-  const rating = parseFloat(String(product.average_rating ?? product.rating_summary?.average_rating ?? product.rating ?? 0));
-  const reviewsCount = Number(product.reviews_count ?? product.rating_summary?.reviews_count ?? product.rating_summary?.total_reviews ?? product.reviewsCount ?? 0);
+  const rating = parseFloat(
+    String(product.average_rating ?? product.rating_summary?.average_rating ?? product.rating ?? 0)
+  );
+  const reviewsCount = Number(
+    product.reviews_count ??
+      product.rating_summary?.reviews_count ??
+      product.rating_summary?.total_reviews ??
+      product.reviewsCount ??
+      0
+  );
   const variantCount = product.variants?.length || product.variants_count || 0;
-  const brandName = product.brand?.name || product.brand_name;
-  const categoryName = product.category?.name || product.category_name;
-  const stock = activeCardVariant?.stock ?? product.best_variant?.stock ?? product.total_stock ?? 10;
+  const stock = product.best_variant?.stock ?? product.total_stock ?? 10;
   const showNewBadge = isNew || product.is_new_arrival;
   const showBestsellerBadge = isBestseller || product.is_bestseller;
 
@@ -99,149 +94,191 @@ export default function ProductCard({
       const slug = getProductSlug(product);
       if (!slug) return;
       if (e && (e.ctrlKey || e.metaKey || e.button === 1)) {
-        window.open(`/products/${slug}`, '_blank', 'noopener,noreferrer');
+        window.open(`/products/${slug}`, "_blank", "noopener,noreferrer");
       } else {
         router.push(`/products/${slug}`);
       }
     }
   };
 
-  const formattedReviewCount = reviewsCount >= 1000
-    ? `${(reviewsCount / 1000).toFixed(1).replace(/\.0$/, '')}K`
-    : reviewsCount;
+  const formattedReviewCount =
+    reviewsCount >= 1000
+      ? `${(reviewsCount / 1000).toFixed(1).replace(/\.0$/, "")}K`
+      : reviewsCount;
+
+  if (compact) {
+    return (
+      <div
+        onClick={handleClick}
+        className={`group/card bg-pure-white cursor-pointer overflow-hidden flex flex-col h-full select-none border border-[rgba(14,14,13,0.1)] hover:border-on-surface/35 transition-colors ${className}`}
+        style={{ boxShadow: "0 0 0 0.5px rgba(14,14,13,0.05)" }}
+      >
+        <div className="relative w-full aspect-[3/4] bg-surface-ivory overflow-hidden flex-shrink-0">
+          <img
+            src={imgSrc}
+            alt={product.name || "Product"}
+            className="w-full h-full object-cover"
+            onError={(e: any) => {
+              e.target.src = imgPlaceholder.src;
+            }}
+          />
+
+          {hasDiscount && discountPct > 0 && (
+            <span className="absolute top-3 left-3 z-10 bg-primary text-surface text-[10px] font-semibold px-2 py-1 uppercase tracking-wider">
+              {discountPct}% Off
+            </span>
+          )}
+
+          <button
+            type="button"
+            onClick={handleWishlistClick}
+            className="absolute top-3 right-3 z-20 w-9 h-9 bg-pure-white/95 border border-[rgba(14,14,13,0.1)] flex items-center justify-center"
+            aria-label={isProductLiked ? "Remove from Wishlist" : "Add to Wishlist"}
+          >
+            <Heart
+              className={`w-4 h-4 ${
+                isProductLiked ? "fill-primary text-primary" : "text-on-surface"
+              }`}
+            />
+          </button>
+
+          {showBestsellerBadge && (
+            <span className="absolute bottom-3 left-3 z-10 bg-accent-ochre text-surface-dark text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
+              Bestseller
+            </span>
+          )}
+          {showNewBadge && !showBestsellerBadge && (
+            <span className="absolute bottom-3 left-3 z-10 bg-surface-dark text-surface text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
+              New
+            </span>
+          )}
+
+          {rating > 0 && (
+            <span className="absolute bottom-3 right-3 z-10 bg-surface-dark/80 text-surface text-[11px] font-semibold px-2 py-1">
+              {rating.toFixed(1)} ★
+            </span>
+          )}
+        </div>
+
+        <div className="p-3.5 sm:p-4 flex gap-3 items-start">
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <h3 className="text-[13px] sm:text-[15px] font-semibold text-on-surface line-clamp-2 leading-snug tracking-tight">
+              {product.name}
+            </h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              {hasDiscount && (
+                <span className="line-through text-[12px] text-body-slate">{formattedMrp}</span>
+              )}
+              <span className="font-bold text-[15px] sm:text-base text-on-surface">{formattedSp}</span>
+              {hasDiscount && discountPct > 0 && (
+                <span className="text-[12px] font-semibold text-primary">{discountPct}% Off</span>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClick(e);
+            }}
+            className="shrink-0 w-10 h-10 bg-primary text-surface flex items-center justify-center hover:bg-surface-dark transition-colors"
+            aria-label="View product"
+          >
+            <ShoppingBag className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
       onClick={handleClick}
-      className={`group/card bg-[#F7F7F7] rounded-2xl border border-gray-200/80 hover:border-gray-300 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between h-full select-none ${className}`}
+      className={`sv-product-card group/card bg-pure-white border border-border-line hover:border-on-surface transition-colors cursor-pointer overflow-hidden flex flex-col justify-between h-full select-none ${className}`}
     >
-      {/* ── 1. Image Frame (1:1 Aspect Ratio, Scale Hover) ── */}
-      <div className="relative w-full aspect-square bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-200/60 flex-shrink-0">
+      <div className="relative w-full aspect-[3/4] bg-surface-ivory flex items-center justify-center overflow-hidden border-b border-border-line flex-shrink-0">
         <img
           src={imgSrc}
           alt={product.name || "Product"}
-          className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover transition-opacity duration-300"
           onError={(e: any) => {
             e.target.src = imgPlaceholder.src;
           }}
         />
 
-        {/* Top-Left Badges */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10 pointer-events-none">
+        <div className="absolute top-3 left-3 flex flex-col gap-1 z-10 pointer-events-none">
           {showNewBadge && (
-            <span className="bg-[#007FFF] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
-              NEW
+            <span className="bg-primary text-surface text-[10px] font-semibold px-2 py-1 uppercase tracking-wider">
+              New
             </span>
           )}
           {showBestsellerBadge && !showNewBadge && (
-            <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
-              BESTSELLER
+            <span className="bg-surface-dark text-surface text-[10px] font-semibold px-2 py-1 uppercase tracking-wider">
+              Atelier
             </span>
           )}
         </div>
 
-        {/* Top-Right Wishlist (Like / Heart) Button */}
         <button
           type="button"
           onClick={handleWishlistClick}
-          className="absolute top-2 right-2 p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-full shadow-md transition-all duration-200 z-20 flex items-center justify-center hover:scale-110"
+          className="absolute top-3 right-3 p-2 bg-surface/95 hover:bg-surface border border-border-line transition-all duration-200 z-20 flex items-center justify-center"
           title={isProductLiked ? "Remove from Wishlist" : "Add to Wishlist"}
           aria-label={isProductLiked ? "Remove from Wishlist" : "Add to Wishlist"}
         >
           <Heart
-            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${isProductLiked
-              ? "fill-red-500 text-red-500"
-              : "text-gray-600 hover:text-red-500"
-              }`}
+            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
+              isProductLiked ? "fill-primary text-primary" : "text-on-surface hover:text-primary"
+            }`}
           />
         </button>
 
-        {/* "Choose Options" Overlay Button */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] flex justify-center pointer-events-none opacity-0 invisible group-hover/card:opacity-100 group-hover/card:visible transition-all duration-300 scale-95 group-hover/card:scale-100 z-20">
-          <span className="w-full text-center bg-white/95 hover:bg-white text-gray-900 text-xs sm:text-sm font-bold py-2.5 sm:py-3 px-6 rounded-full shadow-2xl border border-gray-200">
-            Choose Options
+        <div className="absolute bottom-0 inset-x-0 opacity-0 invisible group-hover/card:opacity-100 group-hover/card:visible transition-all duration-300 z-20">
+          <span className="block w-full text-center bg-surface-dark/90 text-surface text-[11px] font-semibold tracking-[0.08em] uppercase py-3">
+            Select &amp; Reserve
           </span>
         </div>
       </div>
 
-      {/* ── 2. Card Content ── */}
-      <div className="p-2 sm:p-2.5 flex flex-col justify-between flex-1 bg-[#F7F7F7] gap-1.5">
-        <div className="flex flex-col gap-0.5">
-          {/* Product Title (Max 2 lines) */}
-          <h3 className="text-xs sm:text-[13px] font-semibold text-gray-900 line-clamp-2 leading-snug group-hover/card:text-[#007FFF] transition-colors min-h-[2rem]">
+      <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 gap-2">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-start justify-between gap-2 text-[10px] sm:text-[11px] font-semibold tracking-wider text-body-slate uppercase">
+            <span className="truncate">{product.brand?.name || product.category?.name || "Collection"}</span>
+            {hasDiscount && discountPct > 0 && (
+              <span className="text-primary shrink-0">{discountPct}% Off</span>
+            )}
+          </div>
+
+          <h3 className="text-sm sm:text-base font-bold uppercase tracking-tight text-on-surface line-clamp-2 leading-snug group-hover/card:text-primary transition-colors">
             {product.name}
           </h3>
 
-          {/* ── Rating Row (Only show if product actually has ratings/reviews) ── */}
-          {rating > 0 && reviewsCount > 0 && (
-            <div className="flex items-center gap-1 my-0.5 select-none flex-wrap">
-              <span className="text-[11px] font-bold text-gray-900 leading-none">
-                {rating.toFixed(1)}
-              </span>
-              <div className="flex items-center text-amber-500">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`w-3 h-3 ${star <= Math.round(rating)
-                        ? "fill-amber-500 text-amber-500"
-                        : "fill-gray-200 text-gray-200"
-                      }`}
-                  />
-                ))}
-              </div>
-              <ChevronDown className="w-2.5 h-2.5 text-gray-500 stroke-[2.5]" />
-              <span className="text-[10px] sm:text-[11px] text-[#007185] hover:text-[#C7511F] font-normal">
+          {rating > 0 && (
+            <div className="flex items-center gap-1.5 select-none flex-wrap">
+              <span className="text-[11px] font-bold text-on-surface leading-none">{rating.toFixed(1)}</span>
+              <span className="text-accent-ochre text-[11px]">★</span>
+              <span className="text-[10px] sm:text-[11px] text-body-slate font-normal">
                 ({formattedReviewCount})
               </span>
             </div>
           )}
 
-          {/* Pricing Row */}
-          <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-            <span className="font-bold text-xs sm:text-sm text-[#C53030]">
-              {formattedSp}
-            </span>
+          <div className="flex items-center gap-2 flex-wrap mt-0.5">
+            <span className="font-bold text-sm sm:text-base text-on-surface">{formattedSp}</span>
             {hasDiscount && (
-              <span className="line-through text-[10px] sm:text-xs text-gray-400 font-normal">
+              <span className="line-through text-[11px] sm:text-xs text-body-slate font-normal">
                 {formattedMrp}
-              </span>
-            )}
-            {hasDiscount && discountPct > 0 && (
-              <span className="bg-[#0c2340] text-white text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shadow-2xs">
-                {discountPct}% OFF
               </span>
             )}
           </div>
         </div>
 
-        {/* ── 3. Useful Product Metadata Section (Strictly 2 Lines) ── */}
         {!hideMetadata && (
-          <div className="flex pt-1.5 border-t border-gray-200/60 flex-col gap-1 mt-auto">
-            {/* Row 1: Quality Assured & Options Tag (Single line, no wrap) */}
-            <div className="flex items-center justify-between gap-1 text-xs flex-nowrap w-full">
-              <span className="inline-flex items-center gap-1 bg-blue-50 text-[#007FFF] text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 rounded border border-blue-100 flex-shrink-0">
-                <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#007FFF]" /> Quality Assured
-              </span>
-
-              {/* Variant count badge if multi-variant */}
+          <div className="flex pt-3 border-t border-border-line flex-col gap-1 mt-auto">
+            <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider font-semibold">
+              <span className="text-primary">{stock > 0 ? "In Collection" : "Made to Order"}</span>
               {variantCount > 1 && (
-                <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-semibold text-gray-700 bg-white px-1.5 py-0.5 rounded border border-gray-200 shadow-2xs flex-shrink-0">
-                  <Layers className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-400" />
-                  {variantCount} Options
-                </span>
-              )}
-            </div>
-
-            {/* Row 2: Stock / Express Shipping Status Tag */}
-            <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-medium text-gray-600 truncate">
-              {stock > 0 ? (
-                <span className="flex items-center gap-1 text-emerald-700 font-medium truncate">
-                  <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-600 flex-shrink-0" /> In Stock & ready to ship
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 text-amber-600 font-medium truncate">
-                  <Truck className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" /> Express Delivery Available
-                </span>
+                <span className="text-body-slate">{variantCount} Options</span>
               )}
             </div>
           </div>

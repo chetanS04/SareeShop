@@ -1,0 +1,399 @@
+---
+# ============================================================
+# SareeShop — full production deploy (fresh Ubuntu server)
+# Run from WSL:  cd ansible && ./deploy.sh
+# ============================================================
+
+- name: Deploy SareeShop (Nest API + Next.js + MySQL + Nginx + PM2)
+  hosts: sareeshop
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Fail if domain still example.com
+      ansible.builtin.fail:
+        msg: "Edit ansible/group_vars/all.yml — set app_domain, DB passwords, jwt_secret, admin_password before deploy."
+      when: app_domain is match('(?i)^example\\.com$') and not (allow_example_domain | default(false) | bool)
+
+    - name: Ensure apt cache is fresh
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+  tasks:
+    # ---------- 1) Base packages ----------
+    - name: Install base OS packages
+      ansible.builtin.apt:
+        name:
+          - curl
+          - wget
+          - gnupg
+          - ca-certificates
+          - apt-transport-https
+          - software-properties-common
+          - build-essential
+          - git
+          - rsync
+          - ufw
+          - nginx
+          - python3
+          - python3-pip
+          - python3-pymysql
+          - python3-mysqldb
+          - unzip
+          - zip
+          - htop
+          - jq
+        state: present
+
+    # ---------- 2) Node.js 22 ----------
+    - name: Check if Node.js is installed
+      ansible.builtin.command: node -v
+      register: node_check
+      changed_when: false
+      failed_when: false
+
+    - name: Add NodeSource repository
+      ansible.builtin.shell: |
+        set -euo pipefail
+        curl -fsSL https://deb.nodesource.com/setup_{{ node_major }}.x | bash -
+      args:
+        executable: /bin/bash
+      when: node_check.rc != 0 or (node_check.stdout is not match('^v' + (node_major | string)))
+
+    - name: Install Node.js
+      ansible.builtin.apt:
+        name: nodejs
+        state: present
+        update_cache: true
+
+    - name: Install PM2 globally
+      community.general.npm:
+        name: pm2
+        global: true
+        state: present
+
+    # ---------- 3) MySQL ----------
+    - name: Install MySQL Server
+      ansible.builtin.apt:
+        name:
+          - mysql-server
+          - mysql-client
+        state: present
+
+    - name: Ensure MySQL is started
+      ansible.builtin.service:
+        name: mysql
+        state: started
+        enabled: true
+
+    - name: Set MySQL root password (first-time safe)
+      ansible.builtin.shell: |
+        set -euo pipefail
+        mysql -u root -e "SELECT 1" >/dev/null 2>&1 && \
+          mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '{{ mysql_root_password }}'; FLUSH PRIVILEGES;" || true
+      args:
+        executable: /bin/bash
+      no_log: true
+
+    - name: Create application database
+      community.mysql.mysql_db:
+        name: "{{ db_name }}"
+        state: present
+        encoding: utf8mb4
+        collation: utf8mb4_unicode_ci
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      no_log: true
+
+    - name: Create application DB user
+      community.mysql.mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        host: "%"
+        priv: "{{ db_name }}.*:ALL"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      no_log: true
+
+    - name: Also allow DB user from localhost
+      community.mysql.mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        host: "localhost"
+        priv: "{{ db_name }}.*:ALL"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      no_log: true
+
+    # ---------- 4) App user & directories ----------
+    - name: Create deploy user
+      ansible.builtin.user:
+        name: "{{ deploy_user }}"
+        system: true
+        shell: /bin/bash
+        home: "/home/{{ deploy_user }}"
+        create_home: true
+
+    - name: Create app directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: "0755"
+      loop:
+        - "{{ app_root }}"
+        - "{{ api_dir }}"
+        - "{{ web_dir }}"
+        - "{{ storage_dir }}"
+        - "{{ backup_dir }}"
+        - "{{ app_root }}/logs"
+        - /var/www/certbot
+
+    # ---------- 5) Sync code from local machine ----------
+    - name: Sync nest-api (exclude heavy/local files)
+      ansible.posix.synchronize:
+        src: "{{ local_project_root }}/nest-api/"
+        dest: "{{ api_dir }}/"
+        delete: false
+        rsync_opts:
+          - "--exclude=node_modules"
+          - "--exclude=dist"
+          - "--exclude=.env"
+          - "--exclude=.git"
+          - "--exclude=coverage"
+          - "--exclude=*.log"
+      become: false
+      delegate_to: localhost
+
+    - name: Sync next-app (exclude heavy/local files)
+      ansible.posix.synchronize:
+        src: "{{ local_project_root }}/next-app/"
+        dest: "{{ web_dir }}/"
+        delete: false
+        rsync_opts:
+          - "--exclude=node_modules"
+          - "--exclude=.next"
+          - "--exclude=.env"
+          - "--exclude=.git"
+          - "--exclude=*.log"
+      become: false
+      delegate_to: localhost
+
+    - name: Fix ownership after sync
+      ansible.builtin.file:
+        path: "{{ app_root }}"
+        state: directory
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        recurse: true
+
+    # ---------- 6) Env files ----------
+    - name: Write nest-api .env
+      ansible.builtin.template:
+        src: nest.env.j2
+        dest: "{{ api_dir }}/.env"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: "0600"
+
+    - name: Write next-app .env
+      ansible.builtin.template:
+        src: next.env.j2
+        dest: "{{ web_dir }}/.env"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: "0600"
+
+    - name: Write PM2 ecosystem file
+      ansible.builtin.template:
+        src: ecosystem.config.js.j2
+        dest: "{{ app_root }}/ecosystem.config.js"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: "0644"
+
+    # ---------- 7) Install + build API ----------
+    - name: npm install nest-api (includes build tooling)
+      ansible.builtin.command: npm install
+      args:
+        chdir: "{{ api_dir }}"
+      become_user: "{{ deploy_user }}"
+      when: run_npm_ci | bool
+
+    - name: Build nest-api
+      ansible.builtin.command: npm run build
+      args:
+        chdir: "{{ api_dir }}"
+      become_user: "{{ deploy_user }}"
+      when: build_apps | bool
+
+    - name: Initialize database (migrate + seed admin/locations)
+      ansible.builtin.command: npm run db:setup
+      args:
+        chdir: "{{ api_dir }}"
+      become_user: "{{ deploy_user }}"
+      when: run_db_setup | bool
+      register: db_setup_result
+      changed_when: true
+
+    # ---------- 8) Install + build Next ----------
+    - name: npm install next-app
+      ansible.builtin.command: npm install
+      args:
+        chdir: "{{ web_dir }}"
+      become_user: "{{ deploy_user }}"
+      when: run_npm_ci | bool
+
+    - name: Build next-app
+      ansible.builtin.command: npm run build
+      args:
+        chdir: "{{ web_dir }}"
+      become_user: "{{ deploy_user }}"
+      when: build_apps | bool
+      environment:
+        NODE_ENV: production
+
+    # ---------- 9) PM2 process manager ----------
+    - name: Start / reload apps with PM2
+      ansible.builtin.command: pm2 startOrReload {{ app_root }}/ecosystem.config.js --update-env
+      become_user: "{{ deploy_user }}"
+      environment:
+        HOME: "/home/{{ deploy_user }}"
+        PM2_HOME: "/home/{{ deploy_user }}/.pm2"
+
+    - name: Save PM2 process list
+      ansible.builtin.command: pm2 save
+      become_user: "{{ deploy_user }}"
+      environment:
+        HOME: "/home/{{ deploy_user }}"
+        PM2_HOME: "/home/{{ deploy_user }}/.pm2"
+
+    - name: Enable PM2 startup on boot
+      ansible.builtin.shell: |
+        set -euo pipefail
+        env PATH=$PATH:/usr/bin pm2 startup systemd -u {{ deploy_user }} --hp /home/{{ deploy_user }}
+      args:
+        executable: /bin/bash
+      register: pm2_startup
+      changed_when: "'systemd' in pm2_startup.stdout or 'command' in pm2_startup.stdout"
+
+    # ---------- 10) Nginx ----------
+    - name: Deploy Nginx site config
+      ansible.builtin.template:
+        src: nginx-sareeshop.conf.j2
+        dest: /etc/nginx/sites-available/sareeshop.conf
+        mode: "0644"
+      notify: Reload nginx
+
+    - name: Enable sareeshop site
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/sareeshop.conf
+        dest: /etc/nginx/sites-enabled/sareeshop.conf
+        state: link
+      notify: Reload nginx
+
+    - name: Disable default Nginx site
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Reload nginx
+
+    - name: Test Nginx config
+      ansible.builtin.command: nginx -t
+      changed_when: false
+
+    - name: Ensure Nginx is running
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    # ---------- 11) Firewall ----------
+    - name: Configure UFW allow SSH / HTTP / HTTPS
+      community.general.ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "{{ open_ssh_port | string }}"
+        - "80"
+        - "443"
+      when: configure_firewall | bool
+
+    - name: Enable UFW
+      community.general.ufw:
+        state: enabled
+        policy: deny
+        direction: incoming
+      when: configure_firewall | bool
+
+    # ---------- 12) Optional SSL ----------
+    - name: Install Certbot
+      ansible.builtin.apt:
+        name:
+          - certbot
+          - python3-certbot-nginx
+        state: present
+      when: enable_ssl | bool
+
+    - name: Obtain Let's Encrypt certificate
+      ansible.builtin.command: >
+        certbot --nginx
+        -d {{ app_domain }}
+        -d www.{{ app_domain }}
+        --non-interactive
+        --agree-tos
+        -m {{ letsencrypt_email }}
+        --redirect
+      when: enable_ssl | bool
+      register: certbot_result
+      changed_when: "'Successfully' in certbot_result.stdout or 'Certificate not yet due' in certbot_result.stdout or certbot_result.rc == 0"
+      failed_when: false
+
+    # ---------- 13) Health checks ----------
+    - name: Wait for API port
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ api_port }}"
+        timeout: 60
+
+    - name: Wait for Web port
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ web_port }}"
+        timeout: 60
+
+    - name: Hit local API health (states)
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ api_port }}/api/states"
+        method: GET
+        status_code: 200
+      register: api_health
+      retries: 5
+      delay: 3
+      until: api_health.status == 200
+
+    - name: Show deploy summary
+      ansible.builtin.debug:
+        msg:
+          - "✅ SareeShop deployed"
+          - "Domain: {{ frontend_url }}"
+          - "API local: http://127.0.0.1:{{ api_port }}"
+          - "Web local: http://127.0.0.1:{{ web_port }}"
+          - "App root: {{ app_root }}"
+          - "Admin: {{ admin_email }}"
+          - "SSL enabled: {{ enable_ssl }}"
+          - "Next: open {{ frontend_url }} and login to /dashboard"
+
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded

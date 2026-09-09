@@ -402,14 +402,14 @@ const SearchPage = () => {
         return (
             <div className="min-h-[70vh] bg-white flex items-center justify-center p-6">
                 <div className="text-center max-w-md">
-                    <div className="w-16 h-16 bg-blue-50 text-[#007FFF] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                    <div className="w-16 h-16 bg-blue-50 text-[#8B1313] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
                         <Search className="w-8 h-8" />
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Search Products on Zelton</h2>
                     <p className="text-sm text-gray-500 mb-6">Type any search term above to explore official products, categories, and brands.</p>
                     <button
                         onClick={() => router.push("/")}
-                        className="px-6 py-2.5 bg-[#007FFF] hover:bg-[#0066CC] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition active:scale-95 cursor-pointer"
+                        className="px-6 py-2.5 bg-[#8B1313] hover:bg-[#680D0D] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition active:scale-95 cursor-pointer"
                     >
                         Return to Store Home
                     </button>
@@ -439,7 +439,7 @@ const SearchPage = () => {
                     <span className="text-xs font-bold text-gray-900 uppercase">Active Filters</span>
                     <button
                         onClick={handleClearAllFilters}
-                        className="text-xs font-semibold text-[#007FFF] hover:underline cursor-pointer flex items-center gap-1"
+                        className="text-xs font-semibold text-[#8B1313] hover:underline cursor-pointer flex items-center gap-1"
                     >
                         <RotateCcw className="w-3 h-3" />
                         Clear All
@@ -459,7 +459,7 @@ const SearchPage = () => {
                                 return (
                                     <label
                                         key={cat.id}
-                                        className="flex items-center gap-2.5 cursor-pointer select-none text-xs hover:text-[#007FFF]"
+                                        className="flex items-center gap-2.5 cursor-pointer select-none text-xs hover:text-[#8B1313]"
                                     >
                                         <input
                                             type="checkbox"
@@ -469,7 +469,7 @@ const SearchPage = () => {
                                                     isSelected ? prev.filter((id) => id !== cat.id) : [...prev, cat.id]
                                                 );
                                             }}
-                                            className="rounded border-gray-300 text-[#007FFF] focus:ring-[#007FFF] cursor-pointer"
+                                            className="rounded border-gray-300 text-[#8B1313] focus:ring-[#8B1313] cursor-pointer"
                                         />
                                         <span className="text-gray-800 line-clamp-1 flex-1 font-normal">{cat.name}</span>
                                         <span className="text-[10px] text-gray-400">({cat.count})</span>
@@ -480,7 +480,7 @@ const SearchPage = () => {
                     {availableCategories.length > 6 && (
                         <button
                             onClick={() => setShowAllCategories(!showAllCategories)}
-                            className="text-xs font-semibold text-[#007FFF] hover:underline mt-2 flex items-center gap-0.5 cursor-pointer"
+                            className="text-xs font-semibold text-[#8B1313] hover:underline mt-2 flex items-center gap-0.5 cursor-pointer"
                         >
                             {showAllCategories ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                             <span>{showAllCategories ? "See less" : `See more (${availableCategories.length - 6})`}</span>
@@ -499,7 +499,7 @@ const SearchPage = () => {
                         type="checkbox"
                         checked={freeShippingOnly}
                         onChange={(e) => setFreeShippingOnly(e.target.checked)}
-                        className="mt-0.5 rounded border-gray-300 text-[#007FFF] focus:ring-[#007FFF] cursor-pointer"
+                        className="mt-0.5 rounded border-gray-300 text-[#8B1313] focus:ring-[#8B1313] cursor-pointer"
                     />
                     <div>
                         <span className="text-xs font-semibold text-gray-900 block">Eligible for Free Delivery</span>
@@ -522,7 +522,7 @@ const SearchPage = () => {
                                 return (
                                     <label
                                         key={brand.id}
-                                        className="flex items-center gap-2.5 cursor-pointer select-none text-xs hover:text-[#007FFF]"
+                                        className="flex items-center gap-2.5 cursor-pointer select-none text-xs hover:text-[#8B1313]"
                                     >
                                         <input
                                             type="checkbox"
@@ -532,7 +532,7 @@ const SearchPage = () => {
                                                     isChecked ? prev.filter((id) => id !== brand.id) : [...prev, brand.id]
                                                 );
                                             }}
-                                            className="rounded border-gray-300 text-[#007FFF] focus:ring-[#007FFF] cursor-pointer"
+                                            className="rounded border-gray-300 text-[#8B1313] focus:ring-[#8B1313] cursor-pointer"
                                         />
                                         <span className="text-gray-800 line-clamp-1 flex-1 font-normal">{brand.name}</span>
                                         <span className="text-[10px] text-gray-400">({brand.count})</span>
@@ -544,7 +544,7 @@ const SearchPage = () => {
                     {availableBrands.length > 6 && (
                         <button
                             onClick={() => setShowAllBrands(!showAllBrands)}
-                            className="text-xs font-semibold text-[#007FFF] hover:underline mt-2 flex items-center gap-0.5 cursor-pointer"
+                            className="text-xs font-semibold text-[#8B1313] hover:underline mt-2 flex items-center gap-0.5 cursor-pointer"
                         >
                             {showAllBrands ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                             <span>{showAllBrands ? "See less" : `See more (${availableBrands.length - 6})`}</span>
@@ -569,7 +569,7 @@ const SearchPage = () => {
                             key={key}
                             type="button"
                             onClick={() => setPriceBracket(priceBracket === key ? null : key)}
-                            className={`block text-left w-full transition-colors hover:text-[#007FFF] cursor-pointer ${priceBracket === key ? "font-bold text-[#007FFF]" : "text-gray-700"
+                            className={`block text-left w-full transition-colors hover:text-[#8B1313] cursor-pointer ${priceBracket === key ? "font-bold text-[#8B1313]" : "text-gray-700"
                                 }`}
                         >
                             {label}
@@ -587,7 +587,7 @@ const SearchPage = () => {
                             setPriceBracket(null);
                             setCustomMinPrice(e.target.value);
                         }}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-[#007FFF]"
+                        className="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-[#8B1313]"
                     />
                     <span className="text-gray-400 text-xs">-</span>
                     <input
@@ -598,7 +598,7 @@ const SearchPage = () => {
                             setPriceBracket(null);
                             setCustomMaxPrice(e.target.value);
                         }}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-[#007FFF]"
+                        className="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-[#8B1313]"
                     />
                 </div>
             </div>
@@ -619,7 +619,7 @@ const SearchPage = () => {
                             key={stars}
                             type="button"
                             onClick={() => setMinRating(minRating === stars ? null : stars)}
-                            className={`flex items-center justify-between text-xs w-full text-left transition-colors hover:text-[#007FFF] cursor-pointer ${minRating === stars ? "font-bold text-[#007FFF]" : "text-gray-700"
+                            className={`flex items-center justify-between text-xs w-full text-left transition-colors hover:text-[#8B1313] cursor-pointer ${minRating === stars ? "font-bold text-[#8B1313]" : "text-gray-700"
                                 }`}
                         >
                             <div className="flex items-center gap-1.5">
@@ -656,7 +656,7 @@ const SearchPage = () => {
                             key={pct}
                             type="button"
                             onClick={() => setMinDiscount(minDiscount === pct ? null : pct)}
-                            className={`flex items-center justify-between text-left w-full transition-colors hover:text-[#007FFF] cursor-pointer ${minDiscount === pct ? "font-bold text-[#007FFF]" : "text-gray-700"
+                            className={`flex items-center justify-between text-left w-full transition-colors hover:text-[#8B1313] cursor-pointer ${minDiscount === pct ? "font-bold text-[#8B1313]" : "text-gray-700"
                                 }`}
                         >
                             <span>{pct}% Off or more</span>
@@ -689,7 +689,7 @@ const SearchPage = () => {
                                         style={{ backgroundColor: swatch.bg }}
                                         title={`${colorItem.name} (${colorItem.count})`}
                                         className={`w-6 h-6 rounded-full border shadow-xs transition-all relative flex items-center justify-center cursor-pointer ${isSelected
-                                            ? "ring-2 ring-[#007FFF] scale-110"
+                                            ? "ring-2 ring-[#8B1313] scale-110"
                                             : "hover:scale-110"
                                             }`}
                                     >
@@ -736,7 +736,7 @@ const SearchPage = () => {
                             <SlidersHorizontal className="w-3.5 h-3.5" />
                             <span>Filters</span>
                             {hasActiveFilters && (
-                                <span className="w-2 h-2 rounded-full bg-[#007FFF]" />
+                                <span className="w-2 h-2 rounded-full bg-[#8B1313]" />
                             )}
                         </button>
 
@@ -745,7 +745,7 @@ const SearchPage = () => {
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-md focus:ring-1 focus:ring-[#007FFF] focus:border-[#007FFF] block px-2.5 py-1.5 font-medium shadow-2xs cursor-pointer"
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-md focus:ring-1 focus:ring-[#8B1313] focus:border-[#8B1313] block px-2.5 py-1.5 font-medium shadow-2xs cursor-pointer"
                             >
                                 <option value="featured">Featured</option>
                                 <option value="price_low_high">Price: Low to High</option>
@@ -788,7 +788,7 @@ const SearchPage = () => {
                                             type="button"
                                             onClick={() => setActiveNarrowTag(isSelected ? null : pill.tag)}
                                             className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs whitespace-nowrap transition-all shadow-2xs cursor-pointer flex-shrink-0 ${isSelected
-                                                ? "bg-[#007FFF] text-white border-[#007FFF] font-bold shadow-xs"
+                                                ? "bg-[#8B1313] text-white border-[#8B1313] font-bold shadow-xs"
                                                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400 font-medium"
                                                 }`}
                                         >
@@ -867,8 +867,8 @@ const SearchPage = () => {
                                 {/* Infinite Scroll Sentinel */}
                                 <div ref={observerTargetRef} className="w-full py-10 flex flex-col items-center justify-center">
                                     {loadingMore && (
-                                        <div className="flex items-center gap-2.5 px-5 py-2.5 bg-white shadow-md rounded-full border border-gray-200 text-[#007FFF] font-semibold text-xs animate-pulse">
-                                            <div className="w-4 h-4 border-2 border-[#007FFF] border-t-transparent rounded-full animate-spin" />
+                                        <div className="flex items-center gap-2.5 px-5 py-2.5 bg-white shadow-md rounded-full border border-gray-200 text-[#8B1313] font-semibold text-xs animate-pulse">
+                                            <div className="w-4 h-4 border-2 border-[#8B1313] border-t-transparent rounded-full animate-spin" />
                                             <span>Loading more results...</span>
                                         </div>
                                     )}
@@ -890,14 +890,14 @@ const SearchPage = () => {
                                 {hasActiveFilters ? (
                                     <button
                                         onClick={handleClearAllFilters}
-                                        className="px-5 py-2 bg-[#007FFF] hover:bg-[#0066CC] text-white text-xs font-bold rounded-xl shadow transition active:scale-95 cursor-pointer"
+                                        className="px-5 py-2 bg-[#8B1313] hover:bg-[#680D0D] text-white text-xs font-bold rounded-xl shadow transition active:scale-95 cursor-pointer"
                                     >
                                         Clear All Filters
                                     </button>
                                 ) : (
                                     <button
                                         onClick={() => router.push("/")}
-                                        className="px-5 py-2 bg-[#007FFF] hover:bg-[#0066CC] text-white text-xs font-bold rounded-xl shadow transition active:scale-95 cursor-pointer"
+                                        className="px-5 py-2 bg-[#8B1313] hover:bg-[#680D0D] text-white text-xs font-bold rounded-xl shadow transition active:scale-95 cursor-pointer"
                                     >
                                         Back to Home
                                     </button>
@@ -942,7 +942,7 @@ const SearchPage = () => {
                             )}
                             <button
                                 onClick={() => setIsMobileFilterOpen(false)}
-                                className="flex-1 py-2 text-xs font-bold bg-[#007FFF] hover:bg-[#0066CC] text-white rounded-md shadow cursor-pointer"
+                                className="flex-1 py-2 text-xs font-bold bg-[#8B1313] hover:bg-[#680D0D] text-white rounded-md shadow cursor-pointer"
                             >
                                 Apply Filters ({products.length})
                             </button>

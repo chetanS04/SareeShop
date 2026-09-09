@@ -1,0 +1,16 @@
+# Rename / copy this to inventory.ini and fill your server details.
+#
+# Example (password auth):
+#   ansible_user=ubuntu
+#   ansible_ssh_pass=YourPassword
+#   ansible_become_pass=YourPassword
+#
+# Example (SSH key from WSL):
+#   ansible_user=ubuntu
+#   ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+[sareeshop]
+YOUR_SERVER_IP ansible_user=root
+
+[sareeshop:vars]
+ansible_python_interpreter=/usr/bin/python3

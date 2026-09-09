@@ -15,7 +15,7 @@ const sizeConfig = {
 };
 
 const variantConfig = {
-  brand: "border-[#007FFF]/20 border-t-[#007FFF]",
+  brand: "border-[#8B1313]/20 border-t-[#8B1313]",
   white: "border-white/30 border-t-white",
   navy: "border-[#0c2340]/20 border-t-[#0c2340]",
   gray: "border-gray-200 border-t-gray-600",

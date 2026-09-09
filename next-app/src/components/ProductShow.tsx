@@ -119,7 +119,7 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
         return (
             <div className="min-h-[400px] flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-blue-200 border-t-[#007FFF] rounded-full animate-spin mx-auto mb-3"></div>
+                    <div className="w-12 h-12 border-4 border-blue-200 border-t-[#8B1313] rounded-full animate-spin mx-auto mb-3"></div>
                     <p className="text-sm font-semibold text-gray-600">Loading products...</p>
                 </div>
             </div>
@@ -132,7 +132,7 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
                 <p className="text-red-500 font-semibold mb-4">{errorMessage}</p>
                 <button
                     onClick={() => fetchProducts(1, false)}
-                    className="px-6 py-2 bg-[#007FFF] text-white text-sm font-semibold rounded-full hover:bg-blue-600 transition-colors"
+                    className="px-6 py-2 bg-[#8B1313] text-white text-sm font-semibold rounded-full hover:bg-blue-600 transition-colors"
                 >
                     Try Again
                 </button>
@@ -159,7 +159,7 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
                         <select
                             value={priceRange}
                             onChange={(e) => setPriceRange(e.target.value)}
-                            className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#007FFF] cursor-pointer"
+                            className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8B1313] cursor-pointer"
                         >
                             <option value="all">All Prices</option>
                             <option value="under1000">Under ₹1,000</option>
@@ -173,7 +173,7 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#007FFF] cursor-pointer"
+                            className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#8B1313] cursor-pointer"
                         >
                             <option value="newest">Newest First</option>
                             <option value="price_low">Price: Low to High</option>
@@ -186,7 +186,7 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
                     {(priceRange !== 'all' || sortBy !== 'newest') && (
                         <button
                             onClick={clearFilters}
-                            className="text-xs font-semibold text-[#007FFF] hover:text-[#0066CC] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl border border-blue-200 transition-all flex items-center gap-1"
+                            className="text-xs font-semibold text-[#8B1313] hover:text-[#680D0D] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl border border-blue-200 transition-all flex items-center gap-1"
                         >
                             <X className="w-3.5 h-3.5" />
                             Reset
@@ -203,7 +203,7 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
                     {(priceRange !== 'all' || sortBy !== 'newest') && (
                         <button
                             onClick={clearFilters}
-                            className="px-6 py-2.5 bg-[#007FFF] text-white text-sm font-semibold rounded-xl hover:bg-blue-600 transition-all"
+                            className="px-6 py-2.5 bg-[#8B1313] text-white text-sm font-semibold rounded-xl hover:bg-blue-600 transition-all"
                         >
                             Reset Filters
                         </button>
@@ -234,8 +234,8 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
                     {/* Infinite Scroll Sentinel & Animated Scrollable Loader */}
                     <div ref={observerTargetRef} className="w-full py-8 flex flex-col items-center justify-center">
                         {loadingMore && (
-                            <div className="flex items-center gap-3 px-6 py-3 bg-white shadow-md rounded-full border border-gray-100 text-[#007FFF] font-semibold text-sm animate-pulse">
-                                <div className="w-5 h-5 border-2 border-[#007FFF] border-t-transparent rounded-full animate-spin" />
+                            <div className="flex items-center gap-3 px-6 py-3 bg-white shadow-md rounded-full border border-gray-100 text-[#8B1313] font-semibold text-sm animate-pulse">
+                                <div className="w-5 h-5 border-2 border-[#8B1313] border-t-transparent rounded-full animate-spin" />
                                 <span>Loading more products...</span>
                             </div>
                         )}

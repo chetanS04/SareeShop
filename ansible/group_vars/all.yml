@@ -1,0 +1,81 @@
+---
+# ============================================================
+# SareeShop — Ansible deploy variables
+# Edit these BEFORE running ./deploy.sh
+# ============================================================
+
+# --- Domain / URLs (change for your live domain) ---
+app_domain: "example.com"
+# First deploy (no SSL): use http://DOMAIN_OR_IP
+# After DNS + certbot: switch to https:// and set enable_ssl: true
+frontend_url: "http://{{ app_domain }}"
+api_public_url: "{{ frontend_url }}/api"
+upload_public_url: "{{ frontend_url }}"
+
+# Set true only after DNS A-record points to this server
+enable_ssl: false
+letsencrypt_email: "admin@{{ app_domain }}"
+
+# --- App paths on server ---
+deploy_user: "sareeshop"
+app_root: "/var/www/sareeshop"
+api_dir: "{{ app_root }}/nest-api"
+web_dir: "{{ app_root }}/next-app"
+storage_dir: "{{ app_root }}/storage/api/public/storage"
+backup_dir: "{{ app_root }}/backups"
+
+# Local project root (relative to ansible/ when using deploy.sh)
+# Overridden automatically by deploy.sh
+local_project_root: "{{ playbook_dir }}/.."
+
+# --- Node ---
+node_major: "22"
+api_port: 8001
+web_port: 3000
+
+# --- MySQL ---
+mysql_root_password: "ChangeMe_Root_DB_Pass_Strong!"
+db_name: "saree_shop"
+db_user: "sareeshop"
+db_password: "ChangeMe_App_DB_Pass_Strong!"
+db_host: "127.0.0.1"
+db_port: 3306
+
+# --- App secrets (CHANGE THESE) ---
+jwt_secret: "ChangeMe_Long_Random_JWT_Secret_32chars_Min"
+jwt_expires_in: "7d"
+admin_email: "admin@example.com"
+admin_name: "Admin User"
+admin_password: "ChangeMe_Admin_Password!"
+
+# --- Optional integrations (leave placeholders if unused) ---
+google_client_id: "your_google_client_id.apps.googleusercontent.com"
+google_client_secret: "your_google_client_secret"
+mail_host: "smtp.gmail.com"
+mail_port: 587
+mail_user: "your_email@gmail.com"
+mail_pass: "your_email_app_password"
+mail_from_name: "Saree Shop"
+mail_from_address: "{{ mail_user }}"
+cashfree_app_id: "your_cashfree_app_id"
+cashfree_secret_key: "your_cashfree_secret_key"
+cashfree_api_version: "2023-08-01"
+cashfree_base_url: "https://sandbox.cashfree.com/pg"
+cashfree_mode: "sandbox"
+delhivery_api_key: "your_delhivery_api_key"
+delhivery_base_url: "https://track.delhivery.com/api"
+delhivery_client_name: "SareeShop"
+delhivery_pickup_location: "Warehouse"
+delhivery_return_address: "Your Warehouse Address"
+delhivery_return_city: "City"
+delhivery_return_state: "State"
+delhivery_return_pin: "000000"
+delhivery_return_phone: "0000000000"
+delhivery_test_mode: "true"
+
+# --- Deploy behaviour ---
+run_db_setup: true
+run_npm_ci: true
+build_apps: true
+configure_firewall: true
+open_ssh_port: 22
