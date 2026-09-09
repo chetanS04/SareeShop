@@ -487,11 +487,11 @@ export default function AuthModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+    <div className="sv-theme fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-surface-dark/70 animate-in fade-in duration-200 overflow-y-auto">
       {error && <ErrorMessage message={error} onClose={() => setError(null)} />}
       {success && <SuccessMessage message={success} onClose={() => setSuccess(null)} />}
 
-      <div className="relative w-full max-w-[360px] sm:max-w-md md:max-w-4xl bg-red-600 md:bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row border border-white/20 my-auto max-h-[96vh] animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-[360px] sm:max-w-md md:max-w-4xl bg-primary md:bg-pure-white overflow-hidden flex flex-col md:flex-row border border-on-surface/15 my-auto max-h-[96vh] animate-in zoom-in-95 duration-200">
 
         {/* Close Button */}
         <button
@@ -499,88 +499,77 @@ export default function AuthModal() {
             resetFormFields();
             closeAuthModal();
           }}
-          className="absolute top-3.5 right-3.5 z-30 w-7.5 h-7.5 rounded-full bg-black/25 md:bg-gray-100 text-white md:text-gray-700 flex items-center justify-center transition-all shadow-sm hover:scale-105"
+          className="absolute top-3.5 right-3.5 z-30 w-8 h-8 bg-surface-dark/30 md:bg-surface-ivory text-surface md:text-on-surface border border-surface/20 md:border-border-line flex items-center justify-center transition-colors hover:bg-surface-dark hover:text-surface cursor-pointer"
           aria-label="Close modal"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Left Side: Brand Section (Desktop 2-Column & Mobile Red Card Top) */}
-        <div className="w-full md:w-1/2 bg-red-600 p-4 sm:p-6 md:p-8 text-white flex flex-col justify-between relative overflow-hidden flex-shrink-0">
-          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-64 h-64 rounded-full bg-black/10 blur-2xl pointer-events-none" />
-
+        {/* Left Side: Brand Section */}
+        <div className="w-full md:w-1/2 bg-primary p-4 sm:p-6 md:p-8 text-surface flex flex-col justify-between relative overflow-hidden flex-shrink-0">
           <div className="relative z-10 text-center md:text-left pr-6 md:pr-0">
-            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 bg-white/15 backdrop-blur-md rounded-full text-[11px] md:text-xs font-semibold mb-2 md:mb-6 border border-white/20">
-              <span className="font-extrabold tracking-wide uppercase">Zelton</span>
-              <span className="bg-yellow-400 text-black text-[9px] md:text-[10px] px-1.5 py-0.2 rounded font-bold uppercase">Store</span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface/10 text-[11px] md:text-xs font-semibold uppercase tracking-[0.08em] mb-2 md:mb-6 border border-surface/20">
+              <span className="font-bold tracking-[0.08em]">SVastra</span>
+              <span className="bg-accent-ochre text-on-surface text-[9px] md:text-[10px] px-1.5 py-0.5 font-bold uppercase tracking-[0.06em]">Store</span>
             </div>
 
-            <h2 className="text-base sm:text-xl md:text-3xl font-extrabold tracking-tight mb-1.5 md:mb-3 leading-tight">
+            <h2 className="text-base sm:text-xl md:text-3xl font-bold tracking-tight mb-1.5 md:mb-3 leading-tight uppercase">
               {getBrandHeadline()}
             </h2>
 
-            <p className="hidden md:block text-white/80 text-sm leading-relaxed">
+            <p className="hidden md:block text-surface/80 text-sm leading-relaxed">
               Join thousands of happy shoppers enjoying premium quality products and transparent services.
             </p>
           </div>
 
-          {/* Feature Badge Pill (Image 1 Mobile Reference & Desktop Grid) */}
           <div className="relative z-10 mt-2 md:mt-0">
-            {/* Mobile Feature Pill with Dot Indicator */}
-            <div className="block md:hidden border border-white/30 rounded-full py-1.5 px-4 text-center text-xs font-bold text-white bg-white/10 shadow-inner">
+            <div className="block md:hidden border border-surface/30 py-1.5 px-4 text-center text-xs font-bold text-surface bg-surface/10">
               <div className="flex items-center justify-center gap-1.5">
-                <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-                <span>Customer-first</span>
-              </div>
-              <div className="flex justify-center gap-1 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
-                <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                <Star className="w-3.5 h-3.5 text-accent-ochre fill-accent-ochre" />
+                <span className="uppercase tracking-[0.06em]">Customer-first</span>
               </div>
             </div>
 
-            {/* Desktop 3-Card Grid */}
-            <div className="hidden md:grid grid-cols-3 gap-3 pt-6 border-t border-white/20">
-              <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/15 text-center">
-                <Star className="w-5 h-5 text-yellow-400 mx-auto mb-1 fill-yellow-400" />
-                <div className="text-[11px] font-bold">Customer-first</div>
-                <div className="text-[9px] text-white/70">Putting you in center</div>
+            <div className="hidden md:grid grid-cols-3 gap-3 pt-6 border-t border-surface/20">
+              <div className="bg-surface/10 p-3 border border-surface/15 text-center">
+                <Star className="w-5 h-5 text-accent-ochre mx-auto mb-1 fill-accent-ochre" />
+                <div className="text-[11px] font-bold uppercase tracking-tight">Customer-first</div>
+                <div className="text-[9px] text-surface/70">Putting you in center</div>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/15 text-center">
-                <ShieldCheck className="w-5 h-5 text-green-300 mx-auto mb-1" />
-                <div className="text-[11px] font-bold">Transparent</div>
-                <div className="text-[9px] text-white/70">Honest inside out</div>
+              <div className="bg-surface/10 p-3 border border-surface/15 text-center">
+                <ShieldCheck className="w-5 h-5 text-accent-ochre mx-auto mb-1" />
+                <div className="text-[11px] font-bold uppercase tracking-tight">Transparent</div>
+                <div className="text-[9px] text-surface/70">Honest inside out</div>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/15 text-center">
-                <Sparkles className="w-5 h-5 text-yellow-300 mx-auto mb-1" />
-                <div className="text-[11px] font-bold">Innovative</div>
-                <div className="text-[9px] text-white/70">Best for you</div>
+              <div className="bg-surface/10 p-3 border border-surface/15 text-center">
+                <Sparkles className="w-5 h-5 text-accent-ochre mx-auto mb-1" />
+                <div className="text-[11px] font-bold uppercase tracking-tight">Innovative</div>
+                <div className="text-[9px] text-surface/70">Best for you</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Side: Form Section (Inner White Card on Mobile) */}
-        <div className="w-full md:w-1/2 p-4 sm:p-6 md:p-8 bg-white rounded-t-3xl md:rounded-none flex flex-col justify-center overflow-y-auto max-h-[72vh] md:max-h-none">
+        {/* Right Side: Form Section */}
+        <div className="w-full md:w-1/2 p-4 sm:p-6 md:p-8 bg-pure-white flex flex-col justify-center overflow-y-auto max-h-[72vh] md:max-h-none">
 
-          {/* Header Tabs (Sign In / Register) */}
           {(currentMode === "login" || currentMode === "register") && (
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-gray-900 text-center mb-1">
+              <span className="label-caps text-primary block text-center mb-2">Members</span>
+              <h3 className="text-xl font-bold uppercase tracking-tight text-on-surface text-center mb-1">
                 Unlock Exclusive Discounts Now!
               </h3>
-              <p className="text-xs text-gray-500 text-center mb-4">
+              <p className="text-xs text-body-slate text-center mb-4">
                 {currentMode === "login" ? "Enter your account details to sign in" : "Fill in your information to get started"}
               </p>
 
-              <div className="flex bg-gray-100 p-1 rounded-2xl">
+              <div className="flex bg-surface-ivory p-1 border border-border-line">
                 <button
                   type="button"
                   onClick={() => handleModeSwitch("login")}
-                  className={`flex-1 py-2 text-xs md:text-sm font-bold rounded-xl transition-all ${currentMode === "login" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
+                  className={`flex-1 py-2 text-[11px] md:text-xs font-semibold uppercase tracking-[0.08em] transition-colors cursor-pointer ${currentMode === "login" ? "bg-pure-white text-on-surface border border-border-line" : "text-body-slate hover:text-on-surface"
                     }`}
                 >
                   Sign In
@@ -588,7 +577,7 @@ export default function AuthModal() {
                 <button
                   type="button"
                   onClick={() => handleModeSwitch("register")}
-                  className={`flex-1 py-2 text-xs md:text-sm font-bold rounded-xl transition-all ${currentMode === "register" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
+                  className={`flex-1 py-2 text-[11px] md:text-xs font-semibold uppercase tracking-[0.08em] transition-colors cursor-pointer ${currentMode === "register" ? "bg-pure-white text-on-surface border border-border-line" : "text-body-slate hover:text-on-surface"
                     }`}
                 >
                   Register
@@ -597,19 +586,18 @@ export default function AuthModal() {
             </div>
           )}
 
-          {/* Mode Header for Forgot, Reset & Verify */}
           {currentMode === "forgot-password" && (
             <div className="mb-6">
               <button
                 type="button"
                 onClick={() => (user ? closeAuthModal() : handleModeSwitch("login"))}
-                className="text-xs font-semibold text-gray-500 hover:text-black flex items-center gap-1 mb-3 cursor-pointer"
+                className="text-xs font-semibold uppercase tracking-[0.06em] text-body-slate hover:text-on-surface flex items-center gap-1 mb-3 cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 {user ? "Back to Profile" : "Back to Sign In"}
               </button>
-              <h3 className="text-xl font-bold text-gray-900 mb-1">Forgot Password?</h3>
-              <p className="text-xs text-gray-500">We'll send a 6-digit reset code to your email address.</p>
+              <h3 className="text-xl font-bold uppercase tracking-tight text-on-surface mb-1">Forgot Password?</h3>
+              <p className="text-xs text-body-slate">We&apos;ll send a 6-digit reset code to your email address.</p>
             </div>
           )}
 
@@ -618,25 +606,25 @@ export default function AuthModal() {
               <button
                 type="button"
                 onClick={() => (user ? closeAuthModal() : handleModeSwitch("login"))}
-                className="text-xs font-semibold text-gray-500 hover:text-black flex items-center gap-1 mb-3 cursor-pointer"
+                className="text-xs font-semibold uppercase tracking-[0.06em] text-body-slate hover:text-on-surface flex items-center gap-1 mb-3 cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 {user ? "Back to Profile" : "Back to Sign In"}
               </button>
-              <h3 className="text-xl font-bold text-gray-900 mb-1">Reset Password</h3>
-              <p className="text-xs text-gray-500">Enter the 6-digit code sent to <span className="font-semibold text-black">{email}</span></p>
+              <h3 className="text-xl font-bold uppercase tracking-tight text-on-surface mb-1">Reset Password</h3>
+              <p className="text-xs text-body-slate">Enter the 6-digit code sent to <span className="font-semibold text-on-surface">{email}</span></p>
             </div>
           )}
 
           {currentMode === "email-verify" && (
             <div className="mb-6 text-center">
-              <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-primary/10 text-primary border border-primary/30 flex items-center justify-center mx-auto mb-3">
                 <Mail className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-1">Verify Your Email</h3>
-              <p className="text-xs text-gray-500">
+              <h3 className="text-xl font-bold uppercase tracking-tight text-on-surface mb-1">Verify Your Email</h3>
+              <p className="text-xs text-body-slate">
                 Enter the 6-digit verification code sent to <br />
-                <span className="font-semibold text-black">{email}</span>
+                <span className="font-semibold text-on-surface">{email}</span>
               </p>
             </div>
           )}
@@ -649,17 +637,17 @@ export default function AuthModal() {
               <>
                 {currentMode === "register" && (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Full Name</label>
+                    <label className="label-caps text-body-slate mb-1">Full Name</label>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => handleNameChange(e.target.value)}
                       placeholder="Enter Your Full Name"
-                      className={`w-full px-4 py-2.5 text-xs md:text-sm bg-gray-50 border ${fieldErrors.name ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-black"
-                        } rounded-xl focus:outline-none transition-colors`}
+                      className={`w-full px-4 py-2.5 text-xs md:text-sm bg-surface border ${fieldErrors.name ? "border-primary focus:border-primary" : "border-border-line focus:border-on-surface"
+                        } focus:outline-none transition-colors`}
                     />
                     {fieldErrors.name && (
-                      <p className="text-[11px] text-red-500 font-semibold mt-1 transition-all">
+                      <p className="text-[11px] text-primary font-semibold mt-1 transition-all">
                         {fieldErrors.name}
                       </p>
                     )}
@@ -667,17 +655,17 @@ export default function AuthModal() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
+                  <label className="label-caps text-body-slate mb-1">Email Address</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => handleEmailChange(e.target.value)}
                     placeholder="Enter Your Email Address"
-                    className={`w-full px-4 py-2.5 text-xs md:text-sm bg-gray-50 border ${fieldErrors.email ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-black"
-                      } rounded-xl focus:outline-none transition-colors`}
+                    className={`w-full px-4 py-2.5 text-xs md:text-sm bg-surface border ${fieldErrors.email ? "border-primary focus:border-primary" : "border-border-line focus:border-on-surface"
+                      } focus:outline-none transition-colors`}
                   />
                   {fieldErrors.email && (
-                    <p className="text-[11px] text-red-500 font-semibold mt-1 transition-all">
+                    <p className="text-[11px] text-primary font-semibold mt-1 transition-all">
                       {fieldErrors.email}
                     </p>
                   )}
@@ -685,9 +673,9 @@ export default function AuthModal() {
 
                 {currentMode === "register" && (
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Mobile Number (Optional)</label>
+                    <label className="label-caps text-body-slate mb-1">Mobile Number (Optional)</label>
                     <div className="flex gap-2">
-                      <div className="px-3 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 flex items-center justify-center min-w-[60px]">
+                      <div className="px-3 py-2.5 bg-surface-ivory border border-border-line label-caps text-on-surface flex items-center justify-center min-w-[60px]">
                         IN +91
                       </div>
                       <input
@@ -696,12 +684,12 @@ export default function AuthModal() {
                         value={phone}
                         onChange={(e) => handlePhoneChange(e.target.value)}
                         placeholder="Enter Your Mobile Number"
-                        className={`flex-1 px-4 py-2.5 text-xs md:text-sm bg-gray-50 border ${fieldErrors.phone ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-black"
-                          } rounded-xl focus:outline-none transition-colors`}
+                        className={`flex-1 px-4 py-2.5 text-xs md:text-sm bg-surface border ${fieldErrors.phone ? "border-primary focus:border-primary" : "border-border-line focus:border-on-surface"
+                          } focus:outline-none transition-colors`}
                       />
                     </div>
                     {fieldErrors.phone && (
-                      <p className="text-[11px] text-red-500 font-semibold mt-1 transition-all">
+                      <p className="text-[11px] text-primary font-semibold mt-1 transition-all">
                         {fieldErrors.phone}
                       </p>
                     )}
@@ -710,12 +698,12 @@ export default function AuthModal() {
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold text-gray-700">Password</label>
+                    <label className="label-caps text-body-slate">Password</label>
                     {currentMode === "login" && (
                       <button
                         type="button"
                         onClick={() => handleModeSwitch("forgot-password")}
-                        className="text-xs font-semibold text-[#F40000] hover:underline"
+                        className="text-xs font-semibold text-primary hover:underline"
                       >
                         Forgot password?
                       </button>
@@ -727,19 +715,19 @@ export default function AuthModal() {
                       value={password}
                       onChange={(e) => handlePasswordChange(e.target.value)}
                       placeholder="••••••••"
-                      className={`w-full px-4 py-2.5 pr-10 text-xs md:text-sm bg-gray-50 border ${fieldErrors.password ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-black"
-                        } rounded-xl focus:outline-none transition-colors`}
+                      className={`w-full px-4 py-2.5 pr-10 text-xs md:text-sm bg-surface border ${fieldErrors.password ? "border-primary focus:border-primary" : "border-border-line focus:border-on-surface"
+                        } focus:outline-none transition-colors`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-body-slate hover:text-on-surface"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                   {fieldErrors.password && (
-                    <p className="text-[11px] text-red-500 font-semibold mt-1 transition-all">
+                    <p className="text-[11px] text-primary font-semibold mt-1 transition-all">
                       {fieldErrors.password}
                     </p>
                   )}
@@ -751,9 +739,9 @@ export default function AuthModal() {
                     id="notify"
                     checked={notifyUpdates}
                     onChange={(e) => setNotifyUpdates(e.target.checked)}
-                    className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
+                    className="w-4 h-4 accent-[#8B1313] border-border-line"
                   />
-                  <label htmlFor="notify" className="text-xs text-gray-600 cursor-pointer">
+                  <label htmlFor="notify" className="text-xs text-body-slate cursor-pointer">
                     Notify me with offers & updates
                   </label>
                 </div>
@@ -763,17 +751,17 @@ export default function AuthModal() {
             {/* 2. Forgot Password Fields */}
             {currentMode === "forgot-password" && (
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
+                <label className="label-caps text-body-slate mb-1">Email Address</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => handleEmailChange(e.target.value)}
                   placeholder="Enter your registered email"
-                  className={`w-full px-4 py-2.5 text-xs md:text-sm bg-gray-50 border ${fieldErrors.email ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-black"
-                    } rounded-xl focus:outline-none transition-colors`}
+                  className={`w-full px-4 py-2.5 text-xs md:text-sm bg-surface border ${fieldErrors.email ? "border-primary focus:border-primary" : "border-border-line focus:border-on-surface"
+                    } focus:outline-none transition-colors`}
                 />
                 {fieldErrors.email && (
-                  <p className="text-[11px] text-red-500 font-semibold mt-1 transition-all">
+                  <p className="text-[11px] text-primary font-semibold mt-1 transition-all">
                     {fieldErrors.email}
                   </p>
                 )}
@@ -783,7 +771,7 @@ export default function AuthModal() {
             {/* 3. Reset Password & Email Verify OTP Boxes */}
             {(currentMode === "email-verify" || currentMode === "reset-password") && (
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-2 text-center">
+                <label className="label-caps text-body-slate mb-2 text-center">
                   6-Digit Verification Code
                 </label>
                 <div className="flex justify-center gap-2 mb-4" onPaste={handleOtpPaste}>
@@ -796,7 +784,7 @@ export default function AuthModal() {
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="w-10 h-12 text-center text-lg font-bold bg-gray-50 border border-gray-300 rounded-xl focus:border-black focus:ring-1 focus:ring-black focus:outline-none transition-all"
+                      className="w-10 h-12 text-center text-lg font-bold bg-surface border border-border-line focus:border-on-surface focus:outline-none transition-colors"
                     />
                   ))}
                 </div>
@@ -807,52 +795,52 @@ export default function AuthModal() {
             {currentMode === "reset-password" && (
               <>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">New Password</label>
+                  <label className="label-caps text-body-slate mb-1">New Password</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => handlePasswordChange(e.target.value)}
                       placeholder="Minimum 8 characters"
-                      className={`w-full px-4 py-2.5 pr-10 text-xs md:text-sm bg-gray-50 border ${fieldErrors.password ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-black"
-                        } rounded-xl focus:outline-none transition-colors`}
+                      className={`w-full px-4 py-2.5 pr-10 text-xs md:text-sm bg-surface border ${fieldErrors.password ? "border-primary focus:border-primary" : "border-border-line focus:border-on-surface"
+                        } focus:outline-none transition-colors`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-body-slate hover:text-on-surface"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                   {fieldErrors.password && (
-                    <p className="text-[11px] text-red-500 font-semibold mt-1 transition-all">
+                    <p className="text-[11px] text-primary font-semibold mt-1 transition-all">
                       {fieldErrors.password}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Confirm New Password</label>
+                  <label className="label-caps text-body-slate mb-1">Confirm New Password</label>
                   <div className="relative">
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       value={passwordConfirmation}
                       onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                       placeholder="Re-enter new password"
-                      className={`w-full px-4 py-2.5 pr-10 text-xs md:text-sm bg-gray-50 border ${fieldErrors.passwordConfirmation ? "border-red-500 focus:border-red-500" : "border-gray-200 focus:border-black"
-                        } rounded-xl focus:outline-none transition-colors`}
+                      className={`w-full px-4 py-2.5 pr-10 text-xs md:text-sm bg-surface border ${fieldErrors.passwordConfirmation ? "border-primary focus:border-primary" : "border-border-line focus:border-on-surface"
+                        } focus:outline-none transition-colors`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-body-slate hover:text-on-surface"
                     >
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                   {fieldErrors.passwordConfirmation && (
-                    <p className="text-[11px] text-red-500 font-semibold mt-1 transition-all">
+                    <p className="text-[11px] text-primary font-semibold mt-1 transition-all">
                       {fieldErrors.passwordConfirmation}
                     </p>
                   )}
@@ -867,7 +855,7 @@ export default function AuthModal() {
                   type="button"
                   disabled={resendCountdown > 0 || isResending}
                   onClick={handleResendOTP}
-                  className="text-xs font-semibold text-gray-600 hover:text-black disabled:opacity-50 inline-flex items-center gap-1.5"
+                  className="text-xs font-semibold text-body-slate hover:text-on-surface disabled:opacity-50 inline-flex items-center gap-1.5"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isResending ? "animate-spin" : ""}`} />
                   {resendCountdown > 0 ? `Resend Code in ${resendCountdown}s` : "Resend Code"}
@@ -879,7 +867,7 @@ export default function AuthModal() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 bg-[#007FFF] hover:bg-[#0066CC] text-[#FFFAFB] font-bold rounded-xl text-xs md:text-sm transition-all shadow-md active:scale-[0.99] disabled:opacity-50 mt-2"
+              className="sv-btn-primary w-full disabled:opacity-50 mt-2 cursor-pointer"
             >
               {isSubmitting
                 ? "Processing..."
@@ -899,8 +887,8 @@ export default function AuthModal() {
           {(currentMode === "login" || currentMode === "register") && (
             <div className="mt-5">
               <div className="relative flex items-center justify-center mb-4">
-                <div className="border-t border-gray-200 w-full" />
-                <span className="bg-white px-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider absolute">
+                <div className="border-t border-border-line w-full" />
+                <span className="bg-pure-white px-3 label-caps text-body-slate absolute">
                   OR
                 </span>
               </div>
@@ -910,7 +898,7 @@ export default function AuthModal() {
                   <GoogleLogin
                     onSuccess={handleGoogleSuccess}
                     onError={() => setError("Google sign-in was unsuccessful.")}
-                    shape="pill"
+                    shape="rectangular"
                     text={currentMode === "login" ? "signin_with" : "signup_with"}
                   />
                 </GoogleOAuthProvider>
@@ -919,14 +907,14 @@ export default function AuthModal() {
           )}
 
           {/* Switch link */}
-          <div className="mt-6 text-center text-xs text-gray-500">
+          <div className="mt-6 text-center text-xs text-body-slate">
             {currentMode === "login" ? (
               <p>
                 Don't have an account?{" "}
                 <button
                   type="button"
                   onClick={() => handleModeSwitch("register")}
-                  className="font-bold text-red-600 hover:underline"
+                  className="font-bold text-primary hover:underline"
                 >
                   Register Now
                 </button>
@@ -937,7 +925,7 @@ export default function AuthModal() {
                 <button
                   type="button"
                   onClick={() => handleModeSwitch("login")}
-                  className="font-bold text-red-600 hover:underline"
+                  className="font-bold text-primary hover:underline"
                 >
                   Sign In
                 </button>
@@ -946,7 +934,7 @@ export default function AuthModal() {
               <button
                 type="button"
                 onClick={() => handleModeSwitch("login")}
-                className="font-bold text-red-600 hover:underline"
+                className="font-bold text-primary hover:underline"
               >
                 Return to Sign In
               </button>

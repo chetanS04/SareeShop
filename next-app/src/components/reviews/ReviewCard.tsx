@@ -84,11 +84,10 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   const displayText = shouldTruncate && !isExpanded ? `${reviewText.slice(0, 350)}...` : reviewText;
 
   return (
-    <div className="py-4 border-b border-gray-200 last:border-b-0 space-y-2 text-[#0F1111]">
-      {/* ── 1. Amazon Profile Row: Avatar & Name ── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full overflow-hidden bg-[#E9EBEB] flex items-center justify-center flex-shrink-0 text-gray-500">
+    <article className="py-6 space-y-3 text-on-surface">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="sv-round w-9 h-9 overflow-hidden bg-surface-ivory border border-border-line flex items-center justify-center flex-shrink-0 text-body-slate">
             {profilePic ? (
               <img
                 src={getReviewImageUrl(profilePic)}
@@ -99,15 +98,15 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
                 }}
               />
             ) : (
-              <UserIcon className="w-5 h-5 text-gray-400" />
+              <UserIcon className="w-4 h-4" />
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs sm:text-sm text-[#0F1111] font-medium leading-none">
+          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+            <span className="text-sm font-semibold text-on-surface truncate">
               {userName}
             </span>
             {isOwnReview && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 label-caps bg-surface-ivory text-primary border border-border-line">
                 <Shield className="w-2.5 h-2.5" />
                 Your Review
               </span>
@@ -115,77 +114,69 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
           </div>
         </div>
 
-        {/* Actions for Own Review */}
         {isOwnReview && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 shrink-0">
             {onEdit && (
               <button
                 type="button"
                 onClick={() => onEdit(review)}
-                className="text-xs text-[#007185] hover:text-[#C7511F] hover:underline cursor-pointer flex items-center gap-1 font-medium"
+                className="label-caps text-primary hover:text-on-surface inline-flex items-center gap-1"
               >
                 <Edit className="w-3 h-3" />
-                <span>Edit</span>
+                Edit
               </button>
             )}
             {onDelete && (
               <button
                 type="button"
                 onClick={() => onDelete(review.id)}
-                className="text-xs text-red-600 hover:text-red-800 hover:underline cursor-pointer flex items-center gap-1 font-medium"
+                className="label-caps text-primary hover:text-on-surface inline-flex items-center gap-1"
               >
                 <Trash2 className="w-3 h-3" />
-                <span>Delete</span>
+                Delete
               </button>
             )}
           </div>
         )}
       </div>
 
-      {/* ── 2. Amazon Star Rating & Headline ── */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2.5 flex-wrap">
         <div className="flex items-center gap-0.5">
           {[1, 2, 3, 4, 5].map((s) => (
             <Star
               key={s}
               className={`w-4 h-4 ${s <= rating
-                  ? 'fill-[#DE7921] text-[#DE7921]'
-                  : 'fill-gray-200 text-gray-300'
+                ? 'fill-accent-ochre text-accent-ochre'
+                : 'fill-transparent text-body-slate/35'
                 }`}
             />
           ))}
         </div>
         {reviewTitle && (
-          <span className="font-bold text-sm sm:text-[15px] text-[#0F1111] leading-snug">
+          <h4 className="font-bold text-sm sm:text-[15px] uppercase tracking-tight text-on-surface leading-snug">
             {reviewTitle}
-          </span>
+          </h4>
         )}
       </div>
 
-      {/* ── 3. Date & Country ── */}
       {formattedDate && (
-        <div className="text-xs text-[#565959]">
+        <p className="text-[12px] text-body-slate">
           Reviewed in India on {formattedDate}
-        </div>
+        </p>
       )}
 
-      {/* ── 4. Variant Info & Verified Purchase ── */}
-      <div className="flex items-center gap-2 text-xs text-[#565959] flex-wrap">
-        {isVerified && (
-          <span className="text-[#C45500] font-bold">
-            Verified Purchase
-          </span>
-        )}
-      </div>
+      {isVerified && (
+        <p className="label-caps text-accent-ochre">Verified Purchase</p>
+      )}
 
-      {/* ── 5. Review Body Text ── */}
       {reviewText && (
-        <div className="text-sm text-[#0F1111] leading-relaxed pt-0.5">
-          <p className="whitespace-pre-line break-words">{displayText}</p>
+        <div className="text-[14px] text-body-slate leading-relaxed">
+          <p className="whitespace-pre-line break-words text-on-surface/90">{displayText}</p>
           {shouldTruncate && (
             <button
+              type="button"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-xs text-[#007185] hover:text-[#C7511F] hover:underline font-medium mt-1 cursor-pointer block"
+              className="label-caps text-primary hover:text-on-surface mt-2"
             >
               {isExpanded ? 'Read less' : 'Read more'}
             </button>
@@ -193,29 +184,28 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
         </div>
       )}
 
-      {/* ── 6. Review Images ── */}
       {images && images.length > 0 && (
-        <div className="flex items-center gap-2.5 pt-2 pb-1 flex-wrap">
+        <div className="flex items-center gap-2.5 pt-1 flex-wrap">
           {images.map((img, idx) => (
-            <div
+            <button
               key={idx}
+              type="button"
               onClick={() => setSelectedPhotoIndex(idx)}
-              className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-gray-300 cursor-pointer hover:opacity-90 transition bg-gray-50 flex-shrink-0"
+              className="relative w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border border-border-line cursor-pointer hover:border-on-surface transition bg-surface-ivory flex-shrink-0"
             >
               <img
                 src={getReviewImageUrl(img)}
                 alt={`Customer review photo ${idx + 1}`}
                 className="w-full h-full object-cover"
               />
-            </div>
+            </button>
           ))}
         </div>
       )}
 
-      {/* ── 7. Amazon Footer: Helpful Count, Helpful Button & Report ── */}
       <div className="space-y-2 pt-1">
         {helpfulCount > 0 && (
-          <p className="text-xs text-[#565959]">
+          <p className="text-[12px] text-body-slate">
             {helpfulCount} {helpfulCount === 1 ? 'person' : 'people'} found this helpful
           </p>
         )}
@@ -223,12 +213,13 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
         <div className="flex items-center gap-3 pt-0.5">
           {!isOwnReview && onToggleHelpful && (
             <button
+              type="button"
               onClick={handleToggleHelpful}
               disabled={helpfulLoading}
-              className={`px-5 py-1 rounded-[8px] text-xs sm:text-sm font-normal border transition shadow-[0_2px_5px_rgba(213,217,217,0.5)] cursor-pointer ${isHelpful
-                  ? 'bg-amber-50 border-[#DE7921] text-[#DE7921] font-medium'
-                  : 'bg-white border-[#D5D9D9] text-[#0F1111] hover:bg-[#F7FAFA]'
-                } disabled:opacity-50`}
+              className={`px-4 py-2 text-[11px] font-semibold tracking-[0.12em] uppercase border transition disabled:opacity-50 ${isHelpful
+                ? 'bg-surface-dark text-surface border-on-surface'
+                : 'bg-surface border-on-surface text-on-surface hover:bg-on-surface hover:text-surface'
+                }`}
             >
               {helpfulLoading ? '...' : isHelpful ? 'Helpful ✓' : 'Helpful'}
             </button>
@@ -236,10 +227,11 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
 
           {!isOwnReview && (
             <>
-              <span className="text-[#D5D9D9]">|</span>
+              <span className="text-border-line">|</span>
               <button
+                type="button"
                 onClick={() => setReported(true)}
-                className="text-xs text-[#565959] hover:text-[#0F1111] hover:underline cursor-pointer"
+                className="label-caps text-body-slate hover:text-on-surface"
               >
                 {reported ? 'Reported' : 'Report'}
               </button>
@@ -248,31 +240,34 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
         </div>
       </div>
 
-      {/* ── Lightbox Modal for Review Photo ── */}
       {selectedPhotoIndex !== null && images && images.length > 0 && (
         <div
-          className="fixed inset-0 z-[99999] bg-black/80 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[99999] bg-surface-dark/90 flex items-center justify-center p-4"
           onClick={() => setSelectedPhotoIndex(null)}
         >
           <div
-            className="relative max-w-3xl max-h-[85vh] w-full bg-black rounded-lg overflow-hidden flex items-center justify-center"
+            className="relative max-w-3xl max-h-[85vh] w-full bg-surface-dark border border-border-line-dark overflow-hidden flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
             <button
+              type="button"
               onClick={() => setSelectedPhotoIndex(null)}
-              className="absolute top-3 right-3 z-10 text-white bg-black/50 hover:bg-black p-1.5 rounded-full"
+              className="absolute top-3 right-3 z-10 text-surface bg-surface-dark/60 hover:bg-primary p-1.5"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
 
             {images.length > 1 && (
               <button
+                type="button"
                 onClick={() =>
                   setSelectedPhotoIndex((prev) =>
                     prev !== null ? (prev > 0 ? prev - 1 : images.length - 1) : 0
                   )
                 }
-                className="absolute left-3 top-1/2 -translate-y-1/2 z-10 text-white bg-black/50 hover:bg-black p-2 rounded-full"
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-10 text-surface bg-surface-dark/60 hover:bg-primary p-2"
+                aria-label="Previous"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
@@ -286,12 +281,14 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
 
             {images.length > 1 && (
               <button
+                type="button"
                 onClick={() =>
                   setSelectedPhotoIndex((prev) =>
                     prev !== null ? (prev < images.length - 1 ? prev + 1 : 0) : 0
                   )
                 }
-                className="absolute right-3 top-1/2 -translate-y-1/2 z-10 text-white bg-black/50 hover:bg-black p-2 rounded-full"
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-10 text-surface bg-surface-dark/60 hover:bg-primary p-2"
+                aria-label="Next"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
@@ -299,7 +296,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </article>
   );
 };
 

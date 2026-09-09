@@ -9,26 +9,47 @@ html {
   --font-body: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   --color-gc-300: #8c8c8c;
   --color-gc-600: #2b2b2b;
-  --color-gc-900: #0A0908;
+  --color-gc-900: #0E0E0D;
 
-  /* Zelton PDF Theme Palette 1.0 */
-  --color-brand-blue: #007FFF;
-  --color-brand-white: #FFFAFB;
-  --color-brand-black: #0A0908;
-  --color-brand-green: #0CCA4A;
-  --color-brand-red: #F40000;
+  /* SVastra Marketing Palette */
+  --color-surface: #FFF8F2;
+  --color-surface-dark: #0E0E0D;
+  --color-surface-ivory: #F1E5D2;
+  --color-surface-subtle: #F9F3EB;
+  --color-on-surface: #0E0E0D;
+  --color-body-slate: #4A4742;
+  --color-primary: #8B1313;
+  --color-primary-hover: #680D0D;
+  --color-accent-ochre: #D19E3D;
+  --color-accent-magenta: #951F4B;
+  --color-accent-blue: #1D3170;
+  --color-pure-white: #FFFFFF;
+  --color-border-line: rgba(14, 14, 13, 0.08);
+  --color-border-line-dark: rgba(255, 248, 242, 0.14);
+
+  /* Legacy aliases → SVastra (keep class names working) */
+  --color-brand-blue: #8B1313;
+  --color-brand-white: #FFF8F2;
+  --color-brand-black: #0E0E0D;
+  --color-brand-green: #D19E3D;
+  --color-brand-red: #8B1313;
+
+  --max-width-site: 1440px;
 }
 
 :root {
-  --background: #FFFAFB;
-  --foreground: #0A0908;
-  --theme-blue: #007FFF;
-  --theme-blue-hover: #0066CC;
+  --background: #FFF8F2;
+  --foreground: #0E0E0D;
+  --theme-blue: #8B1313;
+  --theme-blue-hover: #680D0D;
+  --navbar-height: 5.5rem;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 body {
-  background-color: #FFFAFB;
-  color: #0A0908;
+  background-color: #FFF8F2;
+  color: #0E0E0D;
 }
 
 a,
@@ -37,21 +58,288 @@ button {
 }
 
 .text-positive {
-  color: #0CCA4A !important;
+  color: #D19E3D !important;
 }
 
 .text-danger,
 .text-negative {
-  color: #F40000 !important;
+  color: #8B1313 !important;
 }
 
 .bg-positive {
-  background-color: #0CCA4A !important;
+  background-color: #D19E3D !important;
 }
 
 .bg-danger,
 .bg-negative {
-  background-color: #F40000 !important;
+  background-color: #8B1313 !important;
+}
+
+/* ── SVastra marketing theme scope (DESIGN.md) ── */
+.sv-theme {
+  background-color: #FFF8F2;
+  color: #0E0E0D;
+  font-family: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.sv-theme ::selection {
+  background-color: #8B1313;
+  color: #fff;
+}
+
+/* Architectural geometry: no SaaS radii / shadows */
+.sv-theme .sv-sharp,
+.sv-theme .sv-btn-primary,
+.sv-theme .sv-btn-outline,
+.sv-theme .media-frame,
+.sv-theme .nav-link,
+.sv-theme .sv-product-card,
+.sv-theme .sv-mood-chip {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.sv-theme .sv-round,
+.sv-theme .sv-round * {
+  border-radius: 9999px !important;
+}
+
+.sv-theme .site-pad {
+  padding-left: clamp(1.15rem, 3.5vw, 4rem);
+  padding-right: clamp(1.15rem, 3.5vw, 4rem);
+}
+
+.sv-theme .section-y {
+  padding-top: clamp(3.5rem, 8vw, 6rem);
+  padding-bottom: clamp(3.5rem, 8vw, 6rem);
+}
+
+.sv-theme .label-caps {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sv-theme .display-hero {
+  font-size: clamp(2rem, 5.2vw + 0.4rem, 4.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sv-theme .display-section {
+  font-size: clamp(1.65rem, 2.8vw + 0.6rem, 2.125rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sv-theme .nav-link {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4A4742;
+  padding: 0.35rem 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.sv-theme .nav-link:hover {
+  color: #0E0E0D;
+}
+
+.sv-theme .nav-link.is-active {
+  color: #0E0E0D;
+  font-weight: 700;
+  border-bottom-color: #8B1313;
+}
+
+.sv-theme .touch-target {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sv-theme .media-frame {
+  position: relative;
+  overflow: hidden;
+  background: #F1E5D2;
+}
+
+.sv-theme .media-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sv-theme .hero-media {
+  aspect-ratio: 4 / 5;
+}
+
+@media (min-width: 640px) {
+  .sv-theme .hero-media {
+    aspect-ratio: 16 / 11;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sv-theme .hero-media {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+.sv-theme .facet-media,
+.sv-theme .product-media {
+  aspect-ratio: 3 / 4;
+}
+
+.sv-theme .sv-btn-primary {
+  background: #8B1313;
+  color: #FFF8F2;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 0;
+  box-shadow: none;
+  transition: background-color 0.2s ease;
+}
+
+.sv-theme .sv-btn-primary:hover {
+  background: #0E0E0D;
+}
+
+.sv-theme .sv-btn-outline {
+  border: 1px solid #0E0E0D;
+  color: #0E0E0D;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  box-shadow: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sv-theme .sv-btn-outline:hover {
+  background: #0E0E0D;
+  color: #FFF8F2;
+}
+
+.sv-theme .sv-product-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(14, 14, 13, 0.08);
+  box-shadow: none;
+}
+
+/* PDP reserve card — white panel, soft depth, no outer frame */
+.sv-theme .sv-buy-box-wrap {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.sv-theme .sv-buy-box {
+  position: relative;
+  background: #FFFFFF;
+  border: none;
+  border-radius: 0;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 8px 24px rgba(14, 14, 13, 0.05);
+}
+
+.sv-theme .sv-buy-box::before {
+  display: none;
+}
+
+.sv-theme .sv-buy-box .sv-btn-primary,
+.sv-theme .sv-buy-box .sv-btn-outline {
+  min-height: 42px;
+  padding: 0.7rem 1rem;
+  font-size: 11px;
+}
+
+.sv-theme .sv-mood-chip {
+  border: 1px solid rgba(14, 14, 13, 0.12);
+  padding: 0.5rem 0.75rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Remap Zelton / SaaS leftovers inside marketing */
+.sv-theme .text-\[\#007FFF\],
+.sv-theme [class*="text-[#007FFF]"] {
+  color: #8B1313 !important;
+}
+
+.sv-theme .bg-\[\#007FFF\],
+.sv-theme [class*="bg-[#007FFF]"] {
+  background-color: #8B1313 !important;
+}
+
+.sv-theme .hover\:text-\[\#007FFF\]:hover {
+  color: #8B1313 !important;
+}
+
+.sv-theme .border-\[\#007FFF\] {
+  border-color: #8B1313 !important;
+}
+
+.sv-theme .bg-blue-50,
+.sv-theme .bg-indigo-50,
+.sv-theme .bg-purple-50,
+.sv-theme .bg-sky-50 {
+  background-color: #F1E5D2 !important;
+}
+
+.sv-theme .border-blue-100,
+.sv-theme .border-indigo-100,
+.sv-theme .border-purple-100 {
+  border-color: rgba(14, 14, 13, 0.08) !important;
+}
+
+.sv-theme .text-blue-600,
+.sv-theme .text-blue-700,
+.sv-theme .text-indigo-600,
+.sv-theme .text-indigo-800,
+.sv-theme .text-purple-600,
+.sv-theme .text-purple-800 {
+  color: #8B1313 !important;
+}
+
+.sv-theme .bg-blue-600,
+.sv-theme .bg-blue-700,
+.sv-theme .hover\:bg-blue-700:hover {
+  background-color: #8B1313 !important;
+}
+
+.sv-theme .shadow-sm,
+.sv-theme .shadow-md,
+.sv-theme .shadow-lg,
+.sv-theme .shadow-xs,
+.sv-theme .shadow-2xs {
+  box-shadow: none !important;
 }
 
 @layer utilities {
@@ -69,16 +357,16 @@ button {
   }
 
   .scrollbar::-webkit-scrollbar-track {
-    @apply rounded-3xl bg-white/30 cursor-pointer;
+    @apply bg-white/30 cursor-pointer;
   }
 
   .scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-gc-900/60 rounded-2xl border-2 border-gc-300/30 cursor-pointer;
+    @apply bg-gc-900/60 border-2 border-gc-300/30 cursor-pointer;
   }
 }
 
 .swiper-pagination .swiper-pagination-bullet.swiper-pagination-bullet-active {
-  @apply !bg-[#007FFF] !w-12;
+  @apply !bg-primary !w-12;
 }
 
 @media (max-width: 1023.98px) {
@@ -111,7 +399,7 @@ button {
 }
 
 .loader:after {
-  color: #ff3d00;
+  color: #8B1313;
   transform: rotateY(70deg);
   animation-delay: 0.4s;
 }
@@ -172,7 +460,6 @@ button {
   }
 }
 
-/* Zoom functionality styles */
 .cursor-crosshair {
   cursor: crosshair;
 }
@@ -182,13 +469,12 @@ button {
 }
 
 .zoom-indicator {
-  border: 2px solid #007FFF;
-  background-color: rgba(0, 127, 255, 0.2);
+  border: 2px solid #8B1313;
+  background-color: rgba(139, 19, 19, 0.2);
   pointer-events: none;
   transition: all 0.1s ease-out;
 }
 
-/* Slider animations */
 @keyframes fade-in-up {
   0% {
     opacity: 0;
@@ -205,7 +491,6 @@ button {
   animation: fade-in-up 0.8s ease-out forwards;
 }
 
-/* Skeleton shimmer animation */
 @keyframes shimmer {
   0% {
     transform: translateX(-100%) skewX(-12deg);
@@ -220,7 +505,6 @@ button {
   animation: shimmer 2s infinite;
 }
 
-/* WhatsApp floating button jump animation */
 @keyframes whatsapp-jump {
 
   0%,
@@ -265,7 +549,6 @@ button {
   animation: whatsapp-ring 1.6s ease-out infinite;
 }
 
-/* Disable number input spinner controls and styling artifacts */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -274,4 +557,17 @@ input[type="number"]::-webkit-inner-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
-}
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-fade-in-up,
+  .animate-shimmer,
+  .animate-whatsapp-jump,
+  .animate-whatsapp-ring {
+    animation: none !important;
+  }
+}

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Image as ImageIcon, Trash2 } from 'lucide-react';
-import StarRating from '../ui/StarRating';
+import { Send, Image as ImageIcon, Trash2, Star, Loader2 } from 'lucide-react';
 import { CreateReviewData, UpdateReviewData } from '../../../utils/reviewApi';
 import Image from 'next/image';
 
@@ -167,34 +166,49 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         }
     };
 
+    const fieldBase = 'w-full border bg-pure-white px-3 py-2.5 text-sm text-on-surface placeholder:text-body-slate/55 focus:border-primary focus:outline-none transition-colors';
+
     return (
-        <div className="bg-white rounded-lg p-5">
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-pure-white text-on-surface">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Rating Section */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Rating <span className="text-red-500">*</span>
+                    <label className="block label-caps text-body-slate mb-2">
+                        Your Rating <span className="text-primary">*</span>
                     </label>
-                    <div className="flex items-center gap-2">
-                        <StarRating
-                            rating={formData.rating}
-                            interactive={true}
-                            onRatingChange={handleRatingChange}
-                            size="md"
-                        />
-                        <span className="text-xs text-gray-600">
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                                <button
+                                    key={s}
+                                    type="button"
+                                    onClick={() => handleRatingChange(s)}
+                                    aria-label={`Rate ${s} star${s !== 1 ? 's' : ''}`}
+                                    aria-pressed={formData.rating === s}
+                                    className="p-0.5 transition-colors cursor-pointer"
+                                >
+                                    <Star
+                                        className={`w-6 h-6 ${s <= formData.rating
+                                            ? 'fill-accent-ochre text-accent-ochre'
+                                            : 'fill-transparent text-body-slate/35'
+                                            }`}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                        <span className="label-caps text-body-slate">
                             {formData.rating > 0 && `${formData.rating} star${formData.rating !== 1 ? 's' : ''}`}
                         </span>
                     </div>
                     {errors.rating && (
-                        <p className="mt-1 text-xs text-red-600">{errors.rating}</p>
+                        <p className="mt-2 text-[12px] text-primary">{errors.rating}</p>
                     )}
                 </div>
 
                 {/* Title Section */}
                 <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1.5">
-                        Review Title <span className="text-red-500">*</span>
+                    <label htmlFor="title" className="block label-caps text-body-slate mb-2">
+                        Review Title <span className="text-primary">*</span>
                     </label>
                     <input
                         type="text"
@@ -205,17 +219,16 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                             if (errors.title) setErrors(prev => ({ ...prev, title: '' }));
                         }}
                         placeholder="Sum up your review"
-                        className={`w-full px-3 text-black py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${errors.title ? 'border-red-300' : 'border-gray-300'
-                            }`}
+                        className={`${fieldBase} ${errors.title ? 'border-primary' : 'border-border-line'}`}
                         maxLength={100}
                     />
-                    <div className="flex justify-between mt-1">
+                    <div className="flex justify-between gap-3 mt-1.5">
                         {errors.title ? (
-                            <p className="text-xs text-red-600">{errors.title}</p>
+                            <p className="text-[12px] text-primary">{errors.title}</p>
                         ) : (
                             <div></div>
                         )}
-                        <span className="text-xs text-gray-400">
+                        <span className="label-caps text-body-slate/70">
                             {formData.title.length}/100
                         </span>
                     </div>
@@ -223,8 +236,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
                 {/* Review Text Section */}
                 <div>
-                    <label htmlFor="review_text" className="block text-sm font-medium text-gray-700 mb-1.5">
-                        Your Review <span className="text-red-500">*</span>
+                    <label htmlFor="review_text" className="block label-caps text-body-slate mb-2">
+                        Your Review <span className="text-primary">*</span>
                     </label>
                     <textarea
                         id="review_text"
@@ -233,19 +246,18 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                             setFormData(prev => ({ ...prev, review_text: e.target.value }));
                             if (errors.review_text) setErrors(prev => ({ ...prev, review_text: '' }));
                         }}
-                        placeholder="Share your thoughts about this product..."
+                        placeholder="Share how the piece wears, drapes and lasts..."
                         rows={4}
-                        className={`w-full text-black px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical ${errors.review_text ? 'border-red-300' : 'border-gray-300'
-                            }`}
+                        className={`${fieldBase} resize-vertical ${errors.review_text ? 'border-primary' : 'border-border-line'}`}
                         maxLength={1000}
                     />
-                    <div className="flex justify-between mt-1">
+                    <div className="flex justify-between gap-3 mt-1.5">
                         {errors.review_text ? (
-                            <p className="text-xs text-red-600">{errors.review_text}</p>
+                            <p className="text-[12px] text-primary">{errors.review_text}</p>
                         ) : (
                             <div></div>
                         )}
-                        <span className="text-xs text-gray-400">
+                        <span className="label-caps text-body-slate/70">
                             {formData.review_text.length}/1000
                         </span>
                     </div>
@@ -253,16 +265,16 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
                 {/* Image Upload Section */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block label-caps text-body-slate mb-2">
                         Add Photos (Optional)
                     </label>
-                    <p className="text-xs text-gray-500 mb-2">Upload up to {MAX_IMAGES} images (max 5MB each)</p>
+                    <p className="text-[12px] text-body-slate mb-3">Upload up to {MAX_IMAGES} images (max 5MB each)</p>
 
                     {/* Image Preview Grid */}
-                    <div className="grid grid-cols-5 gap-2 mb-2">
+                    <div className="grid grid-cols-5 gap-2">
                         {/* Existing Images */}
                         {existingImages.map((imagePath, index) => (
-                            <div key={`existing-${index}`} className="relative aspect-square border border-gray-200 rounded-lg overflow-hidden group">
+                            <div key={`existing-${index}`} className="relative aspect-square border border-border-line bg-surface-ivory overflow-hidden group">
                                 <img
                                     src={getReviewImageUrl(imagePath)}
                                     alt={`Review image ${index + 1}`}
@@ -271,7 +283,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => removeExistingImage(imagePath)}
-                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    aria-label={`Remove review image ${index + 1}`}
+                                    className="absolute top-0 right-0 bg-primary hover:bg-surface-dark text-surface p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                     <Trash2 className="w-3 h-3" />
                                 </button>
@@ -280,7 +293,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
                         {/* New Image Previews */}
                         {imagePreviewUrls.map((url, index) => (
-                            <div key={`new-${index}`} className="relative aspect-square border border-gray-200 rounded-lg overflow-hidden group">
+                            <div key={`new-${index}`} className="relative aspect-square border border-border-line bg-surface-ivory overflow-hidden group">
                                 <Image
                                     src={url}
                                     alt={`Preview ${index + 1}`}
@@ -290,7 +303,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => removeSelectedImage(index)}
-                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    aria-label={`Remove selected image ${index + 1}`}
+                                    className="absolute top-0 right-0 bg-primary hover:bg-surface-dark text-surface p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                     <Trash2 className="w-3 h-3" />
                                 </button>
@@ -299,9 +313,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
                         {/* Upload Button */}
                         {(existingImages.length + selectedImages.length) < MAX_IMAGES && (
-                            <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                                <ImageIcon className="w-6 h-6 text-gray-400" />
-                                <span className="text-xs text-gray-500 mt-1">Add</span>
+                            <label className="aspect-square border border-dashed border-border-line bg-surface-subtle hover:border-on-surface flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors">
+                                <ImageIcon className="w-5 h-5 text-body-slate" />
+                                <span className="label-caps text-body-slate">Add</span>
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -314,16 +328,16 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                     </div>
 
                     {errors.images && (
-                        <p className="text-xs text-red-600 mt-1">{errors.images}</p>
+                        <p className="text-[12px] text-primary mt-2">{errors.images}</p>
                     )}
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-3 pt-2">
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                        className="sv-btn-outline flex-1 !min-h-[44px] !py-2 !px-4 disabled:opacity-50"
                         disabled={loading}
                     >
                         Cancel
@@ -331,14 +345,14 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                     <button
                         type="submit"
                         disabled={loading || formData.rating === 0}
-                        className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-1.5"
+                        className="sv-btn-primary flex-1 !min-h-[44px] !py-2 !px-4 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? (
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                             <>
                                 <Send className="w-4 h-4" />
-                                {isEditing ? 'Update' : 'Submit'}
+                                {isEditing ? 'Update Review' : 'Submit Review'}
                             </>
                         )}
                     </button>

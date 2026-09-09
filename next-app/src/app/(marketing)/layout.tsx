@@ -7,9 +7,9 @@ import GoogleOneTapPrompt from "@/components/(frontend)/GoogleOneTapPrompt";
 export default function layout({ children }: { children: React.ReactNode }) {
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
-      <div className="min-h-screen flex flex-col">
+      <div className="sv-theme min-h-screen flex flex-col bg-surface text-on-surface antialiased">
         <Navbar />
-        <main className="flex-1">
+        <main id="main" className="flex-1">
           {children}
         </main>
         <div className="mt-auto">

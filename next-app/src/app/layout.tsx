@@ -47,21 +47,21 @@ export const metadata: Metadata = {
   ),
 
   title: {
-    default: "Zelton | Premium Online Shopping & Lifestyle Store",
-    template: "%s | Zelton",
+    default: "SVastra — Wear Yourself",
+    template: "%s | SVastra",
   },
 
   description:
-    "Shop the latest lifestyle products, electronics, fashion, footwear, and trending essentials at Zelton with exclusive offers and fast delivery.",
+    "SVastra — Wear Yourself. Architectural Indian handlooms for one woman, many roles, many moods. Unapologetic. Grounded. Sovereign.",
 
   keywords: [
-    "Zelton",
-    "online shopping",
-    "lifestyle products",
-    "fashion",
-    "electronics",
-    "footwear",
-    "accessories",
+    "SVastra",
+    "Wear Yourself",
+    "handloom",
+    "Indian fashion",
+    "tussar silk",
+    "architectural textiles",
+    "lifestyle",
     "e-commerce India",
   ],
 
@@ -95,14 +95,14 @@ export const metadata: Metadata = {
    * these values with their own dynamic metadata.
    */
   openGraph: {
-    title: "Zelton | Premium Online Shopping & Lifestyle Store",
+    title: "SVastra — Wear Yourself",
 
     description:
-      "Shop the latest lifestyle products, electronics, fashion, footwear, and trending essentials at Zelton with exclusive offers and fast delivery.",
+      "Architectural Indian handlooms for one woman, many roles, many moods.",
 
-    siteName: "Zelton",
+    siteName: "SVastra",
 
-    url: "https://zelton.in",
+    url: process.env.NEXT_PUBLIC_APP_URL || "https://zelton.in",
 
     locale: "en_US",
 
@@ -113,7 +113,7 @@ export const metadata: Metadata = {
         url: "/about-showcase.png",
         width: 1200,
         height: 630,
-        alt: "Zelton Store - Premium Online Shopping",
+        alt: "SVastra — Wear Yourself",
       },
     ],
   },
@@ -124,19 +124,21 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
 
-    title: "Zelton | Premium Online Shopping & Lifestyle Store",
+    title: "SVastra — Wear Yourself",
 
     description:
-      "Shop the latest lifestyle products, electronics, fashion, footwear, and trending essentials at Zelton.",
+      "Architectural Indian handlooms for one woman, many roles, many moods.",
 
     images: ["/about-showcase.png"],
   },
 
   /**
-   * Favicon
+   * Favicon — SVastra logo mark
    */
   icons: {
-    icon: "/favicon.ico",
+    icon: [{ url: "/svastra/logo-mark.png", type: "image/png" }],
+    apple: [{ url: "/svastra/logo-mark.png", type: "image/png" }],
+    shortcut: "/svastra/logo-mark.png",
   },
 };
 

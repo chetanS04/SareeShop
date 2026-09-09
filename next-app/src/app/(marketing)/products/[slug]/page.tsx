@@ -193,10 +193,10 @@ const AmazonBenefitsStrip = ({
                             key={b.id}
                             className="flex flex-col items-center text-center flex-shrink-0 w-[78px] sm:w-[84px] cursor-pointer group select-none"
                         >
-                            <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full ${b.iconBg} border flex items-center justify-center transition-all duration-200 group-hover:scale-105 group-hover:shadow-xs group-hover:border-[#007185]`}>
+                            <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full ${b.iconBg} border flex items-center justify-center transition-all duration-200 group-hover:scale-105 group-hover:shadow-xs group-hover:border-[#8B1313]`}>
                                 {b.icon}
                             </div>
-                            <span className="text-[11px] sm:text-xs text-[#007185] group-hover:text-[#C7511F] group-hover:underline font-normal text-center leading-tight mt-1.5 min-h-[28px] line-clamp-2">
+                            <span className="text-[11px] sm:text-xs text-[#8B1313] group-hover:text-[#C7511F] group-hover:underline font-normal text-center leading-tight mt-1.5 min-h-[28px] line-clamp-2">
                                 {b.title}
                             </span>
                         </div>
@@ -787,7 +787,7 @@ const ProductPage = () => {
                         <button
                             onClick={() => router.push('/')}
                             style={{ backgroundColor: 'var(--theme-blue)', color: '#FFFAFB' }}
-                            className="px-8 py-3 font-semibold rounded-full hover:bg-[#0066CC] hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                            className="px-8 py-3 font-semibold rounded-full hover:bg-[#680D0D] hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                         >
                             Back to Home
                         </button>
@@ -1065,7 +1065,7 @@ const ProductPage = () => {
                                                 style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
                                                 className={`group relative flex flex-col items-center justify-between rounded-lg border transition-all duration-150 select-none overflow-hidden bg-white w-[72px] sm:w-[80px] p-1 ${
                                                     isSelected
-                                                        ? 'border-2 border-[#007185] ring-2 ring-[#007185]/20 shadow-xs'
+                                                        ? 'border-2 border-[#8B1313] ring-2 ring-[#8B1313]/20 shadow-xs'
                                                         : isDisabled
                                                         ? 'border-dashed border-gray-200 bg-gray-50/70 opacity-60 !cursor-not-allowed hover:border-gray-200'
                                                         : 'border-gray-300 hover:border-gray-500 shadow-2xs hover:shadow-xs'
@@ -1093,7 +1093,7 @@ const ProductPage = () => {
                                                 <div className="w-full pt-1 pb-0.5 px-0.5 text-center border-t border-gray-100">
                                                     {optionPricing ? (
                                                         <div className="flex flex-col items-center justify-center leading-none">
-                                                            <span className={`text-[11px] font-bold ${isSelected ? 'text-[#007185]' : 'text-gray-900'} leading-tight`}>
+                                                            <span className={`text-[11px] font-bold ${isSelected ? 'text-[#8B1313]' : 'text-gray-900'} leading-tight`}>
                                                                 ₹{Math.round(optionPricing.sp).toLocaleString('en-IN')}
                                                             </span>
                                                             {optionPricing.mrp > optionPricing.sp && (
@@ -1143,10 +1143,10 @@ const ProductPage = () => {
                                             title={isDisabled ? `${val} (Out of stock / Unavailable)` : val}
                                             style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
                                             className={`relative overflow-hidden px-3.5 py-1.5 rounded-lg border text-sm font-medium transition-all duration-150 select-none ${isSelected
-                                                ? 'border-[#007FFF] bg-blue-50/90 text-[#007FFF] font-semibold shadow-2xs ring-2 ring-[#007FFF]/20 cursor-pointer'
+                                                ? 'border-[#8B1313] bg-blue-50/90 text-[#8B1313] font-semibold shadow-2xs ring-2 ring-[#8B1313]/20 cursor-pointer'
                                                 : isDisabled
                                                 ? 'border-gray-200 bg-gray-50/80 text-gray-400 !cursor-not-allowed border-dashed hover:border-gray-200'
-                                                : 'border-gray-300 bg-white text-gray-800 hover:border-[#007FFF] hover:text-[#007FFF] cursor-pointer'
+                                                : 'border-gray-300 bg-white text-gray-800 hover:border-[#8B1313] hover:text-[#8B1313] cursor-pointer'
                                                 }`}
                                         >
                                             <span className={isDisabled ? 'opacity-50 pointer-events-none' : ''}>{val}</span>
@@ -1359,7 +1359,7 @@ const ProductPage = () => {
                                 )}
                                 <button
                                     onClick={() => product.brand ? router.push(`/brands/${getBrandSlug(product.brand)}`) : null}
-                                    className="text-[11px] text-[#007185] hover:underline block leading-tight font-medium text-left"
+                                    className="text-[11px] text-[#8B1313] hover:underline block leading-tight font-medium text-left"
                                 >
                                     Visit the store
                                 </button>
@@ -1376,7 +1376,7 @@ const ProductPage = () => {
                                     {'★'.repeat(Math.round((liveRatingSummary || product.rating_summary)?.average_rating || 0))}
                                     {'☆'.repeat(5 - Math.round((liveRatingSummary || product.rating_summary)?.average_rating || 0))}
                                 </div>
-                                <span className="text-xs text-[#007185] font-semibold">
+                                <span className="text-xs text-[#8B1313] font-semibold">
                                     {(liveRatingSummary || product.rating_summary)?.total_reviews}
                                 </span>
                             </div>
@@ -1516,7 +1516,7 @@ const ProductPage = () => {
                                 </p>
                             )}
                             <div className="flex items-center gap-1.5 pt-0.5">
-                                <span className="inline-flex items-center gap-1 bg-[#007185] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                                <span className="inline-flex items-center gap-1 bg-[#8B1313] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
                                     Zelton Fulfilled
                                 </span>
                                 <span className="text-xs text-gray-500 font-medium">
@@ -1548,7 +1548,7 @@ const ProductPage = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs text-[#007185] font-medium pt-0.5">
+                    <div className="flex items-center justify-between text-xs text-[#8B1313] font-medium pt-0.5">
                         <span className="flex items-center gap-1.5">
                             <BadgePercent className="w-4 h-4 text-orange-500" />
                             See all offers & discounts
@@ -1583,9 +1583,9 @@ const ProductPage = () => {
                                 <p className="text-xs text-gray-700">
                                     <span className="font-semibold text-gray-900">FREE delivery</span>{' '}
                                     <span className="font-bold text-gray-900">{getEstimatedDeliveryDate()}</span>.{' '}
-                                    <span className="text-[#007185] cursor-pointer">Details</span>
+                                    <span className="text-[#8B1313] cursor-pointer">Details</span>
                                 </p>
-                                <p className="text-xs text-[#007185] flex items-center gap-1 pt-0.5 cursor-pointer">
+                                <p className="text-xs text-[#8B1313] flex items-center gap-1 pt-0.5 cursor-pointer">
                                     <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                                     Deliver to {user?.name || 'Prince'} - {(user as any)?.city || (user as any)?.address || 'Patiala 140417'}
                                 </p>
@@ -1660,13 +1660,13 @@ const ProductPage = () => {
                                 <span className="col-span-2 text-gray-800 font-medium">Zelton Logistics</span>
 
                                 <span className="text-gray-500">Sold by</span>
-                                <span className="col-span-2 text-[#007185] font-medium">{product.brand?.name || 'Zelton Retail'}</span>
+                                <span className="col-span-2 text-[#8B1313] font-medium">{product.brand?.name || 'Zelton Retail'}</span>
 
                                 <span className="text-gray-500">Packaging</span>
                                 <span className="col-span-2 text-gray-800 font-medium">Ships in product packaging</span>
 
                                 <span className="text-gray-500">Gift options</span>
-                                <span className="col-span-2 text-[#007185] font-medium">Available at checkout</span>
+                                <span className="col-span-2 text-[#8B1313] font-medium">Available at checkout</span>
                             </div>
 
                             {/* Save this item / Wishlist Button */}
@@ -1690,7 +1690,7 @@ const ProductPage = () => {
                     <div className="grid grid-cols-2 gap-3">
                         {/* Delivery */}
                         <div className="flex items-center gap-2 text-xs text-gray-700 font-medium">
-                            <Truck className="w-4 h-4 text-[#007185]" />
+                            <Truck className="w-4 h-4 text-[#8B1313]" />
                             <span>
                                 {selectedVariant?.shipping_charges && Number(selectedVariant.shipping_charges) > 0
                                     ? `Delivery: ₹${Number(selectedVariant.shipping_charges).toLocaleString('en-IN')}`
@@ -1699,14 +1699,14 @@ const ProductPage = () => {
                         </div>
                         {/* COD */}
                         <div className="flex items-center gap-2 text-xs font-medium">
-                            <Banknote className={`w-4 h-4 ${selectedVariant?.is_cod_allowed !== false ? 'text-[#007185]' : 'text-amber-600'}`} />
+                            <Banknote className={`w-4 h-4 ${selectedVariant?.is_cod_allowed !== false ? 'text-[#8B1313]' : 'text-amber-600'}`} />
                             <span className={selectedVariant?.is_cod_allowed !== false ? 'text-gray-700' : 'text-amber-700 font-semibold'}>
                                 {selectedVariant?.is_cod_allowed !== false ? 'Pay on Delivery' : 'Prepaid Only (No COD)'}
                             </span>
                         </div>
                         {/* Return & Exchange */}
                         <div className="flex items-center gap-2 text-xs font-medium">
-                            <RotateCcw className={`w-4 h-4 ${selectedVariant?.is_returnable !== false ? 'text-[#007185]' : 'text-amber-600'}`} />
+                            <RotateCcw className={`w-4 h-4 ${selectedVariant?.is_returnable !== false ? 'text-[#8B1313]' : 'text-amber-600'}`} />
                             <span className={selectedVariant?.is_returnable !== false ? 'text-gray-700' : 'text-amber-700 font-semibold'}>
                                 {selectedVariant?.is_returnable !== false
                                     ? `${selectedVariant?.return_window_days ?? 7} days Return & Exchange`
@@ -1715,7 +1715,7 @@ const ProductPage = () => {
                         </div>
                         {/* Delivered */}
                         <div className="flex items-center gap-2 text-xs text-gray-700 font-medium">
-                            <ShieldCheck className="w-4 h-4 text-[#007185]" />
+                            <ShieldCheck className="w-4 h-4 text-[#8B1313]" />
                             <span>Zelton Delivered</span>
                         </div>
                     </div>
@@ -1823,7 +1823,7 @@ const ProductPage = () => {
                                 <div className="flex flex-col gap-2 w-[68px] flex-shrink-0">
                                     {galleryImages.map((img, idx) => (
                                         <div key={idx} onClick={() => setMainImage(img)}
-                                            className={`relative w-[68px] h-[68px] border-2 rounded cursor-pointer overflow-hidden transition-all duration-200 ${mainImage === img ? 'border-[#007FFF] shadow-md' : 'border-gray-200 hover:border-[#007FFF]'
+                                            className={`relative w-[68px] h-[68px] border-2 rounded cursor-pointer overflow-hidden transition-all duration-200 ${mainImage === img ? 'border-[#8B1313] shadow-md' : 'border-gray-200 hover:border-[#8B1313]'
                                                 }`}>
                                             <Image src={img} alt={`thumb-${idx}`} fill unoptimized className="object-contain p-1" />
                                         </div>
@@ -1867,7 +1867,7 @@ const ProductPage = () => {
                             <div className="flex gap-6">
                                 {/* Details */}
                                 <div className="flex-1 min-w-0">
-                                    {product.brand && <p className="text-sm text-[#007185] hover:text-[#007FFF] cursor-pointer mb-1 font-medium">{product.brand.name}</p>}
+                                    {product.brand && <p className="text-sm text-[#8B1313] hover:text-[#8B1313] cursor-pointer mb-1 font-medium">{product.brand.name}</p>}
                                     <h1 className="text-xl xl:text-2xl font-medium text-gray-900 leading-snug mb-2">{product.name}</h1>
 
                                     {/* Rating (Only show if product actually has reviews) */}
@@ -1878,7 +1878,7 @@ const ProductPage = () => {
                                                 <ProductRatingDisplay
                                                     averageRating={(liveRatingSummary || product.rating_summary)?.average_rating || 0}
                                                     reviewCount={(liveRatingSummary || product.rating_summary)?.total_reviews || 0}
-                                                    size="md" showCount={true} className="text-[#007185] hover:text-[#007FFF]"
+                                                    size="md" showCount={true} className="text-[#8B1313] hover:text-[#8B1313]"
                                                 />
                                                 {isUpdatingRating && <div className="w-2 h-2 bg-green-500 rounded-full animate-ping ml-1" />}
                                             </div>
@@ -1993,7 +1993,7 @@ const ProductPage = () => {
                                                 return (
                                                     <div className="space-y-1.5 pt-2 border-t border-gray-100 text-xs text-gray-700">
                                                         <p className="flex items-center gap-1.5">
-                                                            <Truck className="w-3.5 h-3.5 text-[#007185] flex-shrink-0" />
+                                                            <Truck className="w-3.5 h-3.5 text-[#8B1313] flex-shrink-0" />
                                                             <span>
                                                                 {shipFee > 0
                                                                     ? `Shipping: ₹${shipFee.toLocaleString('en-IN')}`
@@ -2001,13 +2001,13 @@ const ProductPage = () => {
                                                             </span>
                                                         </p>
                                                         <p className="flex items-center gap-1.5">
-                                                            <Banknote className={`w-3.5 h-3.5 flex-shrink-0 ${isCod ? 'text-[#007185]' : 'text-amber-600'}`} />
+                                                            <Banknote className={`w-3.5 h-3.5 flex-shrink-0 ${isCod ? 'text-[#8B1313]' : 'text-amber-600'}`} />
                                                             <span className={isCod ? 'text-gray-700' : 'text-amber-700 font-semibold'}>
                                                                 {isCod ? 'Pay on Delivery' : 'Prepaid Only (No COD)'}
                                                             </span>
                                                         </p>
                                                         <p className="flex items-center gap-1.5">
-                                                            <RotateCcw className={`w-3.5 h-3.5 flex-shrink-0 ${isRet && retDays > 0 ? 'text-[#007185]' : 'text-amber-600'}`} />
+                                                            <RotateCcw className={`w-3.5 h-3.5 flex-shrink-0 ${isRet && retDays > 0 ? 'text-[#8B1313]' : 'text-amber-600'}`} />
                                                             <span className={isRet && retDays > 0 ? 'text-gray-700' : 'text-amber-700 font-semibold'}>
                                                                 {isRet && retDays > 0
                                                                     ? `${retDays} Days Return & Exchange`
@@ -2034,7 +2034,7 @@ const ProductPage = () => {
                                             </div>
                                             {!user && (
                                                 <p className="text-xs text-gray-500 text-center">
-                                                    <button onClick={() => openAuthModal('login')} className="text-[#007185] hover:underline font-medium">Sign in</button> to order
+                                                    <button onClick={() => openAuthModal('login')} className="text-[#8B1313] hover:underline font-medium">Sign in</button> to order
                                                 </p>
                                             )}
                                         </div>
@@ -2069,7 +2069,7 @@ const ProductPage = () => {
                                     ))}
                                     {loadingSimilar && (
                                         <div className="py-4 text-center">
-                                            <Loader2 className="w-5 h-5 animate-spin text-[#007FFF] mx-auto" />
+                                            <Loader2 className="w-5 h-5 animate-spin text-[#8B1313] mx-auto" />
                                         </div>
                                     )}
                                 </div>
@@ -2091,7 +2091,7 @@ const ProductPage = () => {
                             <div ref={observerTargetRef} className="py-6 text-center min-h-[50px] flex items-center justify-center">
                                 {loadingSimilar && (
                                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm text-gray-600 font-medium shadow-sm">
-                                        <Loader2 className="w-4 h-4 animate-spin text-[#007FFF]" />
+                                        <Loader2 className="w-4 h-4 animate-spin text-[#8B1313]" />
                                         <span>Loading more products...</span>
                                     </div>
                                 )}
@@ -2199,7 +2199,7 @@ const ProductPage = () => {
                                     <button
                                         key={idx}
                                         onClick={() => setLightboxIndex(idx)}
-                                        className={`relative w-14 h-14 rounded-lg border-2 overflow-hidden flex-shrink-0 transition-all ${idx === lightboxIndex ? 'border-[#007FFF] scale-105 shadow-md' : 'border-gray-200 opacity-60 hover:opacity-100'
+                                        className={`relative w-14 h-14 rounded-lg border-2 overflow-hidden flex-shrink-0 transition-all ${idx === lightboxIndex ? 'border-[#8B1313] scale-105 shadow-md' : 'border-gray-200 opacity-60 hover:opacity-100'
                                             }`}
                                     >
                                         <Image src={img} alt={`thumb-${idx}`} fill unoptimized className="object-contain p-1" />

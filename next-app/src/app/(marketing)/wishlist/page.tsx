@@ -12,7 +12,6 @@ import { getUserLikedProducts } from "../../../../utils/likeApi";
 import ErrorMessage from "@/components/(sheared)/ErrorMessage";
 import SuccessMessage from "@/components/(sheared)/SuccessMessage";
 import { useLoader } from "@/context/LoaderContext";
-import { useProductSync, ProductEventData } from "@/context/ProductSyncContext";
 
 interface LikedProduct {
     id: number;
@@ -49,7 +48,6 @@ const LikesPage = () => {
     const [likedProducts, setLikedProducts] = useState<LikedProduct[]>([]);
     const [removingId, setRemovingId] = useState<number | null>(null);
     const { showLoader, hideLoader } = useLoader();
-    const { subscribeToAll } = useProductSync();
 
     const basePath = process.env.NEXT_PUBLIC_UPLOAD_BASE || "https://api.zelton.co.in";
 
@@ -58,27 +56,8 @@ const LikesPage = () => {
         fetchLikedProducts();
     }, [user, authLoading]);
 
-    // Real-time synchronization for Wishlist products
-    useEffect(() => {
-        const unsubscribe = subscribeToAll((event: ProductEventData) => {
-            const updatedProd = event.product;
-            const pid = event.productId || (updatedProd?.id ? Number(updatedProd.id) : undefined);
-            if (!pid) return;
-
-            if (event.action === "deleted" || (event.action === "status_changed" && event.status === false)) {
-                setLikedProducts((prev) => prev.filter((p) => Number(p.id) !== pid));
-            } else if (event.action === "updated" || event.action === "stock_updated") {
-                fetchLikedProducts(true);
-            }
-        });
-
-        return () => {
-            unsubscribe();
-        };
-    }, [subscribeToAll]);
-
-    const fetchLikedProducts = async (silent = false) => {
-        if (!silent) showLoader();
+    const fetchLikedProducts = async () => {
+        showLoader();
         try {
             const response = await getUserLikedProducts();
             if (response.res === 'success') {
@@ -122,18 +101,20 @@ const LikesPage = () => {
 
     if (!user) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-                <div className="container mx-auto px-4 py-16">
-                    <div className="text-center">
-                        <Heart className="w-24 h-24 text-gray-400 mx-auto mb-6" />
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">Please Login</h1>
-                        <p className="text-gray-600 mb-8">You need to login to view your wishlist</p>
+            <div className="min-h-screen bg-surface">
+                <div className="max-w-site mx-auto site-pad section-y">
+                    <div className="border border-border-line bg-surface-ivory p-8 sm:p-14 max-w-2xl mx-auto text-center">
+                        <Heart className="w-10 h-10 text-primary mx-auto mb-6" strokeWidth={1.25} />
+                        <span className="label-caps text-primary block mb-3">Members Only</span>
+                        <h1 className="display-section text-on-surface">Sign In to Your Archive</h1>
+                        <p className="text-[15px] text-body-slate mt-4 leading-relaxed max-w-md mx-auto">
+                            Your saved pieces live in your SVastra account. Sign in to revisit the cuts you have marked.
+                        </p>
                         <button
                             onClick={() => openAuthModal('login')}
-                            style={{ backgroundColor: 'var(--theme-blue)', color: '#FFFAFB' }}
-                            className="px-8 py-3 font-semibold rounded-full hover:bg-[#0066CC] hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                            className="sv-btn-primary mt-8"
                         >
-                            Login Now
+                            Sign In
                         </button>
                     </div>
                 </div>
@@ -142,39 +123,43 @@ const LikesPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-surface">
             {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
             {successMessage && <SuccessMessage message={successMessage} onClose={() => setSuccessMessage(null)} />}
 
-            <div className="container mx-auto px-4 py-8">
+            <div className="max-w-site mx-auto site-pad py-10 sm:py-14">
                 {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center gap-4 mb-4">
+                <div className="border-b border-border-line pb-6 sm:pb-8 mb-8 sm:mb-10">
+                    <div className="flex items-start gap-4">
                         <button
                             onClick={() => router.back()}
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            className="w-11 h-11 border border-border-line bg-pure-white text-on-surface hover:border-on-surface transition-colors flex items-center justify-center flex-shrink-0"
+                            aria-label="Go back"
                         >
-                            <ArrowLeft className="w-6 h-6 text-gray-600" />
+                            <ArrowLeft className="w-5 h-5" />
                         </button>
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">My Wishlist</h1>
-                            <p className="text-gray-600">{likedProducts.length} items saved</p>
+                            <span className="label-caps text-primary block mb-2">Saved by You</span>
+                            <h1 className="display-section text-on-surface">The Archive</h1>
+                            <p className="text-[13px] text-body-slate mt-2">{likedProducts.length} {likedProducts.length === 1 ? 'piece' : 'pieces'} saved</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Products Grid */}
                 {likedProducts.length === 0 ? (
-                    <div className="text-center py-16">
-                        <Heart className="w-24 h-24 text-gray-400 mx-auto mb-6" />
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Your wishlist is empty</h2>
-                        <p className="text-gray-600 mb-8">Start adding products you love to your wishlist</p>
+                    <div className="border border-border-line bg-surface-ivory p-8 sm:p-14 max-w-2xl mx-auto text-center">
+                        <Heart className="w-10 h-10 text-primary mx-auto mb-6" strokeWidth={1.25} />
+                        <span className="label-caps text-primary block mb-3">Nothing Saved Yet</span>
+                        <h2 className="display-section text-on-surface">Your Archive Is Empty</h2>
+                        <p className="text-[15px] text-body-slate mt-4 leading-relaxed max-w-md mx-auto">
+                            Mark the pieces that speak to you and they will be held here for your next edit.
+                        </p>
                         <button
                             onClick={() => router.push('/')}
-                            style={{ backgroundColor: 'var(--theme-blue)', color: '#FFFAFB' }}
-                            className="px-8 py-3 font-semibold rounded-full hover:bg-[#0066CC] hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                            className="sv-btn-primary mt-8"
                         >
-                            Browse Products
+                            Browse the Archive
                         </button>
                     </div>
                 ) : (
@@ -185,13 +170,13 @@ const LikesPage = () => {
                             const hasStock = product.variants?.some((v) => v.stock > 0) ?? true;
 
                             return (
-                                <div key={product.id} className="bg-white rounded-2xl shadow-2xs hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-200/80 flex flex-col group/card">
+                                <div key={product.id} className="sv-product-card bg-pure-white border border-border-line hover:border-on-surface transition-colors overflow-hidden flex flex-col group/card">
                                     {/* 1. Full-bleed Product Image Section (object-cover with Choose Options overlay) */}
-                                    <div className="relative w-full aspect-square bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-200/60 flex-shrink-0">
+                                    <div className="relative w-full aspect-[3/4] bg-surface-ivory flex items-center justify-center overflow-hidden border-b border-border-line flex-shrink-0">
                                         <img
                                             src={getProductImageUrl(product)}
                                             alt={fullName || "Product"}
-                                            className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500 cursor-pointer"
+                                            className="w-full h-full object-cover transition-opacity duration-300 cursor-pointer"
                                             onClick={() => handleProductClick(product)}
                                             onError={(e: any) => {
                                                 e.target.src = imgPlaceholder.src;
@@ -204,98 +189,98 @@ const LikesPage = () => {
                                                 handleRemoveFromWishlist(product.id);
                                             }}
                                             disabled={removingId === product.id || likesLoading}
-                                            className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-red-500 shadow-md border border-gray-100 hover:bg-red-50 transition-all hover:scale-110 disabled:opacity-50"
+                                            className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 w-8 h-8 bg-surface/95 hover:bg-surface border border-border-line flex items-center justify-center text-primary transition-colors disabled:opacity-50"
                                             title="Remove from wishlist"
                                         >
                                             {removingId === product.id ? (
-                                                <div className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-500 rounded-full animate-spin"></div>
+                                                <div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary sv-round animate-spin"></div>
                                             ) : (
-                                                <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-red-500 text-red-500" />
+                                                <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-primary text-primary" />
                                             )}
                                         </button>
 
                                         {/* "Choose Options" Overlay Button on hover */}
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] flex justify-center pointer-events-none opacity-0 invisible group-hover/card:opacity-100 group-hover/card:visible transition-all duration-300 scale-95 group-hover/card:scale-100 z-20">
-                                            <span className="w-full text-center bg-white/95 hover:bg-white text-gray-900 text-xs sm:text-sm font-bold py-2 sm:py-2.5 px-4 rounded-full shadow-2xl border border-gray-200">
-                                                Choose Options
+                                        <div className="absolute bottom-0 inset-x-0 pointer-events-none opacity-0 invisible group-hover/card:opacity-100 group-hover/card:visible transition-all duration-300 z-20">
+                                            <span className="block w-full text-center bg-surface-dark/90 text-surface text-[11px] font-semibold tracking-[0.12em] uppercase py-3">
+                                                Select &amp; Reserve
                                             </span>
                                         </div>
                                     </div>
 
                                     {/* 2. Product Info Section */}
-                                    <div className="p-2.5 sm:p-3.5 flex flex-col justify-between flex-1 bg-[#F7F7F7] gap-2">
-                                        <div className="flex flex-col gap-1">
+                                    <div className="p-3 sm:p-4 flex flex-col justify-between flex-1 bg-pure-white gap-2">
+                                        <div className="flex flex-col gap-1.5">
                                             {/* Full Product Name */}
                                             <h3
-                                                className="text-xs sm:text-sm font-semibold text-gray-900 leading-snug cursor-pointer group-hover/card:text-[#007FFF] transition-colors"
+                                                className="text-xs sm:text-sm font-bold uppercase tracking-tight text-on-surface leading-snug line-clamp-2 cursor-pointer group-hover/card:text-primary transition-colors"
                                                 onClick={() => handleProductClick(product)}
                                                 title={fullName}
                                             >
                                                 {fullName}
                                             </h3>
 
-                                            {/* Pricing Row (Selling Price in Red, Strikethrough MRP, Navy Discount Pill) */}
+                                            {/* Pricing Row */}
                                             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mt-0.5">
-                                                <span className="font-bold text-sm sm:text-base text-[#C53030]">
+                                                <span className="font-bold text-sm sm:text-base text-on-surface">
                                                     {formattedSp}
                                                 </span>
                                                 {hasDiscount && (
-                                                    <span className="line-through text-xs sm:text-sm text-gray-400 font-normal">
+                                                    <span className="line-through text-[11px] sm:text-xs text-body-slate font-normal">
                                                         {formattedMrp}
                                                     </span>
                                                 )}
                                                 {hasDiscount && discountPct > 0 && (
-                                                    <span className="bg-[#0c2340] text-white text-[10px] sm:text-[11px] font-extrabold px-2 py-0.5 rounded-full shadow-2xs">
-                                                        {discountPct}% OFF
+                                                    <span className="text-primary text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase">
+                                                        {discountPct}% Off
                                                     </span>
                                                 )}
                                             </div>
                                         </div>
 
-                                        {/* ── 3. Desktop Metadata Section (Quality Assured, Options, Stock Status — Matching Image 2) ── */}
-                                        <div className="hidden sm:flex pt-2 border-t border-gray-200/60 flex-col gap-1.5 mt-auto">
-                                            <div className="flex items-center justify-between gap-2 text-xs">
+                                        {/* ── 3. Desktop Metadata Section (Quality Assured, Options, Stock Status) ── */}
+                                        <div className="hidden sm:flex pt-3 border-t border-border-line flex-col gap-2 mt-auto">
+                                            <div className="flex items-center justify-between gap-2">
                                                 {product.brand ? (
-                                                    <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 text-[11px] font-medium px-2 py-0.5 rounded-md">
-                                                        <Tag className="w-3 h-3 text-gray-500" />
+                                                    <span className="inline-flex items-center gap-1 bg-surface-ivory border border-border-line text-body-slate text-[10px] font-semibold tracking-wider uppercase px-2 py-1">
+                                                        <Tag className="w-3 h-3" />
                                                         {product.brand.name}
                                                     </span>
                                                 ) : product.category ? (
-                                                    <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-600 text-[11px] font-medium px-2 py-0.5 rounded-md">
+                                                    <span className="inline-flex items-center gap-1 bg-surface-ivory border border-border-line text-body-slate text-[10px] font-semibold tracking-wider uppercase px-2 py-1">
                                                         {product.category.name}
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center gap-1 bg-blue-50 text-[#007FFF] text-[11px] font-medium px-2 py-0.5 rounded-md">
-                                                        <ShieldCheck className="w-3 h-3" /> Quality Assured
+                                                    <span className="inline-flex items-center gap-1 bg-surface-ivory border border-border-line text-primary text-[10px] font-semibold tracking-wider uppercase px-2 py-1">
+                                                        <ShieldCheck className="w-3 h-3" /> Atelier Assured
                                                     </span>
                                                 )}
 
                                                 {product.variants && product.variants.length > 1 && (
-                                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-600 bg-white px-2 py-0.5 rounded-md border border-gray-200">
-                                                        <Layers className="w-3 h-3 text-gray-400" />
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold tracking-wider uppercase text-body-slate bg-surface border border-border-line px-2 py-1">
+                                                        <Layers className="w-3 h-3" />
                                                         {product.variants.length} Options
                                                     </span>
                                                 )}
                                             </div>
 
-                                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
+                                            <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase">
                                                 {hasStock ? (
-                                                    <span className="flex items-center gap-1 text-emerald-600 font-medium">
-                                                        <CheckCircle2 className="w-3 h-3" /> In Stock & ready to ship
+                                                    <span className="flex items-center gap-1 text-accent-ochre">
+                                                        <CheckCircle2 className="w-3 h-3" /> In Archive &amp; Ready to Ship
                                                     </span>
                                                 ) : (
-                                                    <span className="flex items-center gap-1 text-amber-600 font-medium">
-                                                        <Truck className="w-3 h-3" /> Express Delivery Available
+                                                    <span className="flex items-center gap-1 text-body-slate">
+                                                        <Truck className="w-3 h-3" /> Made to Order
                                                     </span>
                                                 )}
                                             </div>
                                         </div>
 
                                         {/* Action buttons (View + Delete) */}
-                                        <div className="flex items-center gap-1.5 sm:gap-2 pt-2 border-t border-gray-200/60 mt-1">
+                                        <div className="flex items-stretch gap-2 pt-3 border-t border-border-line mt-1">
                                             <button
                                                 onClick={() => handleProductClick(product.id)}
-                                                className="flex-1 py-1.5 sm:py-2 px-2.5 sm:px-3 bg-[#007FFF] text-white rounded-lg hover:bg-[#0066CC] transition-colors text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs"
+                                                className="flex-1 py-2.5 px-3 bg-primary text-surface hover:bg-surface-dark transition-colors text-[10px] sm:text-[11px] font-semibold tracking-[0.06em] uppercase flex items-center justify-center gap-1.5"
                                             >
                                                 <ShoppingCart className="w-3.5 h-3.5" />
                                                 <span>View</span>
@@ -303,7 +288,7 @@ const LikesPage = () => {
                                             <button
                                                 onClick={() => handleRemoveFromWishlist(product.id)}
                                                 disabled={removingId === product.id || likesLoading}
-                                                className="p-1.5 sm:px-2.5 sm:py-2 bg-red-50 text-[#F40000] hover:bg-red-100 border border-red-100 rounded-lg transition-colors text-xs disabled:opacity-50 flex items-center justify-center"
+                                                className="px-3 border border-border-line text-primary hover:border-primary transition-colors disabled:opacity-50 flex items-center justify-center"
                                                 title="Remove"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />

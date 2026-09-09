@@ -1,0 +1,37 @@
+module.exports = {
+  apps: [
+    {
+      name: "sareeshop-api",
+      cwd: "{{ api_dir }}",
+      script: "dist/main.js",
+      instances: 1,
+      exec_mode: "fork",
+      env: {
+        NODE_ENV: "production",
+        PORT: "{{ api_port }}",
+      },
+      max_memory_restart: "512M",
+      time: true,
+      error_file: "{{ app_root }}/logs/api-error.log",
+      out_file: "{{ app_root }}/logs/api-out.log",
+      merge_logs: true,
+    },
+    {
+      name: "sareeshop-web",
+      cwd: "{{ web_dir }}",
+      script: "node_modules/next/dist/bin/next",
+      args: "start -p {{ web_port }} -H 127.0.0.1",
+      instances: 1,
+      exec_mode: "fork",
+      env: {
+        NODE_ENV: "production",
+        PORT: "{{ web_port }}",
+      },
+      max_memory_restart: "768M",
+      time: true,
+      error_file: "{{ app_root }}/logs/web-error.log",
+      out_file: "{{ app_root }}/logs/web-out.log",
+      merge_logs: true,
+    },
+  ],
+};
