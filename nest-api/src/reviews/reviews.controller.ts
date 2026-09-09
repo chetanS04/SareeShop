@@ -14,19 +14,24 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname, join, resolve } from 'path';
+import { extname, join, resolve, isAbsolute } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 import { ReviewsService } from './reviews.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 const getStorageBaseDir = () => {
   const envPath = process.env.SHARED_STORAGE_PATH || process.env.UPLOAD_PATH;
-  return envPath ? resolve(process.cwd(), envPath) : join(process.cwd(), '../zelton-storage/api/public/storage');
+  if (!envPath) {
+    const defaultZelton = join(process.cwd(), '../Saree-app-storage/api/public/storage');
+    if (existsSync(defaultZelton)) return defaultZelton;
+    return join(process.cwd(), '../Saree-app-storage/api/public/storage');
+  }
+  return isAbsolute(envPath) ? envPath : resolve(process.cwd(), envPath);
 };
 
 const reviewUploadStorage = diskStorage({
   destination: (req, file, cb) => {
     const dir = join(getStorageBaseDir(), 'reviews');
-    const { mkdirSync, existsSync } = require('fs');
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },

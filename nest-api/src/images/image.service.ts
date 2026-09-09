@@ -11,7 +11,7 @@ export class ImageService {
     const envPath = this.config.get<string>('UPLOAD_PATH') || this.config.get<string>('SHARED_STORAGE_PATH');
     this.uploadDir = envPath
       ? (path.isAbsolute(envPath) ? envPath : path.resolve(process.cwd(), envPath))
-      : path.join(process.cwd(), '../zelton-storage/api/public/storage');
+      : path.join(process.cwd(), '../Saree-app-storage/api/public/storage');
     // Ensure base upload directory exists
     if (!fs.existsSync(this.uploadDir)) fs.mkdirSync(this.uploadDir, { recursive: true });
   }
