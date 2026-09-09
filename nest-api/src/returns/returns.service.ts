@@ -57,15 +57,23 @@ export class ReturnsService {
   async requestReturn(userId: number, dto: RequestReturnDto): Promise<any> {
     this.logger.log(`User #${userId} requesting return for order #${dto.order_id}`);
 
-    // 1. Verify eligibility
-    const eligibility = await this.eligibilityService.checkEligibility(dto.order_id);
-    if (!eligibility.is_eligible && (!eligibility.items || eligibility.items.length === 0)) {
-      throw new BadRequestException(eligibility.rejection_reason || 'This order is not eligible for return or exchange.');
+    // 1. Fetch order
+    const order = await this.eligibilityService.findOrderByIdentifier(dto.order_id);
+    if (!order) {
+      throw new NotFoundException(`Order #${dto.order_id} not found.`);
     }
 
-    const order = eligibility.order;
-    if (order.userId && order.userId !== userId) {
+    if (order.userId && Number(order.userId) !== Number(userId)) {
       throw new ForbiddenException('You are not authorized to return items for this order.');
+    }
+
+    // 2. Verify eligibility
+    const eligibility = await this.eligibilityService.checkEligibility(dto.order_id, userId);
+    const isEligible = eligibility.eligible ?? eligibility.is_eligible ?? false;
+    if (!isEligible && (!eligibility.items || eligibility.items.length === 0)) {
+      throw new BadRequestException(
+        eligibility.reason || eligibility.rejection_reason || 'This order is not eligible for return or exchange.',
+      );
     }
 
     if (!dto.items || dto.items.length === 0) {
@@ -136,16 +144,26 @@ export class ReturnsService {
     // 3. Resolve pickup address
     let pickupAddr = dto.pickup_address;
     if (!pickupAddr) {
-      const parsedShipping = typeof order.shippingAddress === 'object' && order.shippingAddress !== null
-        ? order.shippingAddress
-        : {};
+      let parsedShipping: any = {};
+      if (typeof order.shippingAddress === 'object' && order.shippingAddress !== null) {
+        parsedShipping = order.shippingAddress;
+      } else if (typeof order.shippingAddress === 'string') {
+        const trimmed = order.shippingAddress.trim();
+        if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+          try {
+            parsedShipping = JSON.parse(trimmed);
+          } catch (e) {
+            parsedShipping = {};
+          }
+        }
+      }
       pickupAddr = {
-        name: (parsedShipping as any).name || (order as any).user?.name || 'Customer',
-        phone: String((parsedShipping as any).phone || (order as any).user?.phoneNumber || '9999999999'),
-        address: (parsedShipping as any).address || (parsedShipping as any).street || String(order.shippingAddress || ''),
-        city: (parsedShipping as any).city || 'Ambala',
-        state: (parsedShipping as any).state || 'Haryana',
-        pincode: (parsedShipping as any).pin || (parsedShipping as any).pincode || '134003',
+        name: parsedShipping?.name || (order as any).user?.name || 'Customer',
+        phone: String(parsedShipping?.phone || (order as any).user?.phoneNumber || '9999999999'),
+        address: parsedShipping?.add || parsedShipping?.address || parsedShipping?.street || (typeof order.shippingAddress === 'string' && !order.shippingAddress.trim().startsWith('{') ? order.shippingAddress : ''),
+        city: parsedShipping?.city || 'Ambala',
+        state: parsedShipping?.state || 'Haryana',
+        pincode: String(parsedShipping?.pin || parsedShipping?.pincode || '134003'),
       };
     }
 

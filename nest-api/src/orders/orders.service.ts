@@ -21,6 +21,7 @@ import {
   products,
   users,
   settings,
+  returnRequests,
 } from '../database/schema';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
@@ -176,10 +177,11 @@ export class OrdersService implements OnModuleInit {
 
     const userIds = Array.from(new Set(orderList.map(o => o.userId).filter(Boolean)));
 
-    const [items, tracking, userRows] = await Promise.all([
+    const [items, tracking, userRows, returnRows] = await Promise.all([
       this.db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds)).catch(() => []),
       this.db.select().from(orderTrackingRecords).where(inArray(orderTrackingRecords.orderId, orderIds)).catch(() => []),
       userIds.length > 0 ? this.db.select().from(users).where(inArray(users.id, userIds)).catch(() => []) : Promise.resolve([]),
+      this.db.select().from(returnRequests).where(inArray(returnRequests.orderId, orderIds)).catch(() => []),
     ]);
 
     const productIds = Array.from(new Set((items as any[]).map(i => i.productId).filter(Boolean)));
@@ -219,6 +221,13 @@ export class OrdersService implements OnModuleInit {
       trackingByOrderId.set(tr.orderId, list);
     }
 
+    const returnsByOrderId = new Map<number, any[]>();
+    for (const ret of ((returnRows as any[]) || [])) {
+      const list = returnsByOrderId.get(ret.orderId) || [];
+      list.push(ret);
+      returnsByOrderId.set(ret.orderId, list);
+    }
+
     return orderList.map((o: any) => ({
       ...o,
       user: userMap.get(o.userId) || null,
@@ -226,6 +235,8 @@ export class OrdersService implements OnModuleInit {
       trackingRecords: (trackingByOrderId.get(o.id) || []).sort(
         (a: any, b: any) => new Date(a.trackedAt || a.createdAt).getTime() - new Date(b.trackedAt || b.createdAt).getTime()
       ),
+      returnRequests: returnsByOrderId.get(o.id) || [],
+      returns: returnsByOrderId.get(o.id) || [],
     }));
   }
 

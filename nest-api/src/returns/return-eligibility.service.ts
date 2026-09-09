@@ -77,12 +77,14 @@ export class ReturnEligibilityService {
     if (!isDelivered) {
       return {
         eligible: false,
+        is_eligible: false,
         reason: 'Return/Exchange can only be requested once the order has been delivered by courier.',
         orderId: order.id,
         orderNumber: order.orderNumber,
         status: order.status,
         remainingDays: 0,
         items: [],
+        order,
       };
     }
 
@@ -200,6 +202,7 @@ export class ReturnEligibilityService {
 
     return {
       eligible: hasAnyEligibleItem,
+      is_eligible: hasAnyEligibleItem,
       reason: hasAnyEligibleItem ? null : 'No items in this order are currently eligible for return or exchange.',
       orderId: order.id,
       orderNumber: order.orderNumber,
@@ -210,6 +213,8 @@ export class ReturnEligibilityService {
       remainingDays: maxRemainingDays,
       allowedReasons: ALLOWED_RETURN_REASONS,
       items: itemsResult,
+      existingReturns: existingReturns || [],
+      order,
     };
   }
 }
