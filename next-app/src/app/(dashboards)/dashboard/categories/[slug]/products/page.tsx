@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { getCategoryById } from "../../../../../../../utils/category";
-import { getAdminProducts, deleteProduct, toggleProductStatus, setEditProductId } from "../../../../../../../utils/product";
+import { getAdminProducts, deleteProduct, toggleProductStatus, setEditProductId, clearEditProductId } from "../../../../../../../utils/product";
 import { getProductSlug } from "../../../../../../../utils/slugUtils";
 import { TiInfoLargeOutline } from "react-icons/ti";
 import { Pencil, Trash2, Search, Loader2, Plus, Check } from "lucide-react";
@@ -217,6 +217,7 @@ export default function Products() {
     };
 
     const addProduct = () => {
+        clearEditProductId();
         if (category?.attributes && category?.attributes?.length > 0) {
             if (category?.attributes?.length === 1) {
                 router.push(`/dashboard/categories/${categoryId}/products/add-single-attribute-product`);
@@ -237,11 +238,11 @@ export default function Products() {
         setEditProductId(product.id);
         const attrCount = product.item_attributes?.length ?? product.itemAttributes?.length ?? category?.attributes?.length ?? 0;
         if (attrCount === 1) {
-            router.push(`/dashboard/categories/${categoryId}/products/add-single-attribute-product`);
+            router.push(`/dashboard/categories/${categoryId}/products/add-single-attribute-product?productId=${product.id}`);
         } else if (attrCount === 0 && (!product.variants || product.variants.length <= 1)) {
-            router.push(`/dashboard/categories/${categoryId}/products/add-single-variant`);
+            router.push(`/dashboard/categories/${categoryId}/products/add-single-variant?productId=${product.id}`);
         } else {
-            router.push(`/dashboard/categories/${categoryId}/products/add-multi-variant`);
+            router.push(`/dashboard/categories/${categoryId}/products/add-multi-variant?productId=${product.id}`);
         }
     };
 

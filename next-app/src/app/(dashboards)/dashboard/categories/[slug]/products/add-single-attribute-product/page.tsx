@@ -57,6 +57,10 @@ const variant = yup.object({
         .required("Stock is required")
         .min(0, "Stock must be greater than or equal to 0")
         .max(100000, "Stock exceeds limit"),
+    is_cod_allowed: yup.boolean().default(true),
+    is_returnable: yup.boolean().default(true),
+    return_window_days: yup.number().typeError("Return days must be a number").min(0, "Cannot be negative").max(90, "Cannot exceed 90 days").default(7),
+    shipping_charges: yup.number().typeError("Shipping charges must be a number").min(0, "Cannot be negative").default(0),
     status: yup.boolean().default(true),
     imageUrl: yup.string().when('has_images', {
         is: (has_images: any) => Boolean(has_images),
@@ -147,18 +151,17 @@ function VariantProductForm() {
     const categoryId = (params?.slug || params?.id || "") as string;
 
     useEffect(() => {
-        const idFromStorage = getEditProductId();
-        const idFromQuery = searchParams?.get("productId");
-        const effectiveId = idFromStorage || idFromQuery;
-        if (effectiveId) {
-            setProductId(effectiveId);
-            setEditProductId(effectiveId);
-            if (idFromQuery) {
-                const url = new URL(window.location.href);
-                url.searchParams.delete("productId");
-                window.history.replaceState({}, "", url.toString());
-            }
+        const idFromQuery = searchParams?.get("productId") || searchParams?.get("id") || searchParams?.get("edit");
+        if (idFromQuery) {
+            setProductId(idFromQuery);
+            setEditProductId(idFromQuery);
+        } else {
+            setProductId(null);
+            clearEditProductId();
         }
+        return () => {
+            clearEditProductId();
+        };
     }, [searchParams]);
 
     const config = useMemo(
@@ -225,6 +228,10 @@ function VariantProductForm() {
                         bp: 0,
                         sp: 0,
                         stock: 0,
+                        is_cod_allowed: true,
+                        is_returnable: true,
+                        return_window_days: 7,
+                        shipping_charges: 0,
                         status: true,
                         imageUrl: "",
                         imageJson: [],
@@ -296,7 +303,11 @@ function VariantProductForm() {
                             sp: v.sp,
                             bp: v.bp,
                             stock: v.stock,
-                            status: Boolean(v.status),
+                            is_cod_allowed: v.is_cod_allowed !== undefined ? Boolean(v.is_cod_allowed) : (v.isCodAllowed !== undefined ? Boolean(v.isCodAllowed) : true),
+                            is_returnable: v.is_returnable !== undefined ? Boolean(v.is_returnable) : (v.isReturnable !== undefined ? Boolean(v.isReturnable) : true),
+                            return_window_days: v.return_window_days !== undefined && v.return_window_days !== null ? Number(v.return_window_days) : (v.returnWindowDays !== undefined && v.returnWindowDays !== null ? Number(v.returnWindowDays) : 7),
+                            shipping_charges: v.shipping_charges !== undefined && v.shipping_charges !== null ? Number(v.shipping_charges) : (v.shippingCharges !== undefined && v.shippingCharges !== null ? Number(v.shippingCharges) : 0),
+                            status: Boolean(v.status ?? true),
                             imageUrl: v.image_url || v.imageUrl,
                             imageJson: v.image_json ? (typeof v.image_json === 'string' ? JSON.parse(v.image_json) : v.image_json) : (v.imageJson ? (typeof v.imageJson === 'string' ? JSON.parse(v.imageJson) : v.imageJson) : []),
                             has_images: hasImages,
@@ -415,9 +426,18 @@ function VariantProductForm() {
                 sp: v.sp,
                 bp: v.bp,
                 stock: v.stock,
-                status: v.status,
+                status: v.status ?? true,
+                is_cod_allowed: v.is_cod_allowed ?? true,
+                isCodAllowed: v.is_cod_allowed ?? true,
+                is_returnable: v.is_returnable ?? true,
+                isReturnable: v.is_returnable ?? true,
+                return_window_days: v.return_window_days !== undefined && v.return_window_days !== null ? Number(v.return_window_days) : 7,
+                returnWindowDays: v.return_window_days !== undefined && v.return_window_days !== null ? Number(v.return_window_days) : 7,
+                shipping_charges: v.shipping_charges !== undefined && v.shipping_charges !== null ? Number(v.shipping_charges) : 0,
+                shippingCharges: v.shipping_charges !== undefined && v.shipping_charges !== null ? Number(v.shipping_charges) : 0,
                 has_images: v.has_images,
                 image_url: v.imageUrl ?? null,
+                imageUrl: v.imageUrl ?? null,
                 image_json: v.imageJson?.length ? JSON.stringify(v.imageJson) : null,
             };
 
@@ -895,6 +915,10 @@ function VariantProductForm() {
                                                 bp: 0,
                                                 sp: 0,
                                                 stock: 0,
+                                                is_cod_allowed: true,
+                                                is_returnable: true,
+                                                return_window_days: 7,
+                                                shipping_charges: 0,
                                                 status: true,
                                                 imageUrl: "",
                                                 imageJson: [],
@@ -1039,15 +1063,17 @@ function VariantProductForm() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col sm:flex-row gap-4 items-center">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                                             {/* Stock */}
-                                            <div className="flex-1">
-                                                <label className="block text-base font-semibold text-black mb-1">Stock<span className="text-red-600">*</span></label>
+                                            <div>
+                                                <label className="block text-base font-semibold text-black mb-1">
+                                                    Stock<span className="text-red-600">*</span>
+                                                </label>
                                                 <input
                                                     {...register(`variants.${variantIndex}.stock` as const)}
                                                     type="number"
                                                     onWheel={disableScrollNumberInput}
-                                                    step="0.01"
+                                                    step="1"
                                                     placeholder="Enter Stock"
                                                     className="w-full px-3 py-2 rounded-lg bg-white text-black border border-gray-300 focus:border-[#007FFF] focus:ring-2 focus:ring-blue-100 transition"
                                                 />
@@ -1055,17 +1081,115 @@ function VariantProductForm() {
                                                     {Array.isArray(errors.variants) ? errors.variants[variantIndex]?.stock?.message : undefined}
                                                 </p>
                                             </div>
-                                            <div className="mt-6">
-                                                <div className="flex items-center gap-4 cursor-pointer select-none"
-                                                    onClick={() => setValue(`variants.${variantIndex}.status`, !watch(`variants.${variantIndex}.status`))}
-                                                >
-                                                    <span className="text-sm font-semibold text-gray-800">Status</span>
-                                                    <div className={`relative flex items-center h-6 w-12 rounded-full transition-all duration-300 ${watch(`variants.${variantIndex}.status`) ? "bg-green-500" : "bg-red-500"}`}>
-                                                        <span className={`absolute h-6 w-6 rounded-full bg-white shadow-md transform transition-all duration-300 ${watch(`variants.${variantIndex}.status`) ? "translate-x-6" : "translate-x-0"}`} />
+
+                                            {/* Shipping Charges */}
+                                            <div>
+                                                <label className="block text-base font-semibold text-black mb-1">
+                                                    Shipping Charges (₹)
+                                                    <span className="text-xs text-gray-500 font-normal ms-1">(0 for Free)</span>
+                                                </label>
+                                                <input
+                                                    {...register(`variants.${variantIndex}.shipping_charges` as const)}
+                                                    type="number"
+                                                    onWheel={disableScrollNumberInput}
+                                                    step="0.01"
+                                                    placeholder="0.00"
+                                                    defaultValue={0}
+                                                    className="w-full px-3 py-2 rounded-lg bg-white text-black border border-gray-300 focus:border-[#007FFF] focus:ring-2 focus:ring-blue-100 transition"
+                                                />
+                                                <p className="text-sm text-red-500">
+                                                    {Array.isArray(errors.variants) ? (errors.variants[variantIndex] as any)?.shipping_charges?.message : undefined}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* COD & Return Policy Controls */}
+                                        <div className="p-3.5 bg-white border border-gray-200 rounded-xl space-y-3 shadow-xs">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                                {/* COD Toggle */}
+                                                <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200/80">
+                                                    <div>
+                                                        <span className="text-xs font-bold text-gray-800 block">Cash on Delivery (COD)</span>
+                                                        <span className="text-[11px] text-gray-500">
+                                                            {watch(`variants.${variantIndex}.is_cod_allowed`) !== false ? "COD Enabled" : "Prepaid Only"}
+                                                        </span>
+                                                    </div>
+                                                    <div
+                                                        className="cursor-pointer select-none"
+                                                        onClick={() => {
+                                                            const current = watch(`variants.${variantIndex}.is_cod_allowed`);
+                                                            setValue(`variants.${variantIndex}.is_cod_allowed`, current === false ? true : false);
+                                                        }}
+                                                    >
+                                                        <div className={`relative flex items-center h-6 w-11 rounded-full transition-all duration-300 ${watch(`variants.${variantIndex}.is_cod_allowed`) !== false ? "bg-emerald-500" : "bg-zinc-300"}`}>
+                                                            <span className={`absolute h-5 w-5 rounded-full bg-white shadow-sm transform transition-all duration-300 ${watch(`variants.${variantIndex}.is_cod_allowed`) !== false ? "translate-x-5" : "translate-x-0.5"}`} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Returnable Toggle */}
+                                                <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200/80">
+                                                    <div>
+                                                        <span className="text-xs font-bold text-gray-800 block">Product Returnable</span>
+                                                        <span className="text-[11px] text-gray-500">
+                                                            {watch(`variants.${variantIndex}.is_returnable`) !== false ? "Returns Allowed" : "Non-Returnable"}
+                                                        </span>
+                                                    </div>
+                                                    <div
+                                                        className="cursor-pointer select-none"
+                                                        onClick={() => {
+                                                            const current = watch(`variants.${variantIndex}.is_returnable`);
+                                                            setValue(`variants.${variantIndex}.is_returnable`, current === false ? true : false);
+                                                        }}
+                                                    >
+                                                        <div className={`relative flex items-center h-6 w-11 rounded-full transition-all duration-300 ${watch(`variants.${variantIndex}.is_returnable`) !== false ? "bg-[#007FFF]" : "bg-zinc-300"}`}>
+                                                            <span className={`absolute h-5 w-5 rounded-full bg-white shadow-sm transform transition-all duration-300 ${watch(`variants.${variantIndex}.is_returnable`) !== false ? "translate-x-5" : "translate-x-0.5"}`} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Variant Active Status */}
+                                                <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200/80">
+                                                    <div>
+                                                        <span className="text-xs font-bold text-gray-800 block">Variant Status</span>
+                                                        <span className="text-[11px] text-gray-500">
+                                                            {watch(`variants.${variantIndex}.status`) !== false ? "Active" : "Disabled"}
+                                                        </span>
+                                                    </div>
+                                                    <div
+                                                        className="cursor-pointer select-none"
+                                                        onClick={() => setValue(`variants.${variantIndex}.status`, !watch(`variants.${variantIndex}.status`))}
+                                                    >
+                                                        <div className={`relative flex items-center h-6 w-11 rounded-full transition-all duration-300 ${watch(`variants.${variantIndex}.status`) !== false ? "bg-[#007FFF]" : "bg-zinc-300"}`}>
+                                                            <span className={`absolute h-5 w-5 rounded-full bg-white shadow-sm transform transition-all duration-300 ${watch(`variants.${variantIndex}.status`) !== false ? "translate-x-5" : "translate-x-0.5"}`} />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
 
+                                            {/* Return Window Days (Only if returnable) */}
+                                            {watch(`variants.${variantIndex}.is_returnable`) !== false ? (
+                                                <div className="flex items-center gap-3 pt-1">
+                                                    <label className="text-xs font-semibold text-gray-700 whitespace-nowrap">
+                                                        Return Window (Days):
+                                                    </label>
+                                                    <input
+                                                        {...register(`variants.${variantIndex}.return_window_days` as const)}
+                                                        type="number"
+                                                        onWheel={disableScrollNumberInput}
+                                                        min="1"
+                                                        max="90"
+                                                        defaultValue={7}
+                                                        placeholder="7"
+                                                        className="w-24 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs text-gray-900 font-semibold focus:border-[#007FFF] focus:ring-1 focus:ring-blue-100"
+                                                    />
+                                                    <span className="text-xs text-gray-500">days after courier delivery</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2 pt-1 text-xs text-amber-700 bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-200">
+                                                    <span>⚠️ Non-Returnable: Customer cannot return this variant after purchase.</span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Primary Image with Cropper for this variant */}

@@ -142,18 +142,17 @@ function VariantProductForm() {
     const categoryId = (params?.slug || params?.id || "") as string;
 
     useEffect(() => {
-        const idFromStorage = getEditProductId();
-        const idFromQuery = searchParams?.get("productId");
-        const effectiveId = idFromStorage || idFromQuery;
-        if (effectiveId) {
-            setProductId(effectiveId);
-            setEditProductId(effectiveId);
-            if (idFromQuery) {
-                const url = new URL(window.location.href);
-                url.searchParams.delete("productId");
-                window.history.replaceState({}, "", url.toString());
-            }
+        const idFromQuery = searchParams?.get("productId") || searchParams?.get("id") || searchParams?.get("edit");
+        if (idFromQuery) {
+            setProductId(idFromQuery);
+            setEditProductId(idFromQuery);
+        } else {
+            setProductId(null);
+            clearEditProductId();
         }
+        return () => {
+            clearEditProductId();
+        };
     }, [searchParams]);
 
     const config = useMemo(
@@ -186,7 +185,8 @@ function VariantProductForm() {
         setValue,
         control,
         formState: { errors },
-        watch
+        watch,
+        reset
     } = useForm<any>({
         resolver: yupResolver(schema),
         defaultValues: {
@@ -199,6 +199,7 @@ function VariantProductForm() {
             sgst: "",
             igst: "",
             categoryId: categoryId || "",
+            variants: [],
         },
     });
 
@@ -208,6 +209,38 @@ function VariantProductForm() {
             await getAllBrands();
             if (productId) {
                 await fetchProductDetails(productId, categoryFlags);
+            } else {
+                const currentVariants = watch("variants");
+                if (!currentVariants || currentVariants.length === 0) {
+                    appendVariant({
+                        title: "",
+                        attributeValue: "",
+                        image_url: "",
+                        imageJson: [],
+                        options: [
+                            {
+                                title: "",
+                                attributeValue: "",
+                                sku: "",
+                                mrp: "" as any,
+                                bp: "" as any,
+                                sp: "" as any,
+                                stock: "" as any,
+                                is_cod_allowed: true,
+                                is_returnable: true,
+                                return_window_days: 7,
+                                shipping_charges: 0,
+                                status: true,
+                                image_url: "",
+                                imageJson: [],
+                                hasAttributeImages1: categoryFlags?.hasImages1 || false,
+                                hasAttributeImages2: categoryFlags?.hasImages2 || false,
+                            }
+                        ],
+                        hasAttributeImages1: categoryFlags?.hasImages1 || false,
+                        hasAttributeImages2: categoryFlags?.hasImages2 || false,
+                    });
+                }
             }
         };
 

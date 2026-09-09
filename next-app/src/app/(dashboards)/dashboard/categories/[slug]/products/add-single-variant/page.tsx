@@ -119,18 +119,17 @@ function ProductForm() {
     const categoryId = (params?.slug || params?.id || "") as string;
 
     useEffect(() => {
-        const idFromStorage = getEditProductId();
-        const idFromQuery = searchParams?.get("productId");
-        const effectiveId = idFromStorage || idFromQuery;
-        if (effectiveId) {
-            setProductId(effectiveId);
-            setEditProductId(effectiveId);
-            if (idFromQuery) {
-                const url = new URL(window.location.href);
-                url.searchParams.delete("productId");
-                window.history.replaceState({}, "", url.toString());
-            }
+        const idFromQuery = searchParams?.get("productId") || searchParams?.get("id") || searchParams?.get("edit");
+        if (idFromQuery) {
+            setProductId(idFromQuery);
+            setEditProductId(idFromQuery);
+        } else {
+            setProductId(null);
+            clearEditProductId();
         }
+        return () => {
+            clearEditProductId();
+        };
     }, [searchParams]);
 
     const config = useMemo(
@@ -196,11 +195,11 @@ function ProductForm() {
                         const attrCount = product.item_attributes?.length ?? product.itemAttributes?.length ?? 0;
                         if (attrCount === 1) {
                             setEditProductId(productId);
-                            router.replace(`/dashboard/categories/${categoryId}/products/add-single-attribute-product`);
+                            router.replace(`/dashboard/categories/${categoryId}/products/add-single-attribute-product?productId=${productId}`);
                             return;
                         } else if (attrCount > 1 || (product.variants && product.variants.length > 1)) {
                             setEditProductId(productId);
-                            router.replace(`/dashboard/categories/${categoryId}/products/add-multi-variant`);
+                            router.replace(`/dashboard/categories/${categoryId}/products/add-multi-variant?productId=${productId}`);
                             return;
                         }
 
@@ -496,15 +495,15 @@ function ProductForm() {
                             <p className="text-sm text-red-500">{(errors as any).shipping_charges?.message}</p>
                         </div>
 
-                        {/* COD & Return Policy Controls */}
-                        <div className="sm:col-span-2 p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        {/* COD, Return Policy & Product Status Controls */}
+                        <div className="sm:col-span-2 p-3.5 bg-white border border-gray-200 rounded-xl space-y-3 shadow-xs">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                                 {/* COD Toggle */}
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-gray-200">
+                                <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200/80">
                                     <div>
-                                        <span className="text-sm font-bold text-gray-800 block">Cash on Delivery (COD)</span>
-                                        <span className="text-xs text-gray-500">
-                                            {watch("is_cod_allowed") !== false ? "COD Enabled for this product" : "Prepaid Only (COD Disabled)"}
+                                        <span className="text-xs font-bold text-gray-800 block">Cash on Delivery (COD)</span>
+                                        <span className="text-[11px] text-gray-500">
+                                            {watch("is_cod_allowed") !== false ? "COD Enabled" : "Prepaid Only"}
                                         </span>
                                     </div>
                                     <div
@@ -521,11 +520,11 @@ function ProductForm() {
                                 </div>
 
                                 {/* Returnable Toggle */}
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-gray-200">
+                                <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200/80">
                                     <div>
-                                        <span className="text-sm font-bold text-gray-800 block">Product Returnable</span>
-                                        <span className="text-xs text-gray-500">
-                                            {watch("is_returnable") !== false ? "Returns & Replacements Allowed" : "Non-Returnable (Final Sale)"}
+                                        <span className="text-xs font-bold text-gray-800 block">Product Returnable</span>
+                                        <span className="text-[11px] text-gray-500">
+                                            {watch("is_returnable") !== false ? "Returns Allowed" : "Non-Returnable"}
                                         </span>
                                     </div>
                                     <div
@@ -537,6 +536,24 @@ function ProductForm() {
                                     >
                                         <div className={`relative flex items-center h-6 w-11 rounded-full transition-all duration-300 ${watch("is_returnable") !== false ? "bg-[#007FFF]" : "bg-zinc-300"}`}>
                                             <span className={`absolute h-5 w-5 rounded-full bg-white shadow-sm transform transition-all duration-300 ${watch("is_returnable") !== false ? "translate-x-5" : "translate-x-0.5"}`} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Product Status */}
+                                <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200/80">
+                                    <div>
+                                        <span className="text-xs font-bold text-gray-800 block">Product Status</span>
+                                        <span className="text-[11px] text-gray-500">
+                                            {watch("status") !== false ? "Active" : "Disabled"}
+                                        </span>
+                                    </div>
+                                    <div
+                                        className="cursor-pointer select-none"
+                                        onClick={() => setValue("status", !watch("status"))}
+                                    >
+                                        <div className={`relative flex items-center h-6 w-11 rounded-full transition-all duration-300 ${watch("status") !== false ? "bg-[#007FFF]" : "bg-zinc-300"}`}>
+                                            <span className={`absolute h-5 w-5 rounded-full bg-white shadow-sm transform transition-all duration-300 ${watch("status") !== false ? "translate-x-5" : "translate-x-0.5"}`} />
                                         </div>
                                     </div>
                                 </div>
@@ -558,11 +575,11 @@ function ProductForm() {
                                         placeholder="7"
                                         className="w-24 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs text-gray-900 font-semibold focus:border-[#007FFF] focus:ring-1 focus:ring-blue-100"
                                     />
-                                    <span className="text-xs text-gray-500">days allowed for return after courier delivery</span>
+                                    <span className="text-xs text-gray-500">days after courier delivery</span>
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2 pt-1 text-xs text-amber-700 bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-200">
-                                    <span>⚠️ Customer will see <strong>Non-Returnable</strong> on product page and checkout.</span>
+                                    <span>⚠️ Non-Returnable: Customer cannot return this product after purchase.</span>
                                 </div>
                             )}
                         </div>
@@ -823,24 +840,6 @@ function ProductForm() {
                                         />
                                     ))}
                             </div>
-                        </div>
-                    </div>
-                    {/* Status Toggle */}
-                    <div
-                        className="flex items-center gap-3 cursor-pointer select-none"
-                        onClick={() => setValue("status", !watch("status"))}
-                    >
-                        <span className="block text-base font-semibold text-black">
-                            Status
-                        </span>
-                        <div
-                            className={`flex items-center h-6 w-12 rounded-full transition-all duration-300 ${watch("status") ? "bg-green-500" : "bg-red-500"
-                                }`}
-                        >
-                            <span
-                                className={`h-6 w-6 rounded-full bg-white shadow-md transform transition-all duration-300 ${watch("status") ? "translate-x-6" : "translate-x-0"
-                                    }`}
-                            />
                         </div>
                     </div>
                 </div>

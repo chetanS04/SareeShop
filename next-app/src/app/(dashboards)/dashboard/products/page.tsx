@@ -370,11 +370,11 @@ function ProductsContent() {
         const catId = product.category_id ?? product.categoryId ?? getCategorySlug({ id: product.category_id, name: product.category?.name, slug: product.category?.slug });
         const attrCount = product.item_attributes?.length ?? product.itemAttributes?.length ?? 0;
         if (attrCount === 1) {
-            router.push(`/dashboard/categories/${catId}/products/add-single-attribute-product`);
+            router.push(`/dashboard/categories/${catId}/products/add-single-attribute-product?productId=${product.id}`);
         } else if (attrCount === 0 && (!product.variants || product.variants.length <= 1)) {
-            router.push(`/dashboard/categories/${catId}/products/add-single-variant`);
+            router.push(`/dashboard/categories/${catId}/products/add-single-variant?productId=${product.id}`);
         } else {
-            router.push(`/dashboard/categories/${catId}/products/add-multi-variant`);
+            router.push(`/dashboard/categories/${catId}/products/add-multi-variant?productId=${product.id}`);
         }
     };
 
