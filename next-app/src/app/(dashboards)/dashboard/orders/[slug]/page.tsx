@@ -21,7 +21,7 @@ import {
     Check
 } from "lucide-react";
 import imgPlaceholder from "@/public/imagePlaceholder.png";
-import { getAdminOrder, updateOrderStatus, formatCurrency, downloadOrderInvoice } from "../../../../../../utils/orderApi";
+import { getAdminOrder, updateOrderStatus, formatCurrency, downloadOrderInvoice, markOrderCompleted } from "../../../../../../utils/orderApi";
 import { generateInvoicePDF } from "@/utils/generateInvoicePDF";
 import ErrorMessage from "@/components/(sheared)/ErrorMessage";
 import SuccessMessage from "@/components/(sheared)/SuccessMessage";
@@ -114,6 +114,42 @@ export default function AdminOrderDetailPage() {
         } finally {
             setDownloadingInvoice(false);
         }
+    };
+
+    const handleMarkOrderCompleted = () => {
+        if (!order) return;
+        const currentOrderNum = order.orderNumber || order.order_number || `ORD-${order.id}`;
+        setConfirmModal({
+            isOpen: true,
+            title: "Mark Order as Completed",
+            badge: "Manual Delivery Confirmation",
+            variant: "success",
+            confirmText: "Mark as Completed",
+            message: (
+                <div className="space-y-2 text-sm text-gray-600">
+                    <p>Are you sure you want to mark order <strong>#{currentOrderNum}</strong> as <strong>Completed (Delivered)</strong>?</p>
+                    <p className="text-xs text-gray-500">This will update the order status to Completed, record the delivery timestamp, and automatically mark COD payment as Paid.</p>
+                </div>
+            ),
+            onConfirm: async () => {
+                setUpdatingStatus(true);
+                try {
+                    const res = await markOrderCompleted(order.id);
+                    if (res && (res.success || res.order || res.data)) {
+                        setSuccessMessage("Order marked as completed and delivered successfully!");
+                        fetchOrderDetails();
+                    } else {
+                        setErrorMessage(res?.message || "Failed to mark order as completed");
+                    }
+                } catch (err: any) {
+                    console.error("Error marking order completed:", err);
+                    setErrorMessage(err.response?.data?.message || err.message || "Failed to mark order as completed");
+                } finally {
+                    setUpdatingStatus(false);
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                }
+            }
+        });
     };
 
     const getStatusIcon = (status: string) => {
@@ -289,6 +325,17 @@ export default function AdminOrderDetailPage() {
                                 </>
                             )}
                         </button>
+
+                        {order.status !== 'completed' && order.status !== 'cancelled' && (
+                            <button
+                                onClick={handleMarkOrderCompleted}
+                                disabled={updatingStatus}
+                                className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-semibold text-xs md:text-sm rounded-lg transition-all flex items-center gap-2 shadow-sm hover:shadow-md disabled:opacity-50 cursor-pointer"
+                            >
+                                <CheckCircle className="w-4 h-4" />
+                                <span>Mark as Completed</span>
+                            </button>
+                        )}
 
                         <div className={`px-4 py-2 rounded-xl border flex items-center gap-2 text-sm font-semibold capitalize ${getStatusColor(order.status)}`}>
                             {getStatusIcon(order.status)}

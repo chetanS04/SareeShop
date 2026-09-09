@@ -9,7 +9,8 @@ import Modal from "@/components/(sheared)/Modal";
 import CreateShipmentModal from "@/components/CreateShipmentModal";
 import BulkCreateShipmentModal from "@/components/BulkCreateShipmentModal";
 import ActionDropdownMenu from "@/components/(sheared)/ActionDropdownMenu";
-import { getCompletedOrders, getCancelledOrders, downloadOrderInvoice, bulkAcceptOrders, bulkCancelOrders } from "../../../../../utils/orderApi";
+import ConfirmModal from "@/components/(sheared)/ConfirmModal";
+import { getCompletedOrders, getCancelledOrders, downloadOrderInvoice, bulkAcceptOrders, bulkCancelOrders, markOrderCompleted, bulkCompleteOrders } from "../../../../../utils/orderApi";
 import { generateInvoicePDF } from "@/utils/generateInvoicePDF";
 import { useLoader } from "@/context/LoaderContext";
 import { getOrderSlug, getUserSlug } from "../../../../../utils/slugUtils";
@@ -151,10 +152,29 @@ function OrdersContent() {
     // Bulk Management State
     const [selectedOrderIds, setSelectedOrderIds] = useState<number[]>([]);
     const [showBulkAcceptModal, setShowBulkAcceptModal] = useState(false);
+    const [showBulkCompleteModal, setShowBulkCompleteModal] = useState(false);
     const [showBulkCancelModal, setShowBulkCancelModal] = useState(false);
     const [showBulkShipmentModal, setShowBulkShipmentModal] = useState(false);
     const [bulkCancelReason, setBulkCancelReason] = useState('');
     const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+
+    // Confirm Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string | React.ReactNode;
+        confirmText: string;
+        variant: 'danger' | 'warning' | 'info' | 'success';
+        badge?: string;
+        onConfirm: () => Promise<void>;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        confirmText: 'Confirm',
+        variant: 'success',
+        onConfirm: async () => { },
+    });
 
     const [showCreateShipment, setShowCreateShipment] = useState(false);
     const [shipmentOrderId, setShipmentOrderId] = useState<number | null>(null);
@@ -481,6 +501,39 @@ function OrdersContent() {
         }
     };
 
+    const handleMarkCompleted = (orderId: number, orderNumber?: string) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Mark Order as Completed",
+            badge: "Manual Delivery Confirmation",
+            variant: "success",
+            confirmText: "Mark as Completed",
+            message: (
+                <div className="space-y-2 text-sm text-gray-600">
+                    <p>Are you sure you want to mark order <strong>{orderNumber ? `#${orderNumber}` : `ID #${orderId}`}</strong> as <strong>Completed (Delivered)</strong>?</p>
+                    <p className="text-xs text-gray-500">This will update the order status to Completed, record the delivery timestamp, and automatically mark COD payment as Paid.</p>
+                </div>
+            ),
+            onConfirm: async () => {
+                showLoader();
+                try {
+                    const res = await markOrderCompleted(orderId);
+                    if (res.success) {
+                        showToastMessage("Order marked as completed successfully!", "success");
+                        refreshCurrentTab();
+                        fetchOrderStats();
+                    }
+                } catch (err: any) {
+                    console.error("Error marking order completed:", err);
+                    showToastMessage(err.response?.data?.message || "Failed to mark order as completed", "error");
+                } finally {
+                    hideLoader();
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                }
+            }
+        });
+    };
+
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'pending':
@@ -603,6 +656,11 @@ function OrdersContent() {
     const alreadyAcceptedForAccept = selectedOrdersList.filter(o => o.status === 'confirmed');
     const skippedForAccept = selectedOrdersList.filter(o => o.status !== 'pending');
 
+    // Smart Status Classification for Complete (Mark Delivered)
+    const eligibleForComplete = selectedOrdersList.filter(o => !['completed', 'cancelled'].includes(o.status));
+    const alreadyCompletedForComplete = selectedOrdersList.filter(o => o.status === 'completed');
+    const skippedForComplete = selectedOrdersList.filter(o => ['completed', 'cancelled'].includes(o.status));
+
     // Smart Status Classification for Cancel
     const eligibleForCancel = selectedOrdersList.filter(o => ['pending', 'confirmed', 'processing'].includes(o.status));
     const alreadyCancelledForCancel = selectedOrdersList.filter(o => o.status === 'cancelled');
@@ -641,6 +699,15 @@ function OrdersContent() {
         setShowBulkAcceptModal(true);
     };
 
+    const handleOpenBulkCompleteModal = () => {
+        if (selectedOrderIds.length === 0) return;
+        if (eligibleForComplete.length === 0) {
+            showToastMessage('No selected orders can be marked as completed. The selected orders are already completed or cancelled.', 'error');
+            return;
+        }
+        setShowBulkCompleteModal(true);
+    };
+
     const handleOpenBulkCancelModal = () => {
         if (selectedOrderIds.length === 0) return;
         if (eligibleForCancel.length === 0) {
@@ -648,6 +715,47 @@ function OrdersContent() {
             return;
         }
         setShowBulkCancelModal(true);
+    };
+
+    const handleBulkComplete = async () => {
+        const eligibleIds = eligibleForComplete.map(o => o.id);
+        if (eligibleIds.length === 0) {
+            showToastMessage('No selected orders can be marked as completed. The selected orders are already completed or cancelled.', 'error');
+            setShowBulkCompleteModal(false);
+            return;
+        }
+
+        setIsBulkProcessing(true);
+        showLoader();
+        try {
+            const res = await bulkCompleteOrders(eligibleIds);
+            if (res.success) {
+                const totalCompleted = res.completedCount ?? res.processedCount ?? 0;
+                const clientSkipped = skippedForComplete.length;
+                const totalSkipped = (res.skippedCount ?? 0) + clientSkipped;
+
+                let feedbackMsg = '';
+                if (totalCompleted > 0 && totalSkipped > 0) {
+                    feedbackMsg = `${totalCompleted} order(s) marked as completed successfully. ${totalSkipped} order(s) were skipped because they were already completed or cancelled.`;
+                } else if (totalCompleted > 0) {
+                    feedbackMsg = `${totalCompleted} order(s) marked as completed successfully.`;
+                } else {
+                    feedbackMsg = res.message || 'No orders could be completed.';
+                }
+
+                showToastMessage(feedbackMsg, totalCompleted > 0 ? 'success' : 'error');
+                setSelectedOrderIds([]);
+                setShowBulkCompleteModal(false);
+                refreshCurrentTab();
+                fetchOrderStats();
+            }
+        } catch (err: any) {
+            console.error('Error bulk completing orders:', err);
+            showToastMessage(err.response?.data?.message || 'Failed to complete selected orders', 'error');
+        } finally {
+            setIsBulkProcessing(false);
+            hideLoader();
+        }
     };
 
     const handleBulkAccept = async () => {
@@ -1045,6 +1153,18 @@ function OrdersContent() {
                             <span>Create Shipments ({eligibleForShipment.length})</span>
                         </button>
                         <button
+                            onClick={handleOpenBulkCompleteModal}
+                            disabled={isBulkProcessing || eligibleForComplete.length === 0}
+                            className={`px-3.5 py-2 text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer ${eligibleForComplete.length > 0
+                                ? 'bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white'
+                                : 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                                }`}
+                            title={eligibleForComplete.length > 0 ? `${eligibleForComplete.length} eligible to mark completed` : 'No selected orders eligible to mark completed'}
+                        >
+                            <CheckCircle className="w-4 h-4" />
+                            <span>Mark Completed ({eligibleForComplete.length})</span>
+                        </button>
+                        <button
                             onClick={handleOpenBulkCancelModal}
                             disabled={isBulkProcessing || eligibleForCancel.length === 0}
                             className={`px-3.5 py-2 text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer ${eligibleForCancel.length > 0
@@ -1276,6 +1396,14 @@ function OrdersContent() {
                                                         variant: 'success',
                                                         hidden: activeTab !== 'all' || order.status !== 'pending',
                                                         onClick: () => handleConfirmOrder(order.id),
+                                                    },
+                                                    {
+                                                        key: 'complete',
+                                                        label: 'Mark as Completed',
+                                                        icon: CheckCircle,
+                                                        variant: 'success',
+                                                        hidden: activeTab !== 'all' || ['completed', 'cancelled'].includes(order.status),
+                                                        onClick: () => handleMarkCompleted(order.id, orderNum),
                                                     },
                                                     {
                                                         key: 'reject',
@@ -1522,6 +1650,15 @@ function OrdersContent() {
                                                 >
                                                     <CheckCircle className="w-4 h-4" />
                                                     Confirm Order
+                                                </button>
+                                            )}
+                                            {order.status !== 'completed' && order.status !== 'cancelled' && (
+                                                <button
+                                                    onClick={() => handleMarkCompleted(order.id, orderNum)}
+                                                    className="w-full py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center gap-2 transition font-medium text-sm cursor-pointer"
+                                                >
+                                                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                                                    Mark as Completed
                                                 </button>
                                             )}
                                             {!order.delhivery_waybill && ['confirmed', 'processing'].includes(order.status) && (
@@ -1833,6 +1970,122 @@ function OrdersContent() {
                 </div>
             </Modal>
 
+            {/* Bulk Complete Modal */}
+            <Modal
+                isOpen={showBulkCompleteModal}
+                title="Bulk Complete Orders"
+                onClose={() => {
+                    if (!isBulkProcessing) setShowBulkCompleteModal(false);
+                }}
+            >
+                <div className="p-6">
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+                        <CheckCircle className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 text-center mb-1">
+                        Mark Selected Orders as Completed?
+                    </h3>
+                    <p className="text-xs text-gray-500 text-center mb-4">
+                        This action will mark all eligible selected orders as delivered and completed. Any Cash on Delivery (COD) payment status will be updated to Paid automatically.
+                    </p>
+
+                    {/* Summary stats pill cards */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-center">
+                            <span className="text-xs text-gray-500 block">Selected</span>
+                            <span className="text-base font-bold text-gray-800">{selectedOrderIds.length}</span>
+                        </div>
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-center">
+                            <span className="text-xs text-emerald-700 font-semibold block">To Complete</span>
+                            <span className="text-base font-bold text-emerald-700">{eligibleForComplete.length}</span>
+                        </div>
+                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-2.5 text-center">
+                            <span className="text-xs text-gray-600 block">Already Completed</span>
+                            <span className="text-base font-bold text-gray-700">{alreadyCompletedForComplete.length}</span>
+                        </div>
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-center">
+                            <span className="text-xs text-amber-700 block">To Be Skipped</span>
+                            <span className="text-base font-bold text-amber-700">{skippedForComplete.length}</span>
+                        </div>
+                    </div>
+
+                    {/* Informative text */}
+                    <div className="bg-emerald-50/80 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-950 mb-4">
+                        <p className="font-semibold mb-1">
+                            {eligibleForComplete.length} order{eligibleForComplete.length === 1 ? '' : 's'} will be marked as Completed (Delivered).
+                            {skippedForComplete.length > 0 && ` ${skippedForComplete.length} already completed/cancelled order${skippedForComplete.length === 1 ? '' : 's'} will be skipped.`}
+                        </p>
+                        <p className="text-emerald-800">
+                            Delivery timestamps will be recorded, tracking status updated, and in-app notifications sent to customers.
+                        </p>
+                    </div>
+
+                    {/* Eligible orders list */}
+                    {eligibleForComplete.length > 0 && (
+                        <div className="mb-4">
+                            <p className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                                Orders to be Completed ({eligibleForComplete.length}):
+                            </p>
+                            <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                                {eligibleForComplete.map(o => (
+                                    <span key={o.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                        <CheckCircle className="w-3 h-3 text-emerald-600" />
+                                        <span>{o.order_number || (o as any).orderNumber || `ORD-${o.id}`}</span>
+                                        <span className="text-[10px] opacity-75 capitalize">({o.status})</span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Skipped orders list */}
+                    {skippedForComplete.length > 0 && (
+                        <div className="mb-4">
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                                Orders to be Skipped ({skippedForComplete.length}):
+                            </p>
+                            <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                                {skippedForComplete.map(o => (
+                                    <span key={o.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono bg-white text-gray-600 border border-gray-300">
+                                        <span>{o.order_number || (o as any).orderNumber || `ORD-${o.id}`}</span>
+                                        <span className="text-[10px] text-gray-400 capitalize">({o.status})</span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
+                        <button
+                            type="button"
+                            onClick={() => setShowBulkCompleteModal(false)}
+                            disabled={isBulkProcessing}
+                            className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition disabled:opacity-50 cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleBulkComplete}
+                            disabled={isBulkProcessing || eligibleForComplete.length === 0}
+                            className="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg shadow-sm flex items-center gap-2 transition disabled:opacity-50 cursor-pointer"
+                        >
+                            {isBulkProcessing ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <span>Completing...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span>Complete {eligibleForComplete.length} Order{eligibleForComplete.length === 1 ? '' : 's'}</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
             {/* Single Create Delhivery Shipment Modal */}
             {shipmentOrderId && (
                 <CreateShipmentModal
@@ -1863,6 +2116,18 @@ function OrdersContent() {
                     setSelectedOrderIds([]);
                     showToastMessage('Bulk shipment creation completed successfully!', 'success');
                 }}
+            />
+
+            {/* Single Order Confirmation Modal */}
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                variant={confirmModal.variant}
+                badge={confirmModal.badge}
+                onConfirm={confirmModal.onConfirm}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
             />
 
             {/* Toast Notification */}

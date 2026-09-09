@@ -141,9 +141,21 @@ export class OrdersController {
   }
 
   @UseGuards(JwtAuthGuard, AdminGuard)
+  @Patch('admin/orders/:id/complete')
+  adminMarkOrderCompleted(@Param('id') id: string, @Body() b: any): Promise<any> {
+    return this.svc.adminMarkOrderCompleted(id, b);
+  }
+
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Post('admin/orders/bulk-accept')
   adminBulkAccept(@Body() b: { orderIds: number[] }): Promise<any> {
     return this.svc.bulkAcceptOrders(b);
+  }
+
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Post('admin/orders/bulk-complete')
+  adminBulkComplete(@Body() b: { orderIds: number[] }): Promise<any> {
+    return this.svc.bulkCompleteOrders(b);
   }
 
   @UseGuards(JwtAuthGuard, AdminGuard)

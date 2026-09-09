@@ -920,15 +920,19 @@ export class OrdersService implements OnModuleInit {
     const order = await this._resolveAdminOrder(idOrNumber, true);
     const id = Number(order.id);
 
-    const allowedStatuses = ['confirmed', 'cancelled'];
+    const allowedStatuses = ['confirmed', 'cancelled', 'completed', 'delivered'];
     if (!allowedStatuses.includes(body.status)) {
       throw new BadRequestException(
-        'Admin can only Accept (Confirm) or Reject (Cancel) orders. Shipping, transit, and delivery statuses are automatically managed by Delhivery.'
+        'Admin can only Accept (Confirm), Reject (Cancel), or Complete orders. Shipping and transit statuses are automatically managed by Delhivery.'
       );
     }
 
     const previousStatus = order.status;
     const newStatus = body.status;
+
+    if (newStatus === 'completed' || newStatus === 'delivered') {
+      return this.adminMarkOrderCompleted(id, body);
+    }
 
     // Safeguard: Prevent confirming an unpaid online order
     if (newStatus === 'confirmed' && order.paymentMethod === 'online' && order.paymentStatus !== 'paid') {
@@ -1266,6 +1270,182 @@ export class OrdersService implements OnModuleInit {
       totalRequested: uniqueOrderIds.length,
       results,
       message: `${cancelledCount} order(s) cancelled successfully${skippedCount > 0 ? `, ${skippedCount} skipped` : ''}${failedCount > 0 ? `, ${failedCount} failed` : ''}.`,
+    };
+  }
+
+  // ─── Admin: Mark Order Completed (Delivered) ──────────────────────────────
+  async adminMarkOrderCompleted(idOrNumber: string | number, body: any = {}): Promise<any> {
+    const order = await this._resolveAdminOrder(idOrNumber, true);
+    const id = Number(order.id);
+
+    if (order.status === 'completed') {
+      const refRows = await this.db.select().from(orders).where(eq(orders.id, id)).limit(1);
+      const updatedSame = await this.populateSingleOrder(refRows[0]);
+      return { success: true, message: 'Order is already marked as completed', data: updatedSame };
+    }
+
+    if (order.status === 'cancelled') {
+      throw new BadRequestException('Cannot mark a cancelled order as completed.');
+    }
+
+    const now = new Date();
+    const updateData: any = {
+      status: 'completed',
+      deliveryConfirmedAt: now,
+    };
+
+    if (!order.deliveredAt) {
+      updateData.deliveredAt = now;
+    }
+
+    const isCod = ['cash_on_delivery', 'cod'].includes(String(order.paymentMethod || '').toLowerCase());
+    if (isCod) {
+      updateData.paymentStatus = 'paid';
+    }
+
+    if (!order.delhiveryStatus || order.delhiveryStatus.toLowerCase() !== 'delivered') {
+      updateData.delhiveryStatus = 'Delivered';
+      updateData.delhiveryStatusUpdatedAt = now;
+    }
+
+    await this.db.update(orders).set(updateData).where(eq(orders.id, id));
+
+    const trackingDesc = body.description || 'Order marked as Completed / Delivered manually by store administrator';
+    const trackingLocation = body.location || 'Delivered to Customer';
+    await this.addTracking(id, 'completed', trackingDesc, trackingLocation);
+
+    // In-app notification for customer
+    if (order.userId) {
+      const statusOrderSlug = getOrderSlug(order) || order.orderNumber || id;
+      this.notificationsService.createAndEmitNotification({
+        userId: order.userId,
+        recipientGroup: 'customer',
+        title: '📦 Order Delivered & Completed',
+        message: `Your order #${order.orderNumber} has been delivered and marked as completed.`,
+        type: 'ORDER_DELIVERED',
+        entityType: 'order',
+        entityId: id,
+        referenceKey: `ORDER_STATUS_${id}_COMPLETED_${Date.now()}`,
+        link: `/orders/${statusOrderSlug}`,
+        metadata: { orderId: id, orderNumber: order.orderNumber, status: 'completed' }
+      }).catch(err => this.logger.error('Failed to emit customer order completion notification:', err));
+    }
+
+    const updatedRows = await this.db.select().from(orders).where(eq(orders.id, id)).limit(1);
+    const updated = await this.populateSingleOrder(updatedRows[0]);
+
+    return { success: true, message: 'Order marked as completed and delivered successfully', data: updated };
+  }
+
+  // ─── Admin: Bulk Complete Orders ──────────────────────────────────────────
+  async bulkCompleteOrders(body: { orderIds: number[] }): Promise<any> {
+    const { orderIds } = body;
+    if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+      throw new BadRequestException('Please provide an array of order IDs to complete.');
+    }
+
+    const uniqueOrderIds = Array.from(new Set(orderIds.map(Number))).filter(id => !isNaN(id) && id > 0);
+    if (uniqueOrderIds.length === 0) {
+      throw new BadRequestException('No valid order IDs provided.');
+    }
+
+    const results: Array<{ orderId: number; orderNumber?: string; status: string; success: boolean; reason?: string; message: string }> = [];
+    let completedCount = 0;
+    let skippedCount = 0;
+    let failedCount = 0;
+
+    for (const id of uniqueOrderIds) {
+      try {
+        const rows = await this.db.select().from(orders).where(eq(orders.id, id)).limit(1);
+        if (rows.length === 0) {
+          failedCount++;
+          results.push({ orderId: id, status: 'failed', success: false, reason: 'Not found', message: 'Order not found' });
+          continue;
+        }
+
+        const order = await this.populateSingleOrder(rows[0]);
+        if (!order) {
+          failedCount++;
+          results.push({ orderId: id, status: 'failed', success: false, reason: 'Not found', message: 'Order not found' });
+          continue;
+        }
+
+        const orderNum = order.orderNumber || `ORD-${order.id}`;
+
+        if (order.status === 'completed') {
+          skippedCount++;
+          results.push({ orderId: id, orderNumber: orderNum, status: 'skipped', success: false, reason: 'Already completed', message: 'Order is already completed' });
+          continue;
+        }
+
+        if (order.status === 'cancelled') {
+          skippedCount++;
+          results.push({ orderId: id, orderNumber: orderNum, status: 'skipped', success: false, reason: 'Already cancelled', message: 'Cancelled order cannot be marked as completed' });
+          continue;
+        }
+
+        const now = new Date();
+        const updateData: any = {
+          status: 'completed',
+          deliveryConfirmedAt: now,
+        };
+
+        if (!order.deliveredAt) {
+          updateData.deliveredAt = now;
+        }
+
+        const isCod = ['cash_on_delivery', 'cod'].includes(String(order.paymentMethod || '').toLowerCase());
+        if (isCod) {
+          updateData.paymentStatus = 'paid';
+        }
+
+        if (!order.delhiveryStatus || order.delhiveryStatus.toLowerCase() !== 'delivered') {
+          updateData.delhiveryStatus = 'Delivered';
+          updateData.delhiveryStatusUpdatedAt = now;
+        }
+
+        await this.db.update(orders).set(updateData).where(eq(orders.id, id));
+
+        await this.addTracking(
+          id,
+          'completed',
+          'Order marked as Completed / Delivered manually by store administrator',
+          'Delivered to Customer',
+        );
+
+        if (order.userId) {
+          const bulkCompleteSlug = getOrderSlug(order) || orderNum;
+          this.notificationsService.createAndEmitNotification({
+            userId: order.userId,
+            recipientGroup: 'customer',
+            title: '📦 Order Delivered & Completed',
+            message: `Your order #${orderNum} has been delivered and marked as completed.`,
+            type: 'ORDER_DELIVERED',
+            entityType: 'order',
+            entityId: id,
+            referenceKey: `ORDER_STATUS_${id}_COMPLETED_${Date.now()}`,
+            link: `/orders/${bulkCompleteSlug}`,
+            metadata: { orderId: id, orderNumber: orderNum, status: 'completed' }
+          }).catch(err => this.logger.error('Failed to emit customer order notification:', err));
+        }
+
+        completedCount++;
+        results.push({ orderId: id, orderNumber: orderNum, status: 'completed', success: true, message: 'Order completed successfully' });
+      } catch (err: any) {
+        failedCount++;
+        results.push({ orderId: id, status: 'failed', success: false, reason: err.message, message: err.message || 'Failed to complete order' });
+      }
+    }
+
+    return {
+      success: true,
+      processedCount: completedCount,
+      completedCount,
+      skippedCount,
+      failedCount,
+      totalRequested: uniqueOrderIds.length,
+      results,
+      message: `${completedCount} order(s) marked as completed successfully${skippedCount > 0 ? `, ${skippedCount} skipped` : ''}${failedCount > 0 ? `, ${failedCount} failed` : ''}.`,
     };
   }
 

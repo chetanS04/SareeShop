@@ -260,6 +260,19 @@ export const updateOrderStatus = async (orderId: number | string, statusData: {
   }
 };
 
+export const markOrderCompleted = async (orderId: number | string, data?: {
+  description?: string;
+  location?: string;
+}) => {
+  try {
+    const response = await axios.patch(`/api/admin/orders/${orderId}/complete`, data || {});
+    return normalizeOrdersApiResponse(response.data);
+  } catch (error) {
+    console.error('Error marking order completed:', error);
+    throw error;
+  }
+};
+
 export const getOrderStats = async () => {
   try {
     const response = await axios.get(`/api/admin/orders/stats`);
@@ -492,6 +505,11 @@ export const downloadOrderInvoice = async (orderId: number | string, isAdmin: bo
 
 export const bulkAcceptOrders = async (orderIds: number[]): Promise<any> => {
   const response = await axios.post('/api/admin/orders/bulk-accept', { orderIds });
+  return response.data;
+};
+
+export const bulkCompleteOrders = async (orderIds: number[]): Promise<any> => {
+  const response = await axios.post('/api/admin/orders/bulk-complete', { orderIds });
   return response.data;
 };
 
