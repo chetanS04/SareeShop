@@ -173,8 +173,12 @@ export default function OrderDetailPage() {
   const isDelivered =
     ["delivered", "completed"].includes((order.status || "").toLowerCase()) ||
     (order.delhivery_status || "").toLowerCase().includes("delivered");
+  const existingReturns = (order.returnRequests && order.returnRequests.length > 0)
+    ? order.returnRequests
+    : (order.returns && order.returns.length > 0)
+      ? order.returns
+      : (eligibility?.existingReturns || []);
   const hasEligibleItems = eligibility?.items && eligibility.items.length > 0;
-  const existingReturns = order.returnRequests || order.returns || [];
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -207,8 +211,16 @@ export default function OrderDetailPage() {
               <span>Track Delivery</span>
             </Link>
 
-            {/* Request Return / Exchange Button */}
-            {isDelivered && hasEligibleItems && (
+            {/* Return / Exchange Button OR View Return Request Button */}
+            {existingReturns.length > 0 ? (
+              <Link
+                href={`/orders/${order.slug || order.order_number || order.id}/returns/${existingReturns[0].returnNumber || existingReturns[0].return_number || existingReturns[0].id}`}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs md:text-sm rounded-lg transition-all flex items-center gap-1.5 shadow-sm hover:shadow-md"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>View Return Request</span>
+              </Link>
+            ) : isDelivered && hasEligibleItems ? (
               <button
                 onClick={() => setShowReturnModal(true)}
                 className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs md:text-sm rounded-lg transition-all flex items-center gap-1.5 shadow-sm hover:shadow-md"
@@ -216,7 +228,7 @@ export default function OrderDetailPage() {
                 <RotateCcw className="w-4 h-4" />
                 <span>Return / Exchange</span>
               </button>
-            )}
+            ) : null}
 
             <button
               onClick={handleDownloadInvoice}
@@ -318,7 +330,15 @@ export default function OrderDetailPage() {
               <h3 className="text-lg font-semibold text-gray-900">
                 Order Items ({(order.order_items || order.orderItems || []).length})
               </h3>
-              {isDelivered && hasEligibleItems && (
+              {existingReturns.length > 0 ? (
+                <Link
+                  href={`/orders/${order.slug || order.order_number || order.id}/returns/${existingReturns[0].returnNumber || existingReturns[0].return_number || existingReturns[0].id}`}
+                  className="text-xs font-bold text-purple-700 hover:text-purple-800 flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg border border-purple-200 transition-colors"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-purple-600" />
+                  <span>View Return Request (#{existingReturns[0].returnNumber || existingReturns[0].return_number})</span>
+                </Link>
+              ) : isDelivered && hasEligibleItems ? (
                 <button
                   onClick={() => setShowReturnModal(true)}
                   className="text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1"
@@ -326,7 +346,7 @@ export default function OrderDetailPage() {
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Return or Exchange Items</span>
                 </button>
-              )}
+              ) : null}
             </div>
 
             <div className="space-y-6">

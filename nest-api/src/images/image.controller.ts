@@ -9,11 +9,11 @@ import {
   Headers,
   UseGuards,
   UseInterceptors,
-  UploadedFile,
   UploadedFiles,
   HttpCode,
+  BadRequestException,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join, resolve } from 'path';
 import * as path from 'path';
@@ -51,17 +51,22 @@ export class ImageController {
 
   @Post('upload')
   @UseInterceptors(
-    FileInterceptor('image', {
+    AnyFilesInterceptor({
       storage: tempStorage,
       limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
   async upload(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
     @Body() body: any,
     @Query('directory') queryDir?: string,
     @Headers('x-directory') headerDir?: string,
   ): Promise<any> {
+    const file = files && files.length > 0 ? files[0] : null;
+    if (!file) {
+      throw new BadRequestException('No image file provided');
+    }
+
     const directory = body?.directory || queryDir || headerDir || 'products';
     const targetDir = join(getStorageBaseDir(), directory);
 
@@ -71,8 +76,8 @@ export class ImageController {
 
     let nextNum = 1;
     if (existsSync(targetDir)) {
-      const files = readdirSync(targetDir);
-      const nums = files
+      const existingFiles = readdirSync(targetDir);
+      const nums = existingFiles
         .map((f: string) => parseInt(f.split('.')[0], 10))
         .filter((n: number) => !isNaN(n));
       if (nums.length > 0) nextNum = Math.max(...nums) + 1;
@@ -86,14 +91,17 @@ export class ImageController {
     const url = `/storage/${directory}/${finalFilename}`;
     return {
       isSuccess: true,
+      success: true,
       result: url,
+      url,
+      filename: finalFilename,
       message: 'Image uploaded successfully.',
     };
   }
 
   @Post('upload/:directory')
   @UseInterceptors(
-    FileInterceptor('file', {
+    AnyFilesInterceptor({
       storage: diskStorage({
         destination: (req, file, cb) => {
           const dirParam = Array.isArray(req.params.directory) ? req.params.directory[0] : (req.params.directory ?? 'general');
@@ -109,14 +117,25 @@ export class ImageController {
       limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
-  uploadToDir(@UploadedFile() file: Express.Multer.File, @Param('directory') directory: string): Promise<any> {
+  uploadToDir(@UploadedFiles() files: Express.Multer.File[], @Param('directory') directory: string): Promise<any> {
+    const file = files && files.length > 0 ? files[0] : null;
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
     const url = `/storage/${directory}/${file.filename}`;
-    return Promise.resolve({ success: true, message: 'File uploaded successfully', url, filename: file.filename });
+    return Promise.resolve({
+      success: true,
+      isSuccess: true,
+      message: 'File uploaded successfully',
+      url,
+      result: url,
+      filename: file.filename,
+    });
   }
 
   @Post('upload-multiple')
   @UseInterceptors(
-    FilesInterceptor('images', 5, {
+    AnyFilesInterceptor({
       storage: diskStorage({
         destination: (req, file, cb) => {
           const dir = join(getStorageBaseDir(), (req.query.directory as string) ?? 'general');
@@ -128,13 +147,19 @@ export class ImageController {
           cb(null, `${unique}${extname(file.originalname)}`);
         },
       }),
-      limits: { fileSize: 5 * 1024 * 1024 },
+      limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
   uploadMultiple(@UploadedFiles() files: Express.Multer.File[], @Body() body: any): Promise<any> {
-    const directory = body.directory ?? 'general';
-    const urls = files.map(f => `/storage/${directory}/${f.filename}`);
-    return Promise.resolve({ success: true, message: `${files.length} files uploaded`, urls });
+    const directory = body?.directory ?? 'general';
+    const urls = (files || []).map(f => `/storage/${directory}/${f.filename}`);
+    return Promise.resolve({
+      success: true,
+      isSuccess: true,
+      message: `${urls.length} files uploaded`,
+      urls,
+      result: urls,
+    });
   }
 
   @UseGuards(JwtAuthGuard, AdminGuard)

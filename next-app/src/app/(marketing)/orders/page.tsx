@@ -11,6 +11,7 @@ import {
     ArrowLeft,
     ChevronRight,
     ShoppingBag,
+    RotateCcw,
 } from "lucide-react";
 import imgPlaceholder from "@/public/imagePlaceholder.png";
 import { getOrders, cancelOrder, downloadOrderInvoice } from "../../../../utils/orderApi";
@@ -337,6 +338,10 @@ const OrdersPage = () => {
                                 : parseFloat(order.total || 0).toLocaleString("en-IN");
                             const statusBadge = getStatusBadge(order.status);
 
+                            const retRequests: any[] = order.returnRequests || order.returns || [];
+                            const hasActiveReturn = retRequests.length > 0;
+                            const firstReturn = retRequests[0];
+
                             return (
                                 <div
                                     key={order.id}
@@ -374,7 +379,15 @@ const OrdersPage = () => {
 
                                     {/* Order Number Identifier Sub-Bar */}
                                     <div className="px-4 py-2 bg-gray-50/40 border-b border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
-                                        <span className="font-mono text-gray-400 font-medium">Order ID: #{orderNum}</span>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="font-mono text-gray-400 font-medium">Order ID: #{orderNum}</span>
+                                            {hasActiveReturn && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                                    <RotateCcw className="w-2.5 h-2.5" />
+                                                    <span>Return: {(firstReturn.status || "Requested").replace(/_/g, " ").toUpperCase()}</span>
+                                                </span>
+                                            )}
+                                        </div>
                                         <span className="font-medium text-gray-600">{orderItemsList.length} item{orderItemsList.length > 1 ? "s" : ""}</span>
                                     </div>
 
@@ -442,7 +455,7 @@ const OrdersPage = () => {
 
                                     {/* 3. Action Buttons Footer */}
                                     <div className="px-4 py-3 bg-[#FBFBFB] border-t border-gray-100 flex flex-wrap items-center justify-between gap-2.5">
-                                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                                        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
                                             <button
                                                 onClick={() => router.push(`/orders/${getOrderSlug(order)}`)}
                                                 className="flex-1 sm:flex-none px-4 py-2 bg-[#007FFF] hover:bg-[#0066CC] text-white text-xs font-bold rounded-xl transition shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
@@ -458,6 +471,17 @@ const OrdersPage = () => {
                                                 <Truck className="w-3.5 h-3.5 text-gray-600" />
                                                 <span>Track</span>
                                             </button>
+
+                                            {hasActiveReturn && (
+                                                <button
+                                                    onClick={() => router.push(`/orders/${getOrderSlug(order)}/returns/${firstReturn.returnNumber || firstReturn.return_number || firstReturn.id}`)}
+                                                    className="flex-1 sm:flex-none px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold rounded-xl transition shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                                                    title="View Return / Exchange Request"
+                                                >
+                                                    <RotateCcw className="w-3.5 h-3.5 text-purple-600" />
+                                                    <span>Return Request</span>
+                                                </button>
+                                            )}
                                         </div>
 
                                         <button

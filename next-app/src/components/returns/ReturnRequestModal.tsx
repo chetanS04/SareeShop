@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { returnApi } from "../../../utils/returnApi";
 import { uploadImage } from "../../../utils/fileApi";
+import { getImageUrl } from "../../../utils/imageUtils";
 import imgPlaceholder from "@/public/imagePlaceholder.png";
 
 const basePath = process.env.NEXT_PUBLIC_UPLOAD_BASE || "https://api.zelton.co.in";
@@ -90,14 +91,64 @@ export default function ReturnRequestModal({
   const [images, setImages] = useState<string[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // Pickup address
-  const [pickupAddress, setPickupAddress] = useState({
-    name: order.shipping_address?.name || order.user?.name || "Customer",
-    phone: String(order.shipping_address?.phone || order.user?.phone_number || ""),
-    address: order.shipping_address?.address || order.shipping_address?.street || String(order.shipping_address || ""),
-    city: order.shipping_address?.city || "",
-    state: order.shipping_address?.state || "",
-    pincode: order.shipping_address?.pin || order.shipping_address?.pincode || "",
+  // Pickup address initialized with proper JSON string / object parser
+  const [pickupAddress, setPickupAddress] = useState(() => {
+    const rawAddr = order.shipping_address || order.shippingAddress || order.address;
+    let parsed: any = null;
+
+    if (rawAddr) {
+      if (typeof rawAddr === "object") {
+        parsed = rawAddr;
+      } else if (typeof rawAddr === "string") {
+        const trimmed = rawAddr.trim();
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+          try {
+            parsed = JSON.parse(trimmed);
+          } catch (e) {
+            parsed = null;
+          }
+        }
+      }
+    }
+
+    return {
+      name:
+        parsed?.name ||
+        order.user?.name ||
+        order.customer_name ||
+        order.shipping_name ||
+        "Customer",
+      phone: String(
+        parsed?.phone ||
+        parsed?.mobile ||
+        order.user?.phone_number ||
+        order.user?.phone ||
+        order.shipping_phone ||
+        ""
+      ),
+      address:
+        parsed?.add ||
+        parsed?.address ||
+        parsed?.street ||
+        parsed?.street_address ||
+        (typeof rawAddr === "string" && !rawAddr.trim().startsWith("{") ? rawAddr : ""),
+      city:
+        parsed?.city ||
+        order.shipping_city ||
+        "",
+      state:
+        parsed?.state ||
+        order.shipping_state ||
+        "",
+      pincode: String(
+        parsed?.pin ||
+        parsed?.pincode ||
+        parsed?.zip ||
+        parsed?.postal_code ||
+        order.shipping_pincode ||
+        ""
+      ),
+    };
   });
 
   // Handle item toggle
@@ -128,28 +179,48 @@ export default function ReturnRequestModal({
     }));
   };
 
-  // Image Upload handler
+  const MAX_PHOTOS = 5;
+
+  // Image Upload handler (max 5 photos)
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+
+    if (images.length >= MAX_PHOTOS) {
+      setErrorMsg(`You can upload a maximum of ${MAX_PHOTOS} photos.`);
+      e.target.value = "";
+      return;
+    }
+
+    const availableSlots = MAX_PHOTOS - images.length;
+    const filesToUpload = Array.from(fileList).slice(0, availableSlots);
+
+    if (fileList.length > availableSlots) {
+      setErrorMsg(`Only ${availableSlots} more photo(s) could be uploaded (maximum ${MAX_PHOTOS} photos allowed).`);
+    } else {
+      setErrorMsg(null);
+    }
 
     try {
       setUploadingImage(true);
-      setErrorMsg(null);
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (let i = 0; i < filesToUpload.length; i++) {
+        const file = filesToUpload[i];
         const formData = new FormData();
+        formData.append("image", file);
         formData.append("file", file);
-        const res = await uploadImage(formData);
-        if (res?.result) {
-          const imgUrl = res.result;
-          setImages((prev) => [...prev, imgUrl]);
+        formData.append("directory", "returns");
+        const res: any = await uploadImage(formData);
+        const imgUrl = res?.result || res?.url || res?.data?.url || (typeof res === "string" ? res : null);
+        if (imgUrl) {
+          setImages((prev) => (prev.length < MAX_PHOTOS ? [...prev, imgUrl] : prev));
         }
       }
     } catch (err: any) {
-      setErrorMsg("Failed to upload image. Please try again.");
+      console.error("Upload error:", err);
+      setErrorMsg(err?.response?.data?.message || "Failed to upload image. Please try again.");
     } finally {
       setUploadingImage(false);
+      e.target.value = "";
     }
   };
 
@@ -250,40 +321,46 @@ export default function ReturnRequestModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden my-8 border border-gray-100 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px] animate-fadeIn overflow-y-auto">
+      <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl shadow-slate-900/20 overflow-hidden my-8 border border-gray-100 flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
+        <div className="px-6 py-4.5 bg-white border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-[#ff9903] flex items-center justify-center border border-orange-500/30">
-              <RotateCcw className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-[#007FFF] flex items-center justify-center border border-blue-100 shadow-xs">
+              <RotateCcw className="w-5 h-5 text-[#007FFF]" />
             </div>
             <div>
-              <h2 className="text-lg font-bold">Request Return / Exchange</h2>
-              <p className="text-xs text-gray-400 font-mono">Order #{order.order_number}</p>
+              <h2 className="text-lg font-bold text-gray-900 tracking-tight">Request Return / Exchange</h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-xs text-gray-500 font-mono">Order #{order.order_number}</span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                  Step {step} of 4
+                </span>
+              </div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700 flex items-center justify-center transition-all cursor-pointer"
+            aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Stepper Indicator */}
-        <div className="px-6 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between text-xs">
+        <div className="px-6 py-3 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between text-xs gap-2">
           {[
             { num: 1, label: "Select Items" },
             { num: 2, label: "Type & Method" },
             { num: 3, label: "Reason & Photos" },
             { num: 4, label: "Pickup Address" },
           ].map((s) => (
-            <div key={s.num} className="flex items-center gap-2">
+            <div key={s.num} className="flex items-center gap-2 flex-shrink-0">
               <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[11px] transition-all ${
+                className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[11px] transition-all shadow-xs ${
                   step === s.num
-                    ? "bg-[#007FFF] text-white shadow-sm ring-2 ring-blue-200"
+                    ? "bg-[#007FFF] text-white ring-4 ring-blue-100"
                     : step > s.num
                     ? "bg-emerald-500 text-white"
                     : "bg-gray-200 text-gray-600"
@@ -291,7 +368,7 @@ export default function ReturnRequestModal({
               >
                 {step > s.num ? "✓" : s.num}
               </div>
-              <span className={`hidden sm:inline font-medium ${step === s.num ? "text-blue-600 font-bold" : "text-gray-500"}`}>
+              <span className={`text-xs ${step === s.num ? "text-blue-600 font-bold" : step > s.num ? "text-gray-700 font-medium" : "text-gray-400"}`}>
                 {s.label}
               </span>
             </div>
@@ -642,29 +719,42 @@ export default function ReturnRequestModal({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Upload Photos of the Product / Defect (Optional but speeds up approval)
-                </label>
-                <div className="flex flex-wrap items-center gap-3">
-                  <label className="flex flex-col items-center justify-center w-24 h-24 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#007FFF] bg-gray-50 hover:bg-blue-50/40 cursor-pointer transition-all">
-                    <Upload className="w-5 h-5 text-gray-400" />
-                    <span className="text-[10px] text-gray-500 font-semibold mt-1">
-                      {uploadingImage ? "Uploading..." : "Add Photo"}
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageUpload}
-                      disabled={uploadingImage}
-                      className="hidden"
-                    />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700">
+                    Upload Photos of the Product / Defect <span className="text-gray-400 font-normal">(Optional)</span>
                   </label>
+                  <span
+                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full transition-colors ${
+                      images.length >= MAX_PHOTOS
+                        ? "text-amber-700 bg-amber-50 border border-amber-200"
+                        : "text-gray-500 bg-gray-100"
+                    }`}
+                  >
+                    {images.length}/{MAX_PHOTOS} photos
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  {images.length < MAX_PHOTOS && (
+                    <label className="flex flex-col items-center justify-center w-24 h-24 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#007FFF] bg-gray-50 hover:bg-blue-50/40 cursor-pointer transition-all">
+                      <Upload className="w-5 h-5 text-gray-400" />
+                      <span className="text-[10px] text-gray-500 font-semibold mt-1">
+                        {uploadingImage ? "Uploading..." : "Add Photo"}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                        disabled={uploadingImage || images.length >= MAX_PHOTOS}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
 
                   {images.map((imgUrl, idx) => (
-                    <div key={idx} className="relative w-24 h-24 rounded-2xl border border-gray-200 overflow-hidden bg-gray-100">
+                    <div key={idx} className="relative w-24 h-24 rounded-2xl border border-gray-200 overflow-hidden bg-gray-100 shadow-sm">
                       <Image
-                        src={`${basePath}${imgUrl}`}
+                        src={getImageUrl(imgUrl) || `${basePath}${imgUrl}`}
                         alt={`Photo ${idx + 1}`}
                         fill
                         unoptimized
@@ -673,13 +763,19 @@ export default function ReturnRequestModal({
                       <button
                         type="button"
                         onClick={() => removeImage(idx)}
-                        className="absolute top-1 right-1 w-5 h-5 bg-black/70 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs transition-colors"
+                        className="absolute top-1 right-1 w-5 h-5 bg-black/70 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs transition-colors shadow-sm"
+                        title="Remove photo"
                       >
                         ×
                       </button>
                     </div>
                   ))}
                 </div>
+                {images.length >= MAX_PHOTOS && (
+                  <p className="text-[11px] text-amber-600 mt-2 font-medium">
+                    Maximum limit of {MAX_PHOTOS} photos reached. Remove a photo to upload a different one.
+                  </p>
+                )}
               </div>
             </div>
           )}
