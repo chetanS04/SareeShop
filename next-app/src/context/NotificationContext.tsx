@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { io, Socket } from "socket.io-client";
 import axios from "../../utils/axios";
 import { useAuth } from "./AuthContext";
+import GlobalNotificationToast from "@/components/(sheared)/GlobalNotificationToast";
 
 export interface AppNotification {
   id: number;
@@ -396,6 +397,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }}
     >
       {children}
+      <GlobalNotificationToast />
     </NotificationContext.Provider>
   );
 };

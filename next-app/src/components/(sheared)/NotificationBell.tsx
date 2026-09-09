@@ -13,8 +13,6 @@ export default function NotificationBell() {
   const {
     notifications,
     unreadCount,
-    activeToast,
-    clearActiveToast,
     markAsRead,
     markAllAsRead,
     deleteNotification,
@@ -43,16 +41,6 @@ export default function NotificationBell() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Auto-dismiss active toast after 6 seconds
-  useEffect(() => {
-    if (activeToast) {
-      const timer = setTimeout(() => {
-        clearActiveToast();
-      }, 6000);
-      return () => clearTimeout(timer);
-    }
-  }, [activeToast, clearActiveToast]);
 
   const filteredNotifications = notifications.filter((n) =>
     filter === "unread" ? !n.isRead : true
@@ -263,37 +251,6 @@ export default function NotificationBell() {
             >
               <Layers className="w-3.5 h-3.5" />
               View All Notifications
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Interactive Toast Popup Banner on Screen Bottom Right */}
-      {activeToast && (
-        <div className="fixed bottom-5 right-5 z-[99999] max-w-sm w-full bg-white border border-gray-200 rounded-2xl shadow-2xl p-4 flex gap-3.5 animate-in slide-in-from-bottom-5 fade-in duration-300">
-          <div className="p-2.5 rounded-xl bg-blue-50 h-fit shrink-0">
-            {getNotificationIcon(activeToast.type)}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <h4 className="text-xs font-bold text-gray-900">{activeToast.title}</h4>
-              <button
-                onClick={clearActiveToast}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-2">
-              {activeToast.message}
-            </p>
-            <Link
-              href={getItemLink(activeToast)}
-              onClick={clearActiveToast}
-              className={`inline-flex items-center gap-1 text-xs font-bold ${themeAccentClass} ${themeHoverClass} hover:underline`}
-            >
-              View Now <ExternalLink className="w-3 h-3" />
             </Link>
           </div>
         </div>
