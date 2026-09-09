@@ -54,7 +54,7 @@ class ChangePasswordController {
         ? (require('path').isAbsolute(process.env.UPLOAD_PATH)
           ? process.env.UPLOAD_PATH
           : join(process.cwd(), process.env.UPLOAD_PATH))
-        : join(process.cwd(), '../zelton-storage/api/public/storage'),
+        : join(process.cwd(), '../Saree-app-storage/api/public/storage'),
       serveRoot: '/storage',
     }),
     ServeStaticModule.forRoot({
@@ -62,7 +62,7 @@ class ChangePasswordController {
         ? (require('path').isAbsolute(process.env.UPLOAD_PATH)
           ? process.env.UPLOAD_PATH
           : join(process.cwd(), process.env.UPLOAD_PATH))
-        : join(process.cwd(), '../zelton-storage/api/public/storage'),
+        : join(process.cwd(), '../Saree-app-storage/api/public/storage'),
       serveRoot: '/uploads',
     }),
     DatabaseModule,

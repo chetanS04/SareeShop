@@ -19,7 +19,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 const getStorageBaseDir = () => {
   const envPath = process.env.SHARED_STORAGE_PATH || process.env.UPLOAD_PATH;
-  return envPath ? resolve(process.cwd(), envPath) : join(process.cwd(), '../zelton-storage/api/public/storage');
+  return envPath ? resolve(process.cwd(), envPath) : join(process.cwd(), '../Saree-app-storage/api/public/storage');
 };
 
 const profilePicStorage = diskStorage({
