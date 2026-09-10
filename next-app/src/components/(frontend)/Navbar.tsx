@@ -211,7 +211,7 @@ export default function Navbar() {
 
   const announcementText =
     announcements.length > 0
-      ? announcements[announcementIndex]?.message || announcements[announcementIndex]?.text
+      ? announcements[announcementIndex]?.title || 'Complimentary Concierge & Global Shipping on Curated Edits · Wear Yourself'
       : 'Complimentary Concierge & Global Shipping on Curated Edits · Wear Yourself';
 
   const isActive = (link: NavLink) => {

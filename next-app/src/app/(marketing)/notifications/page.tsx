@@ -12,7 +12,7 @@ import {
   ShieldAlert,
   Sparkles,
   Truck,
-  RefreshCw,
+  RotateCcw,
   SlidersHorizontal,
   Check,
   ArrowLeft,
@@ -140,26 +140,26 @@ export default function NotificationsPage() {
 
   const getNotificationIcon = (type: string) => {
     const t = (type || "").toUpperCase();
-    if (t.startsWith("ORDER")) return <ShoppingBag className="w-5 h-5 text-[#007FFF]" />;
-    if (t.startsWith("PAYMENT")) return <Sparkles className="w-5 h-5 text-emerald-600" />;
-    if (t.startsWith("SHIPMENT") || t.startsWith("DELIVERY")) return <Truck className="w-5 h-5 text-indigo-600" />;
-    if (t.startsWith("RETURN") || t.startsWith("REFUND")) return <RefreshCw className="w-5 h-5 text-amber-600" />;
-    if (t.startsWith("SECURITY") || t.startsWith("PASSWORD") || t === "ACCOUNT" || t === "WELCOME") return <ShieldAlert className="w-5 h-5 text-red-600" />;
-    if (t === "CONTACT") return <Mail className="w-5 h-5 text-purple-600" />;
-    return <Info className="w-5 h-5 text-gray-600" />;
+    if (t.startsWith("ORDER")) return <ShoppingBag className="w-5 h-5 text-primary" />;
+    if (t.startsWith("PAYMENT")) return <Sparkles className="w-5 h-5 text-accent-ochre" />;
+    if (t.startsWith("SHIPMENT") || t.startsWith("DELIVERY")) return <Truck className="w-5 h-5 text-on-surface" />;
+    if (t.startsWith("RETURN") || t.startsWith("REFUND")) return <RotateCcw className="w-5 h-5 text-primary" />;
+    if (t.startsWith("SECURITY") || t.startsWith("PASSWORD") || t === "ACCOUNT" || t === "WELCOME") return <ShieldAlert className="w-5 h-5 text-primary" />;
+    if (t === "CONTACT") return <Mail className="w-5 h-5 text-on-surface" />;
+    return <Info className="w-5 h-5 text-body-slate" />;
   };
 
   const getPriorityBadge = (priority?: string) => {
     const p = (priority || "NORMAL").toUpperCase();
     switch (p) {
       case "CRITICAL":
-        return <span className="px-2.5 py-0.5 text-[10px] font-extrabold bg-red-50 text-red-700 rounded-full border border-red-200">CRITICAL</span>;
+        return <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-primary text-surface">CRITICAL</span>;
       case "HIGH":
-        return <span className="px-2.5 py-0.5 text-[10px] font-extrabold bg-amber-50 text-amber-700 rounded-full border border-amber-200">HIGH</span>;
+        return <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-accent-ochre text-surface-dark">HIGH</span>;
       case "LOW":
-        return <span className="px-2.5 py-0.5 text-[10px] font-extrabold bg-gray-100 text-gray-600 rounded-full border border-gray-200">LOW</span>;
+        return <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-surface-ivory text-body-slate border border-border-line">LOW</span>;
       default:
-        return <span className="px-2.5 py-0.5 text-[10px] font-extrabold bg-blue-50 text-[#007FFF] rounded-full border border-blue-100">NORMAL</span>;
+        return <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-surface-dark text-surface">UPDATE</span>;
     }
   };
 
@@ -209,30 +209,32 @@ export default function NotificationsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50/70 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-surface py-8 sm:py-12 text-on-surface">
+      <div className="max-w-site mx-auto site-pad space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-xs">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-pure-white p-6 sm:p-8 border border-border-line shadow-none">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="p-2 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              className="p-2 border border-border-line text-on-surface hover:text-primary hover:border-primary transition-colors flex items-center justify-center"
               title="Go back"
+              aria-label="Go back"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+              <span className="label-caps text-primary block mb-1">Concierge Desk</span>
+              <div className="flex items-center gap-3">
+                <h1 className="display-section text-2xl sm:text-3xl text-on-surface">
                   Notification Center
                 </h1>
                 {unreadCount > 0 && (
-                  <span className="px-2.5 py-0.5 text-xs font-bold bg-red-600 text-white rounded-full">
-                    {unreadCount > 99 ? "99+" : unreadCount}
+                  <span className="px-2.5 py-0.5 text-[11px] font-bold bg-primary text-surface uppercase tracking-wider">
+                    {unreadCount > 99 ? "99+" : unreadCount} unread
                   </span>
                 )}
               </div>
-              <p className="text-xs font-medium text-gray-500 mt-0.5">
+              <p className="text-xs sm:text-sm text-body-slate mt-1 leading-relaxed">
                 Manage your real-time alerts, order status updates, and notification preferences.
               </p>
             </div>
@@ -241,26 +243,26 @@ export default function NotificationsPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowPreferencesModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-200 transition-colors"
+              className="sv-btn-outline py-2.5 px-4 text-xs font-semibold label-caps inline-flex items-center gap-2"
             >
-              <SlidersHorizontal className="w-4 h-4 text-gray-700" />
-              Preferences
+              <SlidersHorizontal className="w-4 h-4 text-on-surface" />
+              <span>Preferences</span>
             </button>
 
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#007FFF] hover:bg-blue-700 transition-colors shadow-xs"
+                className="sv-btn-primary py-2.5 px-4 text-xs font-semibold label-caps inline-flex items-center gap-1.5"
               >
                 <CheckCheck className="w-4 h-4" />
-                Mark All Read
+                <span>Mark All Read</span>
               </button>
             )}
           </div>
         </div>
 
         {/* Category Navigation Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat.id}
@@ -268,10 +270,11 @@ export default function NotificationsPage() {
                 setActiveTab(cat.id);
                 setSelectedIds([]);
               }}
-              className={`px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition-all ${activeTab === cat.id
-                  ? "bg-[#0A0908] text-white shadow-xs"
-                  : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-                }`}
+              className={`px-4 py-2.5 text-xs font-bold label-caps whitespace-nowrap transition-all border ${
+                activeTab === cat.id
+                  ? "bg-surface-dark text-surface border-surface-dark"
+                  : "bg-pure-white text-body-slate border-border-line hover:text-on-surface hover:border-on-surface"
+              }`}
             >
               {cat.label}
             </button>
@@ -280,39 +283,41 @@ export default function NotificationsPage() {
 
         {/* Bulk Action Controls Bar */}
         {notifications.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-white rounded-xl border border-gray-200 text-xs text-gray-700 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-pure-white border border-border-line text-xs text-on-surface shadow-none">
             <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 cursor-pointer font-bold select-none text-gray-900">
+              <label className="flex items-center gap-2 cursor-pointer font-bold select-none label-caps text-xs text-on-surface">
                 <input
                   type="checkbox"
                   checked={selectedIds.length > 0 && selectedIds.length === notifications.length}
                   onChange={toggleSelectAll}
-                  className="rounded text-[#007FFF] focus:ring-[#007FFF] w-4 h-4 cursor-pointer"
+                  className="rounded-none text-primary focus:ring-primary w-4 h-4 cursor-pointer accent-primary"
                 />
-                Select All
+                <span>Select All</span>
               </label>
               {selectedIds.length > 0 && (
-                <span className="font-bold text-[#007FFF] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-                  {selectedIds.length} selected
+                <span className="label-caps font-bold text-primary bg-surface-ivory px-2.5 py-0.5 border border-border-line text-[10px]">
+                  {selectedIds.length} Selected
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               {selectedIds.length > 0 && (
                 <button
                   onClick={handleBulkDeleteSelected}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 border border-red-200 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold label-caps text-primary hover:bg-surface-ivory border border-primary transition-colors"
                 >
-                  <Trash2 className="w-3.5 h-3.5" /> Delete Selected ({selectedIds.length})
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete Selected ({selectedIds.length})</span>
                 </button>
               )}
 
               <button
                 onClick={handleBulkDeleteRead}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold label-caps text-body-slate hover:text-on-surface hover:bg-surface-ivory border border-border-line transition-colors"
               >
-                <Trash2 className="w-3.5 h-3.5" /> Delete All Read
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete All Read</span>
               </button>
             </div>
           </div>
@@ -321,17 +326,18 @@ export default function NotificationsPage() {
         {/* Notifications List */}
         <div className="space-y-3">
           {loading ? (
-            <div className="py-16 text-center bg-white rounded-2xl border border-gray-200">
-              <div className="w-8 h-8 border-4 border-[#007FFF] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-              <p className="text-xs font-semibold text-gray-500">Loading notifications...</p>
+            <div className="py-16 text-center bg-pure-white border border-border-line">
+              <div className="w-8 h-8 border-2 border-border-line border-t-primary rounded-full animate-spin mx-auto mb-3"></div>
+              <p className="label-caps text-xs text-body-slate">Curating notifications...</p>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="py-20 text-center bg-white rounded-2xl border border-gray-200 px-4 shadow-xs">
-              <Bell className="w-12 h-12 mx-auto text-gray-300 mb-3 stroke-[1.25]" />
-              <h3 className="text-base font-bold text-gray-900 mb-1">
+            <div className="py-20 text-center bg-pure-white border border-border-line px-4 shadow-none">
+              <Bell className="w-12 h-12 mx-auto text-body-slate/40 mb-3 stroke-[1.25]" />
+              <span className="label-caps text-primary block mb-1">Clean Inbox</span>
+              <h3 className="display-section text-lg sm:text-xl text-on-surface mb-1">
                 No Notifications Found
               </h3>
-              <p className="text-xs text-gray-500 max-w-sm mx-auto font-medium">
+              <p className="text-xs sm:text-sm text-body-slate max-w-sm mx-auto leading-relaxed">
                 You don&apos;t have any notifications under this category right now.
               </p>
             </div>
@@ -341,66 +347,70 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={n.id}
-                  className={`p-4 sm:p-5 rounded-2xl border transition-all flex items-start gap-4 ${!n.isRead
-                      ? "bg-white border-blue-200 shadow-sm"
-                      : "bg-white/80 border-gray-200"
-                    }`}
+                  className={`p-5 sm:p-6 border transition-all flex items-start gap-4 ${
+                    !n.isRead
+                      ? "bg-pure-white border-border-line border-l-4 border-l-primary shadow-none"
+                      : "bg-pure-white/90 border-border-line"
+                  }`}
                 >
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => toggleSelect(n.id)}
-                    className="mt-1 rounded text-[#007FFF] focus:ring-[#007FFF] w-4 h-4 cursor-pointer"
+                    className="mt-1.5 rounded-none text-primary focus:ring-primary w-4 h-4 cursor-pointer accent-primary"
                   />
 
-                  <div className="p-3 rounded-xl bg-gray-100 shrink-0 mt-0.5">
+                  <div className="w-10 h-10 bg-surface-ivory border border-border-line flex items-center justify-center shrink-0 mt-0.5">
                     {getNotificationIcon(n.type)}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
                       {getPriorityBadge(n.priority)}
-                      <h3 className="text-sm font-bold text-gray-900 truncate">
+                      <h3 className="text-sm font-bold text-on-surface uppercase tracking-tight truncate">
                         {n.title}
                       </h3>
                       {!n.isRead && (
-                        <span className="w-2 h-2 rounded-full bg-[#007FFF] animate-pulse"></span>
+                        <span className="w-2 h-2 bg-primary"></span>
                       )}
-                      <span className="text-[11px] text-gray-400 ml-auto font-semibold">
+                      <span className="label-caps text-[11px] text-body-slate ml-auto font-semibold">
                         {formatTime(n.createdAt)}
                       </span>
                     </div>
 
-                    <p className="text-xs font-medium text-gray-600 leading-relaxed mb-3">
+                    <p className="text-xs sm:text-sm text-body-slate leading-relaxed mb-3.5">
                       {n.message}
                     </p>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 flex-wrap">
                       {n.link && (
                         <Link
                           href={n.link}
                           onClick={() => {
                             if (!n.isRead) markAsRead(n.id);
                           }}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-[#007FFF] hover:bg-blue-700 transition-colors shadow-xs"
+                          className="sv-btn-primary py-2 px-3.5 text-xs font-semibold label-caps inline-flex items-center gap-1.5"
                         >
-                          View Details <ExternalLink className="w-3.5 h-3.5" />
+                          <span>View Details</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
                         </Link>
                       )}
 
                       {!n.isRead && (
                         <button
                           onClick={() => markAsRead(n.id)}
-                          className="inline-flex items-center gap-1 text-xs font-bold text-gray-600 hover:text-gray-900 transition-colors"
+                          className="sv-btn-outline py-2 px-3 text-xs font-semibold label-caps inline-flex items-center gap-1.5"
                         >
-                          <Check className="w-3.5 h-3.5" /> Mark read
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Mark read</span>
                         </button>
                       )}
 
                       <button
                         onClick={() => deleteNotification(n.id)}
-                        className="ml-auto p-1.5 text-gray-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50"
-                        title="Delete"
+                        className="ml-auto p-1.5 text-body-slate/60 hover:text-primary transition-colors"
+                        title="Delete notification"
+                        aria-label="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -414,46 +424,46 @@ export default function NotificationsPage() {
 
         {/* Infinite Scroll Indicators */}
         {loadingMore && (
-          <div className="py-4 text-center text-xs font-bold text-gray-500 animate-pulse bg-white rounded-xl border border-gray-200 shadow-xs">
-            Loading more notifications...
+          <div className="py-4 text-center text-xs font-bold label-caps text-body-slate bg-pure-white border border-border-line">
+            Curating more notifications...
           </div>
         )}
         {!hasMore && notifications.length > 0 && (
-          <div className="py-3 text-center text-xs font-semibold text-gray-400">
-            You've reached the end of notifications
+          <div className="py-4 text-center label-caps text-xs text-body-slate/70">
+            You&apos;ve reached the end of notifications
           </div>
         )}
       </div>
 
       {/* Customer Notification Preferences Modal */}
       {showPreferencesModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white border border-gray-200 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-blue-50 text-[#007FFF]">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-surface-dark/70 backdrop-blur-xs animate-fade-in-up">
+          <div className="bg-pure-white border border-border-line max-w-xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-border-line pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-surface-ivory border border-border-line flex items-center justify-center text-primary">
                   <SlidersHorizontal className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-900">
+                  <span className="label-caps text-primary block text-[10px]">Atelier Settings</span>
+                  <h3 className="display-section text-lg sm:text-xl text-on-surface">
                     Notification Preferences
                   </h3>
-                  <p className="text-xs font-medium text-gray-500">
-                    Choose which channels you want to receive alerts on.
-                  </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setShowPreferencesModal(false)}
-                className="p-2 text-gray-400 hover:text-gray-700 rounded-xl"
+                className="p-2 text-on-surface hover:text-primary transition-colors"
+                title="Close"
+                aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Toggle Settings Grid */}
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               {[
                 { keyInApp: "inAppOrders", keyEmail: "emailOrders", label: "Order & Dispatch Updates", desc: "Order confirmation, shipping, tracking & delivery alerts" },
                 { keyInApp: "inAppPayments", keyEmail: "emailPayments", label: "Payment & Invoice Updates", desc: "Payment status, receipts, and failure notices" },
@@ -464,59 +474,59 @@ export default function NotificationsPage() {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="p-4 bg-gray-50/70 rounded-2xl border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  className="p-4 bg-surface-subtle/70 border border-border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
                   <div>
-                    <h4 className="text-xs font-bold text-gray-900">{item.label}</h4>
-                    <p className="text-[11px] font-medium text-gray-500">{item.desc}</p>
+                    <h4 className="label-caps text-xs font-bold text-on-surface">{item.label}</h4>
+                    <p className="text-[11px] text-body-slate mt-0.5 leading-snug">{item.desc}</p>
                   </div>
 
                   <div className="flex items-center gap-4 shrink-0">
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800 cursor-pointer select-none">
+                    <label className="flex items-center gap-1.5 label-caps text-[11px] font-bold text-on-surface cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={Boolean(prefState[item.keyInApp as keyof NotificationPreference])}
                         onChange={(e) =>
                           setPrefState((prev) => ({ ...prev, [item.keyInApp]: e.target.checked }))
                         }
-                        className="rounded text-[#007FFF] focus:ring-[#007FFF] w-4 h-4 cursor-pointer"
+                        className="rounded-none text-primary focus:ring-primary w-4 h-4 cursor-pointer accent-primary"
                       />
-                      In-App
+                      <span>In-App</span>
                     </label>
 
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800 cursor-pointer select-none">
+                    <label className="flex items-center gap-1.5 label-caps text-[11px] font-bold text-on-surface cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={Boolean(prefState[item.keyEmail as keyof NotificationPreference])}
                         onChange={(e) =>
                           setPrefState((prev) => ({ ...prev, [item.keyEmail]: e.target.checked }))
                         }
-                        className="rounded text-[#007FFF] focus:ring-[#007FFF] w-4 h-4 cursor-pointer"
+                        className="rounded-none text-primary focus:ring-primary w-4 h-4 cursor-pointer accent-primary"
                       />
-                      Email
+                      <span>Email</span>
                     </label>
                   </div>
                 </div>
               ))}
 
-              <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 text-xs font-medium text-amber-900">
-                <Lock className="w-4 h-4 shrink-0 text-amber-600" />
-                <span>
-                  <strong>Security Note:</strong> Critical security alerts (password resets, login verifications) are mandatory and cannot be disabled.
+              <div className="p-3.5 bg-surface-ivory border border-border-line flex items-center gap-3 text-xs font-medium text-on-surface">
+                <Lock className="w-4 h-4 shrink-0 text-accent-ochre" />
+                <span className="text-xs text-body-slate leading-relaxed">
+                  <strong className="text-on-surface">Security Note:</strong> Critical security alerts (password resets, login verifications) are mandatory and cannot be disabled.
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
+            <div className="flex items-center justify-end gap-3 border-t border-border-line pt-4">
               <button
                 onClick={() => setShowPreferencesModal(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors"
+                className="sv-btn-outline py-2.5 px-5 text-xs font-semibold label-caps"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSavePreferences}
-                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#007FFF] hover:bg-blue-700 transition-colors shadow-xs"
+                className="sv-btn-primary py-2.5 px-6 text-xs font-semibold label-caps"
               >
                 Save Preferences
               </button>
