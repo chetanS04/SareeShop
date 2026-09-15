@@ -116,7 +116,7 @@ export default function ContactUsPage() {
     const [success, setSuccess] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
-    const [whatsappNumber, setWhatsappNumber] = useState<string>('919729310456');
+    const [whatsappNumber, setWhatsappNumber] = useState<string>('917507599315');
     const [faqSearch, setFaqSearch] = useState<string>('');
     const [selectedFaqCategory, setSelectedFaqCategory] = useState<string>('All');
     const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
@@ -289,9 +289,9 @@ export default function ContactUsPage() {
                                 <RiWhatsappLine className="text-lg" />
                                 <span>WhatsApp Concierge</span>
                             </a>
-                            <a href="tel:+919729310456" className="sv-btn-outline gap-3">
+                            <a href="tel:+917507599315" className="sv-btn-outline gap-3">
                                 <Phone className="w-3.5 h-3.5" />
-                                <span>+91 9729310456</span>
+                                <span>+91 75075 99315</span>
                             </a>
                         </div>
                     </div>
@@ -501,13 +501,13 @@ export default function ContactUsPage() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-[14px] font-bold uppercase tracking-tight text-on-surface">Direct Support Hotline</h3>
-                                        <p className="text-[13px] text-body-slate mt-1">Mon – Sat · 9:00 AM – 6:00 PM IST</p>
+                                        <p className="text-[13px] text-body-slate mt-1">Every day · 9:00 AM – 9:00 PM IST</p>
                                         <div className="mt-3">
                                             <a
-                                                href="tel:+919729310456"
+                                                href="tel:+917507599315"
                                                 className="text-[15px] font-semibold text-primary hover:text-on-surface transition-colors"
                                             >
-                                                +91 9729310456
+                                                +91 75075 99315
                                             </a>
                                         </div>
                                     </div>
@@ -521,23 +521,15 @@ export default function ContactUsPage() {
                                         <Mail className="w-5 h-5" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-[14px] font-bold uppercase tracking-tight text-on-surface">Email Client Care</h3>
-                                        <p className="text-[13px] text-body-slate mt-1">Guaranteed reply within 24 business hours</p>
+                                        <h3 className="text-[14px] font-bold uppercase tracking-tight text-on-surface">Email Support</h3>
+                                        <p className="text-[13px] text-body-slate mt-1">We reply within 24–48 business hours</p>
                                         <div className="mt-3 space-y-1.5">
                                             <div>
                                                 <a
-                                                    href="mailto:support@SVastra.co.in"
+                                                    href="mailto:svastrastore@gmail.com"
                                                     className="text-[13px] font-medium text-on-surface hover:text-primary transition-colors"
                                                 >
-                                                    support@SVastra.co.in
-                                                </a>
-                                            </div>
-                                            <div>
-                                                <a
-                                                    href="mailto:care@SVastra.co.in"
-                                                    className="text-[13px] font-medium text-on-surface hover:text-primary transition-colors"
-                                                >
-                                                    care@SVastra.co.in
+                                                    svastrastore@gmail.com
                                                 </a>
                                             </div>
                                         </div>
@@ -545,19 +537,25 @@ export default function ContactUsPage() {
                                 </div>
                             </div>
 
-                            {/* Head Office Card */}
+                            {/* Business Details Card */}
+                            {/* TODO: replace with your registered business name, full address and GSTIN before submitting to the payment gateway */}
                             <div className="bg-surface border border-border-line p-5 sm:p-6">
                                 <div className="flex items-start gap-4">
                                     <div className="w-11 h-11 bg-surface-ivory border border-border-line text-accent-ochre flex items-center justify-center flex-shrink-0">
                                         <MapPin className="w-5 h-5" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-[14px] font-bold uppercase tracking-tight text-on-surface">Registered Office</h3>
+                                        <h3 className="text-[14px] font-bold uppercase tracking-tight text-on-surface">Business Location</h3>
                                         <p className="text-[13px] text-body-slate mt-1.5 leading-[1.55]">
-                                            SVastra Enterprises Private Limited<br />
-                                            Corporate Office, India
+                                            SVASTRA<br />
+                                            Nagpur, Maharashtra, India
                                         </p>
-                                        <p className="label-caps text-body-slate mt-2">GST Registered &amp; Verified</p>
+                                        <p className="text-[12px] text-body-slate mt-2 leading-[1.55]">
+                                            Full registered address and GSTIN available on request at{' '}
+                                            <a href="mailto:svastrastore@gmail.com" className="text-primary hover:text-on-surface transition-colors">
+                                                svastrastore@gmail.com
+                                            </a>.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -876,7 +874,7 @@ export default function ContactUsPage() {
                     <span>WhatsApp</span>
                 </a>
                 <a
-                    href="tel:+919729310456"
+                    href="tel:+917507599315"
                     className="flex-1 flex items-center justify-center gap-2 py-3 px-3 bg-primary text-surface text-[11px] font-semibold uppercase tracking-[0.08em]"
                 >
                     <Phone className="w-3.5 h-3.5" />

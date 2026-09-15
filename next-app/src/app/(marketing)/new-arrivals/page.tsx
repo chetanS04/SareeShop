@@ -2,19 +2,15 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, Package } from "lucide-react";
 import { fetchNewArrivalSliders, fetchNewArrivalProducts, NewArrivalSlider } from "../../../../utils/newArrivalApi";
 import ProductCard from "@/components/(frontend)/ProductCard";
-import { getProductSlug } from "../../../../utils/slugUtils";
 import { useProductSync, ProductEventData } from "@/context/ProductSyncContext";
 
 const baseUrl = process.env.NEXT_PUBLIC_UPLOAD_BASE || "https://api.zelton.co.in";
 const PAGE_SIZE = 10;
 
 export default function NewArrivalsPage() {
-  const router = useRouter();
-
   // Slider state
   const [sliders, setSliders] = useState<NewArrivalSlider[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -204,13 +200,13 @@ export default function NewArrivalsPage() {
     setCurrentSlide((curr) => (curr + 1) % (sliders.length || 1));
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-gray-900 pb-16">
+    <div className="min-h-screen bg-surface text-on-surface">
       {/* ── Edge-to-Edge Full-Width Banner Slider ── */}
       {slidersLoading ? (
-        <div className="w-full aspect-[1791/563] bg-gray-200 animate-pulse mb-6 sm:mb-8" />
+        <div className="w-full aspect-[1791/563] bg-surface-ivory animate-pulse border-b border-border-line" />
       ) : sliders.length > 0 ? (
         <div
-          className="relative w-full aspect-[1791/563] overflow-hidden mb-6 sm:mb-8 group select-none bg-gray-100"
+          className="relative w-full aspect-[1791/563] overflow-hidden group select-none bg-surface-ivory border-b border-border-line"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onTouchStart={(e) => {
@@ -277,14 +273,14 @@ export default function NewArrivalsPage() {
                   </div>
                 )}
                 {(slide.title || slide.description) && (
-                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-7 bg-gradient-to-t from-surface-dark/75 via-surface-dark/20 to-transparent pointer-events-none">
                     {slide.title && (
-                      <p className="text-white text-base sm:text-xl font-bold drop-shadow">
+                      <p className="text-surface text-base sm:text-xl font-bold uppercase tracking-tight">
                         {slide.title}
                       </p>
                     )}
                     {slide.description && (
-                      <p className="text-white/85 text-xs sm:text-sm mt-0.5 drop-shadow">
+                      <p className="text-surface/80 text-xs sm:text-sm mt-1">
                         {slide.description}
                       </p>
                     )}
@@ -293,65 +289,76 @@ export default function NewArrivalsPage() {
               </div>
             );
           })}
+
+          {/* Slide indicators */}
+          {sliders.length > 1 && (
+            <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-7 z-20 flex items-center gap-1.5">
+              {sliders.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  aria-label={`Go to slide ${i + 1}`}
+                  onClick={() => setCurrentSlide(i)}
+                  className={`h-[3px] transition-all duration-300 ${
+                    i === currentSlide ? "w-6 bg-surface" : "w-2.5 bg-surface/50 hover:bg-surface/80"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       ) : null}
 
-      <div className="w-full max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ── Section Header ── */}
-        <div className="text-center my-6 sm:my-8 md:my-10">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black tracking-widest text-[#0A0908] uppercase">
-            New Arrivals
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1.5">
-            Trending products loved by customers
+      <div className="max-w-site mx-auto site-pad pt-10 sm:pt-12 lg:pt-14 pb-16 lg:pb-20">
+        {/* ── Masthead ── */}
+        <nav className="label-caps text-body-slate mb-8 flex flex-wrap items-center gap-2">
+          <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+          <span className="text-on-surface/30" aria-hidden="true">/</span>
+          <span className="text-on-surface">New Arrivals</span>
+        </nav>
+
+        <header className="mb-8 sm:mb-10 lg:mb-12 max-w-3xl">
+          <span className="label-caps text-primary block mb-3">Just Landed</span>
+          <h1 className="display-section text-on-surface mb-4">New Arrivals</h1>
+          <p className="text-[15px] sm:text-[16px] text-body-slate leading-relaxed max-w-xl">
+            The latest handloom weaves to join the collection — fresh cuts, colours and drapes.
           </p>
-        </div>
+          <div className="mt-6 h-px w-16 bg-primary" aria-hidden />
+        </header>
 
         {/* ── Products Grid ── */}
         {isLoadingInitial && products.length === 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8 lg:gap-x-5">
             {Array.from({ length: 10 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl bg-white border border-gray-100 shadow-xs p-3 animate-pulse flex flex-col gap-3"
-              >
-                <div className="aspect-square w-full rounded-xl bg-gray-200" />
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
-                <div className="h-5 bg-gray-200 rounded w-2/3 mt-2" />
+              <div key={i} className="bg-pure-white border border-border-line animate-pulse flex flex-col">
+                <div className="aspect-[3/4] w-full bg-surface-ivory" />
+                <div className="p-3 sm:p-4 flex flex-col gap-2">
+                  <div className="h-2.5 bg-[rgba(14,14,13,0.08)] w-1/3" />
+                  <div className="h-3.5 bg-[rgba(14,14,13,0.1)] w-3/4" />
+                  <div className="h-4 bg-[rgba(14,14,13,0.12)] w-1/2 mt-1" />
+                </div>
               </div>
             ))}
           </div>
         ) : products.length === 0 ? (
           /* Empty State */
-          <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-xs max-w-lg mx-auto my-8">
-            <div className="w-16 h-16 bg-blue-50 text-[#007FFF] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">
+          <div className="border border-[rgba(14,14,13,0.12)] bg-pure-white px-8 py-16 text-center max-w-lg mx-auto">
+            <Package className="w-12 h-12 text-on-surface/20 mx-auto mb-4" strokeWidth={1} />
+            <span className="label-caps text-primary block mb-2">Nothing New Right Now</span>
+            <h3 className="text-xl font-bold uppercase tracking-[-0.02em] text-on-surface mb-3">
               No new arrivals yet
             </h3>
-            <p className="text-xs sm:text-sm text-gray-500 mb-6">
-              Check back soon for fresh picks!
+            <p className="text-[14px] text-body-slate mb-7 leading-relaxed">
+              Check back soon — new pieces are added regularly.
             </p>
-            <Link
-              href="/products"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#007FFF] hover:bg-[#0066CC] text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-all"
-            >
-              <span>Browse All Products</span>
+            <Link href="/products" className="sv-btn-primary">
+              Browse All Products
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8 lg:gap-x-5">
             {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                isNew={true}
-                onClick={() => router.push(`/products/${getProductSlug(product)}`)}
-              />
+              <ProductCard key={product.id} product={product} compact isNew />
             ))}
           </div>
         )}
@@ -361,17 +368,17 @@ export default function NewArrivalsPage() {
 
         {/* Infinite Scroll Bottom Loading State */}
         {isLoadingMore && (
-          <div className="flex items-center justify-center gap-2.5 py-8 text-sm text-gray-600 animate-in fade-in duration-200">
-            <Loader2 className="w-5 h-5 animate-spin text-[#007FFF]" />
-            <span className="font-semibold text-gray-700">Loading more products...</span>
+          <div className="flex items-center justify-center gap-2.5 py-8">
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+            <span className="label-caps text-body-slate">Loading more</span>
           </div>
         )}
 
         {/* All Products Loaded End Indicator */}
         {!hasNextPage && products.length > 0 && !isLoadingInitial && (
-          <div className="flex items-center justify-center py-8 text-xs md:text-sm text-gray-400 font-medium animate-in fade-in duration-200">
-            <span className="bg-white px-4 py-1.5 rounded-full border border-gray-200 text-gray-600 font-semibold shadow-xs flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="mt-10 pt-6 border-t border-border-line flex items-center justify-center">
+            <span className="inline-flex items-center gap-1.5 label-caps text-body-slate">
+              <Check className="w-3.5 h-3.5 text-primary" strokeWidth={2} />
               <span>All {products.length} new arrivals loaded</span>
             </span>
           </div>

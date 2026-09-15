@@ -131,7 +131,7 @@ function SettingsPage() {
                                             },
                                         })}
                                         type="text"
-                                        placeholder="e.g. 919729310456 (country code + number)"
+                                        placeholder="e.g. 917507599315 (country code + number)"
                                         className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all ${errors.whatsapp_number
                                                 ? "border-red-400 focus:ring-2 focus:ring-red-100"
                                                 : "border-gray-300 focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20"
@@ -144,7 +144,7 @@ function SettingsPage() {
                                     </p>
                                 )}
                                 <p className="text-gray-400 text-xs mt-1">
-                                    Include country code without &apos;+&apos;. Example: <strong>919729310456</strong> for India (+91).
+                                    Include country code without &apos;+&apos;. Example: <strong>917507599315</strong> for India (+91).
                                 </p>
                             </div>
 

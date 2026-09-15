@@ -186,6 +186,27 @@
       become: false
       delegate_to: localhost
 
+    - name: Sync product/category storage images
+      ansible.posix.synchronize:
+        src: "{{ local_storage_src }}"
+        dest: "{{ storage_dir }}/"
+        delete: false
+        rsync_opts:
+          - "--exclude=.git"
+          - "--exclude=*.log"
+      become: false
+      delegate_to: localhost
+      when: sync_storage | bool
+
+    - name: Copy SQL dump (saree-app.sql) to server
+      ansible.builtin.copy:
+        src: "{{ local_sql_dump }}"
+        dest: "{{ sql_dump_remote }}"
+        owner: root
+        group: root
+        mode: "0644"
+      when: import_sql_dump | bool
+
     - name: Fix ownership after sync
       ansible.builtin.file:
         path: "{{ app_root }}"
@@ -234,13 +255,23 @@
       become_user: "{{ deploy_user }}"
       when: build_apps | bool
 
-    - name: Initialize database (migrate + seed admin/locations)
+    - name: Import saree-app.sql into MySQL (full catalog data)
+      community.mysql.mysql_db:
+        name: "{{ db_name }}"
+        state: import
+        target: "{{ sql_dump_remote }}"
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      when: import_sql_dump | bool
+      no_log: true
+
+    - name: Fallback empty schema migrate+seed (only if SQL import disabled)
       ansible.builtin.command: npm run db:setup
       args:
         chdir: "{{ api_dir }}"
       become_user: "{{ deploy_user }}"
-      when: run_db_setup | bool
-      register: db_setup_result
+      when: (run_db_migrate_seed | bool) and not (import_sql_dump | bool)
       changed_when: true
 
     # ---------- 8) Install + build Next ----------

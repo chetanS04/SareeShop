@@ -9,7 +9,6 @@ import SvastraIndependentCut from "@/components/(frontend)/svastra/SvastraIndepe
 import SvastraManifesto from "@/components/(frontend)/svastra/SvastraManifesto";
 import SvastraVoices from "@/components/(frontend)/svastra/SvastraVoices";
 import SvastraConcierge from "@/components/(frontend)/svastra/SvastraConcierge";
-import NewArrivalsSection from "./NewArrivals/NewArrivalsSection";
 
 export default function HomeUI() {
   const [products, setProducts] = useState<any[]>([]);
@@ -41,17 +40,11 @@ export default function HomeUI() {
 
   return (
     <div className="w-full bg-surface">
+      {/* Order matches home.html editorial composition */}
       <SvastraHero />
       <SvastraWhoYouAre />
       <SvastraHowYouFeel />
       <SvastraIndependentCut products={products} loading={loading} />
-
-      <section className="w-full bg-surface border-b border-border-line">
-        <div className="max-w-site mx-auto site-pad section-y">
-          <NewArrivalsSection />
-        </div>
-      </section>
-
       <SvastraManifesto />
       <SvastraVoices />
       <SvastraConcierge />

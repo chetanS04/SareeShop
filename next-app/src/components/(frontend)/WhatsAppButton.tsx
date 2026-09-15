@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import { fetchSettingByKey } from "../../../utils/settingsApi";
 
-const FALLBACK_NUMBER = "919729310456";
+const FALLBACK_NUMBER = "917507599315";
 
 export default function WhatsAppButton() {
     const [phoneNumber, setPhoneNumber] = useState<string>(FALLBACK_NUMBER);

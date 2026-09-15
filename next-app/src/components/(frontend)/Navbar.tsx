@@ -34,10 +34,11 @@ type NavLink = {
 };
 
 const NAV_LINKS: NavLink[] = [
-  { href: '/new-arrivals', label: 'New In', route: '/new-arrivals' },
+  // { href: '/new-arrivals', label: 'New In', route: '/new-arrivals' },
   { href: '/#shop-who', label: 'Shop Who You Are', section: 'shop-who' },
   { href: '/#shop-feel', label: 'Shop How You Feel', section: 'shop-feel' },
-  { href: '/products', label: 'Collections', route: '/products' },
+  { href: '/products', label: 'The Edit', route: '/products' },
+  { href: '/#manifesto', label: 'Manifesto', section: 'manifesto' },
   { href: '/about-us#voices', label: 'Stories', route: '/about-us', section: 'voices' },
   { href: '/about-us', label: 'About', route: '/about-us' },
 ];
@@ -211,7 +212,8 @@ export default function Navbar() {
 
   const announcementText =
     announcements.length > 0
-      ? announcements[announcementIndex]?.message || announcements[announcementIndex]?.text
+      ? announcements[announcementIndex]?.title ||
+        'Complimentary Concierge & Global Shipping on Curated Edits · Wear Yourself'
       : 'Complimentary Concierge & Global Shipping on Curated Edits · Wear Yourself';
 
   const isActive = (link: NavLink) => {
@@ -226,7 +228,7 @@ export default function Navbar() {
     }
     if (!link.route) return false;
     if (link.route === '/products') {
-      return pathname === '/products' || pathname.startsWith('/products/');
+      return pathname === '/products' || pathname.startsWith('/products/') || pathname.startsWith('/shop/');
     }
     return pathname === link.route || pathname.startsWith(`${link.route}/`);
   };

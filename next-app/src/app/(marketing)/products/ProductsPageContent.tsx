@@ -396,7 +396,7 @@ const ProductsPage = () => {
     if (loading && products.length === 0) {
         return (
             <div className="min-h-screen bg-surface">
-                <div className="max-w-site mx-auto site-pad section-y">
+                <div className="site-pad section-y">
                     <div className="flex flex-col items-center justify-center gap-4">
                         <div className="w-12 h-12 border-2 border-border-line border-t-primary animate-spin" />
                         <p className="label-caps text-primary">Loading Collections</p>
@@ -410,7 +410,7 @@ const ProductsPage = () => {
         <div className="min-h-screen bg-surface">
             {/* Breadcrumb */}
             <div className="border-b border-border-line bg-surface">
-                <div className="max-w-site mx-auto site-pad py-3.5 flex flex-wrap items-center gap-2 label-caps text-body-slate">
+                <div className="site-pad py-3.5 flex flex-wrap items-center gap-2 label-caps text-body-slate">
                     <Link href="/" className="hover:text-primary transition-colors flex items-center gap-1.5">
                         <Home className="w-3.5 h-3.5" />
                         <span>Home</span>
@@ -440,7 +440,7 @@ const ProductsPage = () => {
                 </div>
             </div>
 
-            <div className="max-w-site mx-auto site-pad pt-10 sm:pt-12 lg:pt-14 pb-16 lg:pb-20">
+            <div className="site-pad pt-8 sm:pt-10 lg:pt-12 pb-16 lg:pb-20">
                 {/* Page header */}
                 <header className="mb-8 sm:mb-10 lg:mb-12 max-w-3xl">
                     <span className="label-caps text-primary block mb-3">Wear Yourself · Shop</span>
@@ -459,9 +459,9 @@ const ProductsPage = () => {
                     <div className="mt-6 h-px w-16 bg-primary" aria-hidden />
                 </header>
 
-                <div className="flex gap-8 lg:gap-12 items-start">
+                <div className="flex gap-6 xl:gap-10 2xl:gap-14 items-start">
                     {/* Left filters — desktop */}
-                    <div className="hidden lg:block w-[248px] xl:w-[272px] flex-shrink-0 sticky top-24">
+                    <div className="hidden lg:block w-[240px] xl:w-[264px] 2xl:w-[288px] flex-shrink-0 sticky top-24">
                         <FilterSidebar />
                     </div>
 
@@ -522,8 +522,8 @@ const ProductsPage = () => {
                         )}
 
                         {/* Toolbar */}
-                        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-                            <div className="flex items-center gap-3 flex-wrap">
+                        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-4 mb-8">
+                            <div className="flex items-center justify-between sm:justify-start gap-3 flex-wrap">
                                 <button
                                     type="button"
                                     className="lg:hidden label-caps px-4 py-2.5 border border-[rgba(14,14,13,0.14)] bg-pure-white text-on-surface inline-flex items-center gap-2"
@@ -532,23 +532,21 @@ const ProductsPage = () => {
                                     <SlidersHorizontal className="w-3.5 h-3.5" />
                                     Refine
                                 </button>
-                                <div>
-                                    <p className="label-caps text-body-slate mb-1">Showing</p>
-                                    <p className="text-[15px] font-semibold text-on-surface tracking-tight">
-                                        {totalProducts} {totalProducts === 1 ? "Piece" : "Pieces"}
-                                    </p>
-                                </div>
+                                <p className="text-[13px] text-body-slate">
+                                    <span className="font-semibold text-on-surface">{totalProducts}</span>{" "}
+                                    {totalProducts === 1 ? "Piece" : "Pieces"}
+                                </p>
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <label htmlFor="collections-sort" className="label-caps text-body-slate">
+                                <label htmlFor="collections-sort" className="label-caps text-body-slate shrink-0">
                                     Sort
                                 </label>
                                 <select
                                     id="collections-sort"
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
-                                    className="appearance-none min-w-[11.5rem] px-4 py-2.5 bg-pure-white border border-[rgba(14,14,13,0.14)] text-[11px] font-semibold tracking-[0.06em] uppercase text-on-surface focus:outline-none focus:border-primary cursor-pointer"
+                                    className="appearance-none flex-1 sm:flex-none sm:min-w-[11.5rem] px-4 py-2.5 bg-pure-white border border-[rgba(14,14,13,0.14)] text-[11px] font-semibold tracking-[0.06em] uppercase text-on-surface focus:outline-none focus:border-primary cursor-pointer"
                                 >
                                     {SORT_OPTIONS.map((opt) => (
                                         <option key={opt.id} value={opt.id}>
@@ -620,7 +618,7 @@ const ProductsPage = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8 lg:gap-x-5">
                                 {processedProducts.map((product) => (
                                     <ProductCard key={product.id} product={product} compact />
                                 ))}

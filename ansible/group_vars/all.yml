@@ -5,7 +5,7 @@
 # ============================================================
 
 # --- Domain / URLs (change for your live domain) ---
-app_domain: "example.com"
+app_domain: "187.127.157.43"
 # First deploy (no SSL): use http://DOMAIN_OR_IP
 # After DNS + certbot: switch to https:// and set enable_ssl: true
 frontend_url: "http://{{ app_domain }}"
@@ -14,7 +14,8 @@ upload_public_url: "{{ frontend_url }}"
 
 # Set true only after DNS A-record points to this server
 enable_ssl: false
-letsencrypt_email: "admin@{{ app_domain }}"
+letsencrypt_email: "admin@sareeshop.local"
+allow_example_domain: true
 
 # --- App paths on server ---
 deploy_user: "sareeshop"
@@ -23,10 +24,14 @@ api_dir: "{{ app_root }}/nest-api"
 web_dir: "{{ app_root }}/next-app"
 storage_dir: "{{ app_root }}/storage/api/public/storage"
 backup_dir: "{{ app_root }}/backups"
+sql_dump_remote: "{{ app_root }}/saree-app.sql"
 
 # Local project root (relative to ansible/ when using deploy.sh)
 # Overridden automatically by deploy.sh
 local_project_root: "{{ playbook_dir }}/.."
+# SQL dump + product/category images (must exist before deploy)
+local_sql_dump: "{{ local_project_root }}/saree-app.sql"
+local_storage_src: "{{ local_project_root }}/Saree-app-storage/api/public/storage/"
 
 # --- Node ---
 node_major: "22"
@@ -34,19 +39,20 @@ api_port: 8001
 web_port: 3000
 
 # --- MySQL ---
-mysql_root_password: "ChangeMe_Root_DB_Pass_Strong!"
-db_name: "saree_shop"
+mysql_root_password: "SvMysql_R00t_9kX2mP!"
+# Must match dump origin (saree-app.sql is from database saree_app)
+db_name: "saree_app"
 db_user: "sareeshop"
-db_password: "ChangeMe_App_DB_Pass_Strong!"
+db_password: "SvApp_Db_7hQ4nL!"
 db_host: "127.0.0.1"
 db_port: 3306
 
 # --- App secrets (CHANGE THESE) ---
-jwt_secret: "ChangeMe_Long_Random_JWT_Secret_32chars_Min"
+jwt_secret: "SvJwt_Live_3fR8wY2cN6pQ9tK1"
 jwt_expires_in: "7d"
-admin_email: "admin@example.com"
+admin_email: "admin@topntech.com"
 admin_name: "Admin User"
-admin_password: "ChangeMe_Admin_Password!"
+admin_password: "root1234"
 
 # --- Optional integrations (leave placeholders if unused) ---
 google_client_id: "your_google_client_id.apps.googleusercontent.com"
@@ -74,7 +80,11 @@ delhivery_return_phone: "0000000000"
 delhivery_test_mode: "true"
 
 # --- Deploy behaviour ---
-run_db_setup: true
+# Prefer importing saree-app.sql (products/categories/brands/users).
+# Set import_sql_dump: false and run_db_migrate_seed: true only for empty schema.
+import_sql_dump: true
+run_db_migrate_seed: false
+sync_storage: true
 run_npm_ci: true
 build_apps: true
 configure_firewall: true

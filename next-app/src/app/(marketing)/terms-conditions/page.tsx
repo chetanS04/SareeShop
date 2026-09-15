@@ -61,7 +61,7 @@ export default function TermsConditionsPage() {
                     <div className="mt-10 pt-6 border-t border-border-line grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-4">
                         <div className="flex items-center gap-2 label-caps text-body-slate sm:border-l sm:first:border-l-0 border-border-line sm:pl-5 first:pl-0">
                             <Clock className="w-3.5 h-3.5 text-primary" />
-                            <span>Last Updated February 2026</span>
+                            <span>Last updated: September 2026</span>
                         </div>
                         <div className="flex items-center gap-2 label-caps text-body-slate sm:border-l border-border-line sm:pl-5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-accent-ochre" />
@@ -142,7 +142,7 @@ export default function TermsConditionsPage() {
                                         <span>Currency &amp; Secure Payments</span>
                                     </div>
                                     <p>
-                                        All transactions are processed in Indian National Rupees (INR). We accept major Credit/Debit cards, UPI (Google Pay, PhonePe, Paytm), Net Banking, and Cash on Delivery (COD). Payment gateways are 256-bit encrypted and PCI-DSS compliant.
+                                        All prices are listed in Indian Rupees (INR) and are inclusive of applicable GST unless stated otherwise. We accept UPI, Credit/Debit cards, Net Banking and Cash on Delivery (COD) where available. Online payments are processed by third-party PCI-DSS compliant payment aggregators (including GoKwik and its partner gateways); SVastra does not store your card or UPI credentials.
                                     </p>
                                 </div>
                             </div>
@@ -170,30 +170,33 @@ export default function TermsConditionsPage() {
                             </div>
                         </article>
 
-                        {/* Section 5: Returns & Replacements */}
+                        {/* Section 5: Returns, Refunds & Shipping */}
                         <article>
                             <div className="flex items-baseline gap-4 border-b border-border-line pb-4 mb-5">
                                 <span className="label-caps text-primary">05</span>
-                                <h2 className="display-section text-on-surface">7-Day Return &amp; Replacement</h2>
+                                <h2 className="display-section text-on-surface">Returns, Refunds &amp; Shipping</h2>
                             </div>
                             <div className="grid md:grid-cols-2 gap-4 text-[15px] leading-[1.55] text-body-slate">
                                 <div className="bg-surface border-l-2 border-l-accent-ochre border-y border-r border-border-line p-5 sm:p-6 space-y-2.5">
                                     <div className="flex items-center gap-2 label-caps text-on-surface">
                                         <RotateCcw className="w-4 h-4 text-accent-ochre" />
-                                        <span>Return Eligibility</span>
+                                        <span>Returns &amp; Refunds</span>
                                     </div>
                                     <p>
-                                        Eligible items may be returned or replaced within 7 days of delivery. Items must be unused, unwashed, with all original tags, boxes, and accessories intact.
+                                        Eligible items may be returned or replaced within the return window shown on the product page (typically 7 days of delivery). Full terms, timelines and non-returnable items are set out in our{" "}
+                                        <Link href="/refund-policy" className="text-primary underline hover:text-on-surface">Refund &amp; Cancellation Policy</Link>.
                                     </p>
                                 </div>
 
                                 <div className="bg-surface border-l-2 border-l-primary border-y border-r border-border-line p-5 sm:p-6 space-y-2.5">
                                     <div className="flex items-center gap-2 label-caps text-on-surface">
                                         <ShieldCheck className="w-4 h-4 text-primary" />
-                                        <span>Refund Disbursement</span>
+                                        <span>Shipping &amp; Delivery</span>
                                     </div>
                                     <p>
-                                        Upon return verification at our fulfillment warehouse, refunds are initiated within 24 hours to the original payment mode or verified UPI account for COD orders.
+                                        Dispatch and delivery timelines, charges and serviceable areas are set out in our{" "}
+                                        <Link href="/shipping-policy" className="text-primary underline hover:text-on-surface">Shipping &amp; Delivery Policy</Link>.
+                                        Risk of loss passes to you once the order is delivered to the address provided.
                                     </p>
                                 </div>
                             </div>
@@ -216,16 +219,18 @@ export default function TermsConditionsPage() {
                                 <AlertCircle className="w-5 h-5" />
                             </div>
                             <div className="space-y-2">
-                                <span className="label-caps text-accent-ochre block">Legal &amp; Customer Desk</span>
+                                <span className="label-caps text-accent-ochre block">Customer Support</span>
                                 <h3 className="text-lg sm:text-xl font-bold uppercase tracking-tight text-surface">
                                     Questions or Clarifications?
                                 </h3>
                                 <p className="text-[14px] leading-[1.55] text-surface/70">
-                                    For inquiries concerning these Terms &amp; Conditions or order compliance, contact our legal and customer team:
+                                    For any question about these Terms or your order, contact us and we will respond within 24–48 business hours.
                                 </p>
                                 <div className="pt-2 flex flex-wrap gap-x-8 gap-y-2 label-caps text-surface/80">
-                                    <span>Email: <a href="mailto:legal@SVastra.co.in" className="text-accent-ochre hover:text-surface transition-colors">legal@SVastra.co.in</a></span>
-                                    <span>Phone: <a href="tel:+919729310456" className="text-accent-ochre hover:text-surface transition-colors">+91 9729310456</a></span>
+                                    <span>Email: <a href="mailto:svastrastore@gmail.com" className="text-accent-ochre hover:text-surface transition-colors">svastrastore@gmail.com</a></span>
+                                    <span>Phone / WhatsApp: <a href="tel:+917507599315" className="text-accent-ochre hover:text-surface transition-colors">+91 75075 99315</a></span>
+                                    <span>Hours: 9:00 AM – 9:00 PM, all days</span>
+                                    <span>Location: Nagpur, Maharashtra, India</span>
                                 </div>
                             </div>
                         </div>

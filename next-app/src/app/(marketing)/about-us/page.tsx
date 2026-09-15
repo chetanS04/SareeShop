@@ -216,17 +216,21 @@ export default function AboutUsPage() {
             </div>
             <div className="lg:col-span-8 space-y-5 text-[15px] sm:text-base leading-relaxed text-body-slate">
               <p>
-                SVastra began as a refusal — of costume, of filigree-for-filigree&apos;s-sake, of
-                wardrobes that ask a woman to shrink into a single role.
+                SVastra is a small, independent saree label. We started it because we wanted
+                handloom sarees that felt modern and easy to wear — without heavy ornament or
+                inflated pricing.
               </p>
               <p>
-                From Atelier Mumbai and Design Studio New Delhi, we work with handloom lineages and
-                contemporary cut. Every release is an independent cut: archival fiber, architectural
-                line, and intentional silence where ornament would usually shout.
+                We work directly with weavers on handloom cotton, tussar, chanderi and linen, and
+                keep the design clean: restrained borders, considered colour, honest finishing.
               </p>
               <p>
-                Our customers are strategists, creators, leaders, and contemplatives — women who
-                author their own rooms. SVastra is the wardrobe that moves with them.
+                Everything is checked before it&apos;s packed, priced on the fabric rather than the
+                label, and backed by a straightforward returns policy. If something isn&apos;t right,
+                write to us at{' '}
+                <a href="mailto:svastrastore@gmail.com" className="text-primary hover:text-on-surface transition-colors">
+                  svastrastore@gmail.com
+                </a>.
               </p>
             </div>
           </div>
@@ -332,66 +336,6 @@ export default function AboutUsPage() {
                   Chief Neurological Researcher &amp; Author
                 </span>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Leadership */}
-      <section className="w-full bg-surface border-b border-border-line">
-        <div className="max-w-site mx-auto site-pad section-y">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            <div className="lg:col-span-5">
-              <div className="media-frame aspect-[4/5] border border-border-line bg-surface-ivory">
-                <img
-                  src="/owner-profile.png"
-                  alt="Gurwinder Singh — Founder & CEO, SVastra"
-                  className="object-cover object-top"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="w-20 h-20 bg-surface-dark text-surface flex items-center justify-center text-2xl font-bold uppercase tracking-tight">
-                    G
-                  </span>
-                </div>
-                <div className="absolute bottom-0 inset-x-0 bg-surface-dark/90 text-surface p-4 border-t border-surface/15">
-                  <span className="text-[14px] font-bold uppercase tracking-tight block">
-                    Gurwinder Singh
-                  </span>
-                  <span className="text-[11px] text-surface/70 uppercase tracking-wider">
-                    Founder &amp; CEO
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-7 space-y-5">
-              <span className="label-caps text-primary block">Leadership</span>
-              <h2 className="display-section text-on-surface">
-                &ldquo;We win when she authors her own room.&rdquo;
-              </h2>
-              <p className="text-[15px] sm:text-base leading-relaxed text-body-slate border-l-2 border-primary pl-5">
-                At SVastra, satisfaction is not a metric dashboard — it is whether a woman feels
-                more herself in the garment than before she put it on. Every partnership, weave, and
-                cut answers that question.
-              </p>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                {[
-                  'Direct loom & atelier sourcing',
-                  'Zero compromise on fiber',
-                  'Customer-first returns',
-                  'Concierge before checkout',
-                ].map((line) => (
-                  <li key={line} className="flex items-start gap-2 text-[13px] text-on-surface font-medium">
-                    <span className="text-primary mt-0.5" aria-hidden="true">
-                      ✓
-                    </span>
-                    {line}
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
         </div>

@@ -203,7 +203,7 @@ export class NotificationsService {
       // Send Transactional Email
       if (allowEmail) {
         if (recipientGroup === 'admin' && this.shouldSendAdminEmail(type)) {
-          const adminEmail = this.config.get<string>('ADMIN_EMAIL', 'admin@sareeapp.com.com');
+          const adminEmail = this.config.get<string>('ADMIN_EMAIL', 'admin@sareeapp.com');
           this.mailService
             .sendAdminAlertEmail(adminEmail, `🚨 Super Admin Alert: ${dto.title}`, dto.title, dto.message, dto.link, priority)
             .catch((err) => this.logger.error(`Failed sending admin alert email to ${adminEmail}:`, err));

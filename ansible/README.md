@@ -1,66 +1,51 @@
 # SareeShop — Live Deploy (Ansible / WSL)
 
-Fresh Ubuntu server pe **ek command** se pura project live.
+Fresh Ubuntu server pe **ek command** se pura project live — including **`saree-app.sql` catalog data** + storage images.
 
 ## What it installs
 
 - Node.js 22, PM2
-- MySQL 8 + `saree_shop` DB + user
+- MySQL 8 + database `saree_app` + app user
+- Imports **`SareeShop/saree-app.sql`** (products, categories, brands, variants, users, …)
+- Syncs **`Saree-app-storage/api/public/storage`** (product/category images)
 - Nginx reverse proxy (`/`, `/api`, `/storage`, `/uploads`, `/socket.io`)
 - UFW firewall (22/80/443)
-- Syncs `nest-api` + `next-app` from your local PC
+- Syncs `nest-api` + `next-app`
 - `npm install` + build both apps
-- DB migrate + seed (`npm run db:setup`)
-- PM2 processes: `sareeshop-api` (8001), `sareeshop-web` (3000)
+- PM2: `sareeshop-api` (8001), `sareeshop-web` (3000)
 - Optional Let's Encrypt SSL
+
+## Required local files before deploy
+
+```
+SareeShop/
+  saree-app.sql
+  Saree-app-storage/api/public/storage/{products,categories}/...
+  nest-api/
+  next-app/
+  ansible/
+```
 
 ## One-time setup (WSL)
 
 ```bash
-# Open WSL, go to ansible folder
 cd /mnt/d/SapnaEcom/SareeShop/ansible
-
-# 1) Inventory (server IP + SSH user)
 cp inventory.ini.example inventory.ini
-nano inventory.ini
-```
-
-Example `inventory.ini`:
-
-```ini
-[sareeshop]
-1.2.3.4 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa
-
-[sareeshop:vars]
-ansible_python_interpreter=/usr/bin/python3
-```
-
-Password SSH (if no key):
-
-```ini
-[sareeshop]
-1.2.3.4 ansible_user=ubuntu ansible_ssh_pass=YourPass ansible_become_pass=YourPass
-```
-
-```bash
-# 2) Domain + passwords + secrets
-nano group_vars/all.yml
+nano inventory.ini          # server IP + SSH user
+nano group_vars/all.yml     # domain + passwords
 ```
 
 **Must change:** `app_domain`, `mysql_root_password`, `db_password`, `jwt_secret`, `admin_password`.
 
-Set:
+Default DB name is **`saree_app`** (matches the SQL dump).
+
+First deploy without SSL:
 
 ```yaml
-frontend_url: "http://YOUR_DOMAIN_OR_IP"   # first deploy without SSL
+frontend_url: "http://YOUR_DOMAIN_OR_IP"
 enable_ssl: false
-```
-
-After DNS works:
-
-```yaml
-frontend_url: "https://yourdomain.com"
-enable_ssl: true
+import_sql_dump: true
+sync_storage: true
 ```
 
 ## Single command deploy
@@ -77,35 +62,48 @@ Password SSH:
 ./deploy.sh --ask-pass --ask-become-pass
 ```
 
-Enable SSL on re-run:
+## Code-only re-deploy (keep DB)
 
 ```bash
-./deploy.sh -e enable_ssl=true -e frontend_url=https://yourdomain.com
+./deploy.sh -e import_sql_dump=false -e sync_storage=true
+```
+
+## Re-import SQL on server (destructive to DB data)
+
+```bash
+./deploy.sh -e import_sql_dump=true
+```
+
+## Local SQL import (Windows / WSL)
+
+PowerShell:
+
+```powershell
+cd d:\SapnaEcom\SareeShop
+powershell -ExecutionPolicy Bypass -File .\scripts\import-sql.ps1
+```
+
+WSL:
+
+```bash
+cd /mnt/d/SapnaEcom/SareeShop
+chmod +x scripts/import-sql.sh
+./scripts/import-sql.sh
 ```
 
 ## After deploy
 
 | Item | Value |
 |------|--------|
-| Site | `http://DOMAIN` or server IP |
+| Site | `http://DOMAIN` |
 | Admin | `/dashboard` |
-| Login | `admin_email` / `admin_password` from `group_vars/all.yml` |
+| Login | from SQL dump user (or `admin_*` vars if you recreate) |
 | API | `http://DOMAIN/api/...` |
+| Images | `/storage/products/...`, `/storage/categories/...` |
 | PM2 | `sudo -u sareeshop pm2 status` |
-
-## Re-deploy (code update only)
-
-Same command again — rsync + rebuild + PM2 reload.
-
-Skip DB seed on later deploys:
-
-```bash
-./deploy.sh -e run_db_setup=false
-```
 
 ## Notes
 
-- Target OS: **Ubuntu 22.04 / 24.04** (fresh VPS)
-- Server needs outbound internet (apt, NodeSource, npm)
-- Point DNS A-record to server before `enable_ssl: true`
-- Local Windows path in WSL: `/mnt/d/SapnaEcom/SareeShop`
+- Target OS: **Ubuntu 22.04 / 24.04**
+- SQL dump has real catalog data — do not also run empty `db:setup` unless `import_sql_dump: false`
+- Point DNS before `enable_ssl: true`

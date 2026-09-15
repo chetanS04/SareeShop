@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>SVastra — Wear Yourself</title><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-lowest": "#ffffff", "inverse-on-surface": "#fbefdc", "secondary": "#5f5e5d", "surface": "#fff8f2", "tertiary-fixed-dim": "#f4be59", "on-tertiary-fixed": "#271900", "surface-container-high": "#f3e7d4", "on-primary-fixed-variant": "#8d1514", "surface-bright": "#fff8f2", "on-primary": "#ffffff", "tertiary-fixed": "#ffdea9", "tertiary": "#402b00", "inverse-primary": "#ffb4ab", "on-tertiary-fixed-variant": "#5f4100", "surface-variant": "#ede1ce", "surface-container": "#f9ecd9", "on-background": "#201b0f", "primary-container": "#8b1313", "surface-container-low": "#fef2df", "on-error": "#ffffff", "on-tertiary": "#ffffff", "secondary-container": "#e2dfdd", "error": "#ba1a1a", "inverse-surface": "#363023", "on-secondary-container": "#646261", "secondary-fixed": "#e5e2e0", "on-surface": "#201b0f", "on-error-container": "#93000a", "on-secondary": "#ffffff", "primary-fixed-dim": "#ffb4ab", "primary-fixed": "#ffdad6", "on-secondary-fixed": "#1c1c1a", "on-surface-variant": "#59413e", "secondary-fixed-dim": "#c9c6c4", "surface-dim": "#e4d9c6", "tertiary-container": "#5d4000", "primary": "#660005", "background": "#fff8f2", "on-secondary-fixed-variant": "#474745", "on-primary-fixed": "#410002", "on-primary-container": "#ff978b", "outline-variant": "#e1bfbb", "error-container": "#ffdad6", "outline": "#8d706d", "surface-tint": "#af2f29", "on-tertiary-container": "#dfaa48", "surface-container-highest": "#ede1ce" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-4": "0.25rem", "space-96": "6rem", "margin-tablet": "2rem", "space-2": "0.125rem", "gutter-desktop": "1.5rem", "margin-desktop": "4.5rem", "space-8": "0.5rem", "space-48": "3rem", "space-12": "0.75rem", "space-16": "1rem", "space-32": "2rem", "gutter-mobile": "1rem", "space-24": "1.5rem", "space-120": "7.5rem", "space-64": "4rem", "margin-mobile": "1.25rem" }, "fontFamily": { "label-sm": [ "Inter" ], "body-lg": [ "Inter" ], "body-md": [ "Inter" ], "label-caps": [ "Inter" ], "headline-sm": [ "Inter" ], "headline-xl-mobile": [ "Inter" ], "headline-2xl": [ "Inter" ], "body-sm": [ "Inter" ], "label-md": [ "Inter" ], "headline-2xl-mobile": [ "Inter" ], "headline-lg": [ "Inter" ], "body-xl": [ "Inter" ], "headline-xl": [ "Inter" ], "headline-md": [ "Inter" ] }, "fontSize": { "label-sm": [ "10px", { "lineHeight": "14px", "letterSpacing": "0.12em", "fontWeight": "600" } ], "body-lg": [ "16px", { "lineHeight": "25px", "letterSpacing": "0em", "fontWeight": "400" } ], "body-md": [ "14px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" } ], "label-caps": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.14em", "fontWeight": "600" } ], "headline-sm": [ "22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "headline-xl-mobile": [ "32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-2xl": [ "64px", { "lineHeight": "72px", "letterSpacing": "-0.03em", "fontWeight": "700" } ], "body-sm": [ "12px", { "lineHeight": "19px", "letterSpacing": "0.005em", "fontWeight": "400" } ], "label-md": [ "13px", { "lineHeight": "18px", "letterSpacing": "0.04em", "fontWeight": "500" } ], "headline-2xl-mobile": [ "38px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "headline-lg": [ "36px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-xl": [ "18px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "400" } ], "headline-xl": [ "48px", { "lineHeight": "54px", "letterSpacing": "-0.025em", "fontWeight": "600" } ], "headline-md": [ "28px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "600" } ] } } } };</script><style id="sans-serif-enforcement">* { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; } h1, h2, h3, h4, h5, h6, blockquote, q { font-family: 'Inter', sans-serif !important; letter-spacing: -0.02em; }</style></head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary"><header class="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-md"><div class="bg-on-surface text-surface py-space-4 px-space-16 text-center text-label-caps font-label-caps tracking-[0.14em] uppercase border-b border-surface/10"><span>COMPLIMENTARY CONCIERGE &amp; GLOBAL SHIPPING ON CURATED EDITS · WEAR YOURSELF</span></div><div class="h-20 max-w-[1440px] mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop flex items-center justify-between border-b border-outline-variant/40"><div class="flex items-center gap-space-12"><a class="flex items-center gap-space-8 group" data-path="home" href="#"><img alt="SVastra Logo Mark.png" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UpO8a3c4_xLQRh9PFJtpCuSpx7y2rVkopKf1U6kTdFd1R59iEyjWxy6ivStq9sNjHiqQRoBmtKrlj288tb9eQeM_K-8M26PCalcFL45rpFX2CQyahPK-4C_NR2YQYrvh1cFfi0z3YW5HFH1tgXvIBbpacxaFYJRz3PrqFvQ_4pwhoyiBd5_KzemORnVzdq3iBklIJj0xyyI3wnE_h6lTfcPrV7Pdhsvn-Vp9iRdEKANzSvyHAHSSj1vQGvsDBE7lt0jW-KQh7SJw"/><span class="font-headline-sm text-headline-sm tracking-[-0.03em] uppercase text-on-surface group-hover:text-primary transition-colors">SVastra</span></a></div><nav class="hidden xl:flex items-center gap-space-32" data-active-classes="text-primary font-semibold border-b-2 border-primary pb-1"><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface uppercase transition-colors" data-path="shop-who-you-are" href="#">SHOP WHO YOU ARE</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface uppercase transition-colors" data-path="shop-how-you-feel" href="#">SHOP HOW YOU FEEL</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface uppercase transition-colors" data-path="the-edit" href="#">THE EDIT</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface uppercase transition-colors" data-path="manifesto" href="#">MANIFESTO</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface uppercase transition-colors" data-path="stories" href="#">STORIES</a></nav><div class="flex items-center gap-space-16 lg:gap-space-24"><button aria-label="Search Archive" class="text-on-surface hover:text-primary transition-colors flex items-center"><span class="material-symbols-outlined text-[20px]">search</span></button><button aria-label="Client Concierge" class="hidden sm:flex items-center text-on-surface hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">support_agent</span></button><a aria-label="Wishlist" class="text-on-surface hover:text-primary transition-colors flex items-center" data-path="wishlist" href="#"><span class="material-symbols-outlined text-[20px]">favorite</span></a><a aria-label="Shopping Bag" class="text-on-surface hover:text-primary transition-colors flex items-center gap-space-4" data-path="bag" href="#"><span class="material-symbols-outlined text-[20px]">shopping_bag</span><span class="font-label-sm text-label-sm">(0)</span></a><a class="flex items-center ml-space-8" data-path="account" href="#"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-1 ring-outline-variant/60 hover:ring-primary transition-all" src="https://lh3.googleusercontent.com/aida/AEtjO1U076ZcWR8FPAMBFrM1bTPU624IvoJxIDh4yULH5mxaV6lR3Bg-g165xUkrWz4XnZZy_De2J-1Vgc_QT32a17epzx4_pC-Qsldp-W0JVTn_pxQiHi0lN64nnkKij7Gqdz8Ymx7Qq8p5qSKEjbzzIn20DyabUYK9PKPb6X5T507XDxeun4ZZs11e18gILEk1qPyjTsl3n8xbmLxFax6gppWE_H1hCPNUsIwr387F_qpasoirz1TlSIQTbb_7d-plYrZ9uzIja8n0"/></a></div></div></header><main class="w-full pt-20 bg-surface flex-grow"><div class="flex flex-col w-full">
+<!-- SECTION 1: BREADCRUMB & CONTEXT -->
+<div class="w-full bg-surface-container-low py-space-12 px-margin-mobile md:px-margin-tablet lg:px-margin-desktop">
+<div class="max-w-[1440px] mx-auto flex items-center justify-between">
+<nav class="flex items-center gap-space-8 font-label-caps text-label-caps tracking-[0.14em] text-on-surface-variant uppercase">
+<a class="hover:text-primary transition-colors" href="#">SHOP WHO YOU ARE</a>
+<span class="text-outline/60">/</span>
+<span class="text-on-surface font-semibold">CHAPTER 02: THE MENTOR</span>
+</nav>
+<div class="hidden md:flex items-center gap-space-16 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
+<span>ARCHETYPE EDITION 02 OF 04</span>
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+<span>ATELIER AUTUMN/WINTER</span>
+</div>
+</div>
+</div>
+<!-- SECTION 2: ROLE HERO (HIGH IMPACT EDITORIAL) -->
+<section class="w-full relative overflow-hidden bg-surface-container-low py-space-48 lg:py-space-96 px-margin-mobile md:px-margin-tablet lg:px-margin-desktop">
+<div class="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-space-32 lg:gap-gutter-desktop items-center">
+<!-- Left Column: Typography & Provenance -->
+<div class="lg:col-span-7 flex flex-col justify-center z-10">
+<div class="inline-flex items-center gap-space-12 mb-space-16">
+<span class="bg-primary text-on-primary font-label-caps text-label-caps px-space-12 py-space-4 tracking-[0.16em] uppercase">ARCHETYPE 02</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-[0.14em] uppercase">ROLE STUDY · SOVEREIGN PRESENCE</span>
+</div>
+<h1 class="font-headline-2xl text-headline-2xl tracking-[-0.03em] uppercase text-on-surface mb-space-16 leading-[1.05]">
+          THE MENTOR
+        </h1>
+<p class="font-headline-md text-headline-md text-primary font-semibold tracking-[-0.015em] mb-space-24">
+          Warm. Intelligent. Grounded.
+        </p>
+<blockquote class="font-body-xl text-body-xl text-on-surface max-w-xl mb-space-32 italic border-l-2 border-primary pl-space-16">
+          “She doesn't need the spotlight to leave an impact.”
+        </blockquote>
+<!-- Archival Specs Matrix -->
+<div class="bg-surface p-space-24 shadow-sm mb-space-32 max-w-xl">
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-space-12 tracking-widest">ATELIER TEXTILE SPECIFICATION</p>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-16 text-left">
+<div>
+<span class="block font-label-sm text-label-sm text-outline uppercase tracking-wider">DENSITY</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface">320 GSM Raw Tussar</span>
+</div>
+<div>
+<span class="block font-label-sm text-label-sm text-outline uppercase tracking-wider">PROVENANCE</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Chanderi &amp; Kutch</span>
+</div>
+<div>
+<span class="block font-label-sm text-label-sm text-outline uppercase tracking-wider">CONSTRUCTION</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Zero Ornamental Filigree</span>
+</div>
+</div>
+</div>
+<!-- Action Pair -->
+<div class="flex flex-wrap items-center gap-space-16">
+<a class="bg-primary hover:bg-on-surface text-on-primary px-space-32 py-space-16 font-label-caps text-label-caps tracking-[0.14em] uppercase transition-colors text-center" href="#mentor-collection">
+            VIEW THE EDIT (12)
+          </a>
+<a class="bg-transparent text-on-surface hover:text-primary px-space-24 py-space-16 font-label-caps text-label-caps tracking-[0.14em] uppercase transition-colors underline underline-offset-8" href="#her-story">
+            READ HER STORY
+          </a>
+</div>
+</div>
+<!-- Right Column: Visual Portrait -->
+<div class="lg:col-span-5 relative">
+<div class="relative w-full aspect-[4/5] bg-surface shadow-xl overflow-hidden group">
+<img class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-alt="Editorial portrait of an intelligent, serene modern Indian woman in her late 30s with hair tied back in a relaxed bun. She wears an architectural unbleached raw Tussar silk saree with deep wine selvedge, seated in an earthy sunlit studio with books, ceramic vessels, and architectural blueprints, warm natural light, dignified composure, high fashion realism." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByw5QvvCuwi1VXVQhuyvrSupgZobwv5o77-SktP3mwQYu5z9AHFO-o7vSaaQOkVyo43VDCxfC1vOA0caxkJ8lnHlWqrP5aORIxFH68Ts-6-CbOXnH_X_JYzBFKA6YiNWbzJ2feN9cBOnChT6GqlXzE0yDOsgQBMKgwjIA0OhQucSXvPyhsV9InIxx71ofkwGrdanCRVmXMgzF40WOeKfTc8ieVu7NR6m79WQcV6actj37PKfliP-O-"/>
+<!-- Tactile Annotation Marker -->
+<div class="absolute bottom-space-16 left-space-16 right-space-16 bg-surface/95 backdrop-blur-sm p-space-16 flex items-center justify-between">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface uppercase tracking-wider">PORTRAIT NO. 02</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Unbleached wild silk with structured pleat</p>
+</div>
+<span class="font-label-caps text-label-caps bg-surface-container-highest px-space-8 py-space-4 text-on-surface font-semibold">100% HANDLOOM</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 3: HER STORY ("WISDOM HAS ITS OWN PRESENCE") -->
+<section class="w-full bg-surface py-space-96 px-margin-mobile md:px-margin-tablet lg:px-margin-desktop" id="her-story">
+<div class="max-w-[1440px] mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-48 items-start">
+<div class="lg:col-span-4">
+<div class="flex items-center gap-space-8 text-primary font-label-caps text-label-caps tracking-[0.14em] uppercase mb-space-16">
+<span class="w-8 h-[2px] bg-primary"></span>
+<span>PROSE &amp; POSTURE</span>
+</div>
+<h2 class="font-headline-xl text-headline-xl tracking-[-0.025em] text-on-surface uppercase leading-tight mb-space-24">
+            WISDOM HAS ITS OWN PRESENCE.
+          </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed mb-space-32">
+            She listens before she speaks. In the decisions she shares without making it about herself. In the quiet gravity of how she anchors a room. Her influence is never loud. But it stays with you.
+          </p>
+<div class="p-space-24 bg-surface-container shadow-sm">
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-widest block mb-space-8">THE ANCHOR RATIO</span>
+<p class="font-body-md text-body-md text-on-surface">Designed with architectural balance: 65% structural drape weight at the hem to encourage centered movement and unwavering physical poise.</p>
+</div>
+</div>
+<div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-space-32">
+<!-- Detail Card 1 -->
+<div class="bg-surface-container-low p-space-32 flex flex-col justify-between h-full shadow-sm hover:shadow-md transition-shadow">
+<div>
+<div class="w-12 h-12 bg-primary text-on-primary flex items-center justify-center font-label-caps text-label-caps font-bold mb-space-24">
+                01
+              </div>
+<h3 class="font-headline-sm text-headline-sm uppercase text-on-surface mb-space-16">
+                The Grounded Drape
+              </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-space-24">
+                Heavy organic wild silks that settle with natural posture. Instead of synthetic stiffness, the density of natural Tussar fibers allows the pallu and pleats to fall straight, creating an uninterrupted monolithic silhouette that commands silent respect.
+              </p>
+</div>
+<div class="pt-space-16 bg-surface p-space-16">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider block mb-space-4">FIBER BEHAVIOR</span>
+<p class="font-body-sm text-body-sm font-semibold text-on-surface">Zero-static natural fall, recalibrates with every step.</p>
+</div>
+</div>
+<!-- Detail Card 2 -->
+<div class="bg-surface-container-low p-space-32 flex flex-col justify-between h-full shadow-sm hover:shadow-md transition-shadow">
+<div>
+<div class="w-12 h-12 bg-on-surface text-surface flex items-center justify-center font-label-caps text-label-caps font-bold mb-space-24">
+                02
+              </div>
+<h3 class="font-headline-sm text-headline-sm uppercase text-on-surface mb-space-16">
+                The Generous Collar
+              </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-space-24">
+                Clean, non-restrictive necklines built for active dialogue and unhurried thought. Engineered with internal facing reinforcement rather than visible stitching, providing an open frame for clear expression and decisive conversation.
+              </p>
+</div>
+<div class="pt-space-16 bg-surface p-space-16">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider block mb-space-4">ERGONOMIC PURPOSE</span>
+<p class="font-body-sm text-body-sm font-semibold text-on-surface">Unconstrained clavicle clearance for speaking &amp; listening.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 4: COLLECTION INTRODUCTION & CONTROLS -->
+<section class="w-full bg-surface-container-low py-space-64 px-margin-mobile md:px-margin-tablet lg:px-margin-desktop" id="mentor-collection">
+<div class="max-w-[1440px] mx-auto">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-space-48">
+<div>
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-[0.14em] block mb-space-8">
+            CURATED CAPSULE · 12 PIECES
+          </span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface uppercase tracking-[-0.025em]">
+            THE MENTOR EDIT
+          </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mt-space-8">
+            A curated selection for confidence that never needs to shout. Twelve tailored handloom silhouettes engineered for poise and longevity.
+          </p>
+</div>
+<div class="flex items-center gap-space-16 mt-space-24 md:mt-0">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">LAYOUT VIEW:</span>
+<div class="flex items-center bg-surface p-space-4 shadow-sm">
+<button class="px-space-12 py-space-8 font-label-sm text-label-sm bg-on-surface text-surface uppercase font-semibold" id="view-4-col">
+              4 COLUMNS
+            </button>
+<button class="px-space-12 py-space-8 font-label-sm text-label-sm text-on-surface uppercase hover:text-primary transition-colors" id="view-3-col">
+              3 COLUMNS
+            </button>
+</div>
+</div>
+</div>
+<!-- SECTION 5: FILTER & SORT CONTROLS -->
+<div class="bg-surface p-space-16 shadow-sm mb-space-48 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-16">
+<!-- Active Filter Chips -->
+<div class="flex flex-wrap items-center gap-space-8">
+<span class="font-label-caps text-label-caps text-on-surface uppercase mr-space-8">FILTERS:</span>
+<span class="inline-flex items-center gap-space-8 bg-on-surface text-surface font-label-sm text-label-sm px-space-12 py-space-8 uppercase">
+            EARTH &amp; OCHRE <button class="hover:text-primary transition-colors">×</button>
+</span>
+<span class="inline-flex items-center gap-space-8 bg-on-surface text-surface font-label-sm text-label-sm px-space-12 py-space-8 uppercase">
+            ORGANIC CHANDERI <button class="hover:text-primary transition-colors">×</button>
+</span>
+<button class="font-label-sm text-label-sm text-primary uppercase underline underline-offset-4 ml-space-8 hover:text-on-surface transition-colors">
+            CLEAR ALL
+          </button>
+</div>
+<!-- Filter Dropdown Selectors -->
+<div class="flex flex-wrap items-center gap-space-12 w-full lg:w-auto">
+<div class="relative flex-1 sm:flex-none">
+<select class="w-full sm:w-auto bg-surface-container font-label-sm text-label-sm text-on-surface uppercase px-space-16 py-space-8 appearance-none pr-space-32 cursor-pointer focus:outline-none">
+<option>FABRIC: CHANDERI, KHADI, HABOTAI</option>
+<option>Organic Khadi</option>
+<option>Chanderi Silk-Cotton</option>
+<option>Habotai Pure Silk</option>
+</select>
+<span class="material-symbols-outlined text-[16px] text-on-surface absolute right-space-8 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
+</div>
+<div class="relative flex-1 sm:flex-none">
+<select class="w-full sm:w-auto bg-surface-container font-label-sm text-label-sm text-on-surface uppercase px-space-16 py-space-8 appearance-none pr-space-32 cursor-pointer focus:outline-none">
+<option>OCCASION: SALON &amp; DISCOURSE</option>
+<option>Atelier Keynote</option>
+<option>Salon Discourse</option>
+<option>Private Symposium</option>
+</select>
+<span class="material-symbols-outlined text-[16px] text-on-surface absolute right-space-8 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
+</div>
+<div class="relative flex-1 sm:flex-none">
+<select class="w-full sm:w-auto bg-surface-container font-label-sm text-label-sm text-on-surface uppercase px-space-16 py-space-8 appearance-none pr-space-32 cursor-pointer focus:outline-none font-semibold">
+<option>SORT: CURATED EDITS</option>
+<option>Price: Low to High</option>
+<option>Price: High to Low</option>
+<option>Textile Weight</option>
+</select>
+<span class="material-symbols-outlined text-[16px] text-on-surface absolute right-space-8 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<!-- SECTION 6: PRODUCT GRID (PART 1 - 8 PIECES) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-24 mb-space-96" id="product-grid-container">
+<!-- Product Card 1 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Modern Indian woman standing with calm authority in raw ecru Chanderi silk saree with subtle architectural graphic borders, minimal jewelry, warm natural lighting, editorial luxury studio." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJ4p_8LBKnjjOnMIED1oM9IQID3uPV5JHPUW9p6EfNXuL7BW4r9dT3-cBWaaVBOtl420R-IwgWr-yALVGT63F0gjz_C7x1LuW65LU2qBLm7y7mLRF34nlbsBi9TO2RwO0KmqGCLDODjkM80YsgdlCWVc--HlOW7Cz2kd8XR3TDxQ2LJ_7rUOP1LoTLkL8TkcE8mLlM2HbiDXuPNyIhKVkAJjdcXi1sNlsv-uyIXCPZ49UkLUFzL2lc"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">RAW ECRU CHANDERI · 180 GSM</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                The Chanderi Discourse Saree
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹19,500</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">BESPOKE DRAPE</span>
+</div>
+</div>
+</article>
+<!-- Product Card 2 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Fashion editorial model wearing an unbleached raw handspun khadi modular overlay trench silhouette over wide leg trousers, clean minimalist architecture background, warm neutral tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaldP1OD-jKt7H8Ptpa0mXsPcgD-YiQTv7ZV4RWewWPXv0CFF4gYaSjXqA3DHlQ7Q2M7m54RU-9OYRf0_5Pj0RvVsFkbm6ciYP1DP9GrY5ZebeFv37XV_q2DXgt3XsXgDaZ35LRgxBlNIfp5VwNPuOV1AgYrgt8aP-o3F-L2zMbytea6ePWa2eBiIIStJwlj8Zu6ivowAMelUUrJuBwiRccXjUgS2xK95hHH14qdxmwLmxbm5zi8SN"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">HANDSPUN KHADI · ZERO SYNTHETIC</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Unbleached Khadi Modular Overlay
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹22,000</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">STRUCTURED</span>
+</div>
+</div>
+</article>
+<!-- Product Card 3 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Editorial look of an Indian woman wearing madder ochre tailored silk kurta with architectural straight trousers, warm sunlight hitting textured natural-dyed fabric, serene posture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAALBWAzSc1mmCfrpmHcfUqVkX63qGgFL_oiMWGNaOPP6WDdrgqRbhNznFlQxiZ29EfKO6TOoac6kFlNUoLa7Xk31UhKuTd0PuFbiIw5fJT8GpeYPxgNSqOU8kFtuZqtlD8EfIdxFbvC12OsLEansqB4M7Ah_6_PsuOGQpY8qDEViS3XhZjER6pCM4ThxDajb2fTqEZJ2vFZPSCsPGPUEZ-pBp9q85MS3A4aso3sPLggPrQ4wCR39QD"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">NATURAL MADDER OCHRE · 240 GSM</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Madder Ochre Tailored Kurta Set
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹17,800</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">PIGMENT DYED</span>
+</div>
+</div>
+</article>
+<!-- Product Card 4 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Minimalist high fashion shot of a wild Tussar pleated wrap with inverted pleat construction, styled on a contemplative woman, earth and sand palette, studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4bCW5yO2uCF24n6FqZw4inFGWnyiAoMdvJCktBalA_5dsu2o6BunYbpUWT5fiqBxEBIpcPnt8Dnr3kSGAac8gl34HJvbohSxtakZ81Eqi_wW7yD5DPGn1JF3A3eHZVpYZWIJZPyI07ochJBSIQOODsISy5VmOMiSsAnDqqW4B_H8VOm5lKlARc1jFbE0n5UY1-jKXeRd0Q-6cD9fjtvO8AFT_bAju5sgSpPL1fBCqzHVsO6yKmcj5"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">WILD TUSSAR SILK · INVERTED PLEAT</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Pleated Tussar Wrap Silhouette
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹24,500</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">HEAVYWEIGHT</span>
+</div>
+</div>
+</article>
+<!-- Product Card 5 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Woman draped in an earth-pigment handloom stance saree in warm clay tones, architectural stance, contemporary modern tailoring, deep studio shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOgWoKE87ieCRDOrbCvoRvzIwabzEV74qkS39UQiZbtqBijlgqIu6R9Zv-UefkuZj6cYUittE_2ZvfXaAijkRurKl6rVHYz232fNr9Twz51BDa056xpR4QLvpwBg1vg6axZ0PeraA9O6IHGxt7nju21YJlUIzI4raC0p7JPHYAXjrs98UMMGGxCY-2jxGVnUKGokkdo779yOJ2EbWn0apRpyiM1rM7xJ2degB06TnLesbPxRoSukJp"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">CLAY PIGMENT HANDLOOM · 290 GSM</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Earth-Pigment Stance Saree
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹21,000</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">NATURAL MINERAL</span>
+</div>
+</div>
+</article>
+<!-- Product Card 6 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Modern architectural asymmetric Angrakha in deep muted forest silk with sharp geometry and hidden inner closures, worn by an Indian woman with composed poise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwTnulY_C1kNfx2vK64KVaGbfHcjun-l3vmF3IpRVwQtWakcRJvjMKj9szBAgw5xhkPamFUUEh5Sh3HKZvbKKqOJdqvsqPH63dmfzEcFf_Roj3Eqxjcsa7j2xZE6OJIZNtOIWU86wKuNJXBRk-s5AZ_aG8ctXl5lXHG3LQ3u8nyw24OzrXFXmDGCS24oUEzxQ3OACtjQfqmiglYEQYCRoJzIZTvOzBLZ0-TaSkPK7DJGjpYq_rP4RJ"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">FOREST SPUN SILK · ARCHITECTURAL CUT</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Architectural Forest Angrakha
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹23,000</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">ASYMMETRIC</span>
+</div>
+</div>
+</article>
+<!-- Product Card 7 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Tailored longline double-weave khadi blazer in dark slate charcoal worn over seamless ivory tunic, intelligent styling, clean minimalist architectural lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQbTS0uV6tafN2SIbNG1SBjRTTJYfj-_ov-mHV3SGrwhHjwiVWCZLk3RD8q0uwVqn4HkPQdavV5Wt58gpdnySOLGAAz_aiS0yc2NoA4snaC3NTKEAlsDxsI1N9FV7TzCLdCuXq8YWvygJsvgKThGGb2LN2AH7aYQL4aAzpxycl2wLL9rMoGZtUWl5TaEkanOxuvCDDzv1WIQL8k3ge2rle6BamWxGSBnU5TvgH-gzT7uDRaAdS6GxL"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">DOUBLE-WEAVE KHADI · SLATE CHARCOAL</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Double-Weave Khadi Longline Blazer
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹26,000</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">TAILORED COAT</span>
+</div>
+</div>
+</article>
+<!-- Product Card 8 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Indian woman wearing an open collar raw silk minimalist silhouette tunic in rich oatmeal ivory, relaxed shoulders, clean neckline, serene editorial lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVA6VXr619jTx0AYiPtYSvJQboW_dbAq2Dc_WqraCxqYuofrsH0EzV1rwZzP_GE-wiHNfrHb2ov7XXmmPib32nnFpuXkO2Yoa4cpCAQmTIu1KMh8omTaHVA2KMAmhIlzHpNcAy-oXvu232BbcksMRAU8ByzleMozoFfcYwGC-tl60hufgiRpo1m1C1ZBTUuw5LpTqa6uhA0awKF0df5VGU4kN-r9CmglqQIEyIOeogirTklfHAXonY"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">RAW MATKA SILK · OATMEAL IVORY</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Raw Silk Open Collar Silhouette
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹18,900</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">COLLAR DETAIL</span>
+</div>
+</div>
+</article>
+</div>
+</div>
+</section>
+<!-- SECTION 7: EDITORIAL INTERRUPTION (FULL BLEED NOIR / ARCHITECTURAL) -->
+<section class="w-full bg-on-surface text-surface py-space-96 px-margin-mobile md:px-margin-tablet lg:px-margin-desktop relative overflow-hidden">
+<div class="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-space-48 items-center">
+<div class="lg:col-span-8">
+<span class="font-label-caps text-label-caps text-on-tertiary-container uppercase tracking-[0.18em] block mb-space-16">
+          THE SVASTRA DIALOGUES · ARCHETYPE PRINCIPLE
+        </span>
+<h2 class="font-headline-2xl text-headline-2xl tracking-[-0.03em] uppercase leading-[1.05] text-surface mb-space-24">
+          INFLUENCE IS NOT VOLUME.
+        </h2>
+<p class="font-body-xl text-body-xl text-surface-container max-w-2xl leading-relaxed mb-space-32">
+          Crafting garments with weight, calm, and permanence. We reject transient decorative noise so your ideas take full shape in the room. When the garment does not distract, your voice carries its full weight.
+        </p>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-24 pt-space-24 bg-surface-dim/10 p-space-24">
+<div>
+<p class="font-label-caps text-label-caps text-tertiary-fixed tracking-wider uppercase mb-space-4">FIBER PURITY</p>
+<p class="font-body-sm text-body-sm text-surface">Hand-spun Organic Cotton &amp; Ahimsa Silk</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-tertiary-fixed tracking-wider uppercase mb-space-4">PIGMENTATION</p>
+<p class="font-body-sm text-body-sm text-surface">Natural Madder, Ochre &amp; Mineral Ferments</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-tertiary-fixed tracking-wider uppercase mb-space-4">CONSTRUCTION</p>
+<p class="font-body-sm text-body-sm text-surface">Zero Synthetic Blend | Hand-finished seams</p>
+</div>
+</div>
+</div>
+<div class="lg:col-span-4 relative flex justify-center">
+<div class="w-full max-w-sm aspect-[4/5] bg-surface-dim/20 shadow-2xl overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Close up architectural detail of handwoven Chanderi border with matte gold zari thread and earthy madder selvage, extreme macro photography, tactile luxury textile quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAh-qQzaTxndKEcMHSZklybi_klNs4yUJqUn8OR_iVdxsiwhfuNqNMyYa-VBDoEmr8dI7iyc7dPLtiqtK_v03tfuJ25sDNhFZ9TKncEYwBTHCgIhpvCJdGnWH982GNCvmDo5lzonNJsCEKuYPAq6Lz9Y_HTdD8_2dUMcAiSRuZwufSGBAOaWXK2xNkf9kGq75IzC_y0zShXDQbbbK_k_0WKwDzfUNUG8a4rOO9nZxwGMuEa7pEoKcno"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface via-transparent to-transparent opacity-60"></div>
+<div class="absolute bottom-space-16 left-space-16 right-space-16 text-surface">
+<span class="font-label-caps text-label-caps uppercase tracking-widest text-tertiary-fixed">WEAVING ARCHIVE</span>
+<p class="font-body-sm text-body-sm mt-space-4">Kutch pit-loom documentation #8812</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 8: PRODUCT GRID (PART 2 - REMAINING 4 PIECES) -->
+<section class="w-full bg-surface-container-low py-space-96 px-margin-mobile md:px-margin-tablet lg:px-margin-desktop">
+<div class="max-w-[1440px] mx-auto">
+<div class="mb-space-32 flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface uppercase tracking-widest">
+          COMPLETE THE ARCHETYPE · SILHOUETTES 09 TO 12
+        </span>
+<span class="font-label-caps text-label-caps text-primary uppercase">
+          STOCKED IN LIMITED SMALL-BATCHES
+        </span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-24">
+<!-- Product Card 9 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Editorial model draped in subtle architecture Chanderi saree with geometric tone-on-tone panels, serene composure in a modernist library context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBntIR1YC-DXb1LybjWQXDW7GohJVaMlbF7ugeuWnW7re0D2itTaHcncicx2lWxk9k34LhFtcgIir1VsoJunKbGYjqKdu4tmwg7jotdioMKGR6Ta_8ZYF4yP75cdueKLEtf3wGQUsQf_30GWJfzVNE0NYHUb2pMirDEUUbPyeewvKh-xgA7eDFnfiXrMWzf9Pc7ozAQhOBIqZWSowIIfBAxzrGdkvJ_jsBSMPNLk0CLMqlo57HvV-Oj"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">CHANDERI HANDLOOM · GEOMETRIC</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Subtle Architecture Chanderi Saree
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹20,500</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">ARCHIVAL</span>
+</div>
+</div>
+</article>
+<!-- Product Card 10 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Woman wearing a muted natural fermented indigo drape overlay with asymmetric hemline over structured ecru trousers, editorial studio warm illumination." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWep8d0wILqodsq44PxwpbV7DPQ_jXFcntyl2dGWpzulq_DPJ9jxfLxiJS_X7GGPjGf9cQaR3ect6FmGrPruZ215exnr1xxlGTcL6uYh17lEk25LF-FWYnZ4FZU0MJ6_N7qW-BADK4oKcuXR9BxLhRlc6geEhHlT6AR9CMWSAw8rAUSG44SvwF37_PsqwQnCUYjjiDGjAMfjPxl3FEpuYlNt5ZDco8t1V1mTI3spmpnn3wjTI-z2rx"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">FERMENTED INDIGO · ZERO CHEMICALS</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Muted Indigo Drape Overlay
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹19,200</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">HERB-DYED</span>
+</div>
+</div>
+</article>
+<!-- Product Card 11 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="High contrast fashion shot of a monochrome kinetic pleated saree with precision lines and clean falls, modern Indian aesthetic without ornamentation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASRSCtNMAhvAfuJlH6ewEnv7BdkEx5qMt9eQVvhzGHZ-k7k0b4AkBmB6kK1juNXB0A_OeLkpWbTRHNfKx8gnQyU7DWBwnGoWzZHZz_L-z5KhF0BZtIL1PA8bmOvOSlcxUlOYGT-SYY1HpxYu5HckpESU9C6yAh5bgKjbD0t0a-gcXWijUlBz4E0a8mzjBgMTT8vjlXFpzYm1yWLDP6uBU_obgq7V1c3TQFrShrw-LIQii1xXSB_lOF"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">KINETIC WEAVE · NOIR &amp; CHALK</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Monochrome Kinetic Pleated Saree
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹23,000</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">KINETIC WEAVE</span>
+</div>
+</div>
+</article>
+<!-- Product Card 12 -->
+<article class="bg-surface group flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" data-alt="Editorial portrait of model wearing a sand washed Habotai pure silk fluid trousers and minimalist long tunic set, understated luxury, natural daylight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc9HLYkkwsf2yzHBwhGs3_wx1zyYqek11dH8jPDvMrav3l8oSwmK0mWCNEhmxxUEjC_3rI8g2ihKaRAweevuP2fIC7h8z6VypiOQU-6_pBlQixrPLBYzkkcTy4ev6KyT_wtkHRxVCupBPd_dMoKBEUCkyYf20KSncJU02fl4FFpiUgXBCJJzUwE3DB-s2un2F__P7bk-jeS9EDTRE7bqVWQOn64kotuJZwg2U2plbdGqhgTBgOHWbS"/>
+<button aria-label="Add to Wishlist" class="absolute top-space-12 right-space-12 bg-surface/90 hover:bg-primary hover:text-on-primary text-on-surface p-space-8 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+<div class="absolute bottom-0 left-0 right-0 bg-on-surface text-surface py-space-8 px-space-12 font-label-caps text-label-caps text-center uppercase translate-y-full group-hover:translate-y-0 transition-transform duration-200">
+              QUICK VIEW · ARCHIVAL DETAILS
+            </div>
+</div>
+<div class="p-space-16 flex flex-col flex-grow justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-space-4">HABOTAI PURE SILK · SAND WASH</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface uppercase group-hover:text-primary transition-colors">
+                Habotai Fluid Trouser &amp; Kurta Set
+              </h3>
+</div>
+<div class="mt-space-16 pt-space-12 bg-surface flex items-center justify-between">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">₹18,400</span>
+<span class="font-label-caps text-label-caps text-primary uppercase">PURE SILK</span>
+</div>
+</div>
+</article>
+</div>
+</div>
+</section>
+<!-- SECTION 9: AFFECTIVE CROSS-NAVIGATION ("HOW THE MENTOR FEELS") -->
+<section class="w-full bg-surface py-space-96 px-margin-mobile md:px-margin-tablet lg:px-margin-desktop">
+<div class="max-w-[1440px] mx-auto">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-space-48">
+<div>
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-[0.14em] block mb-space-8">
+            MOOD &amp; SENSORIAL EXPLORATION
+          </span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface uppercase tracking-[-0.025em]">
+            HOW THE MENTOR FEELS
+          </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mt-space-8">
+            Filter the archetype by your internal rhythm. Navigate the collection through feeling instead of formality.
+          </p>
+</div>
+<a class="font-label-caps text-label-caps uppercase text-on-surface hover:text-primary transition-colors underline underline-offset-4 mt-space-16 md:mt-0" href="#">
+          EXPLORE ALL SENSORIAL MOODS →
+        </a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-32">
+<!-- Mood Card 1: MINIMAL -->
+<a class="group bg-surface-container-low p-space-32 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all" href="#">
+<div>
+<div class="w-full aspect-[16/10] bg-surface-container overflow-hidden mb-space-24">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Monochromatic textural flat lay of raw unbleached cotton and handspun wild silk yarn in sunlight, pristine minimal composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKl2ktARjxxho3C6lDKIyzANJ7grYPQ69VcuVJEhr2Hly6AhrGH9uMXBC3Rhh-dETwluPULtamxzL6IcLemGYxunn4RuaPOiFZJvyhtn5GTnWFyRNIsaOhMxmS3VHD3V_XD0P_GDr5aV85jxUyouLli9vbPIFdps29riwd7FIbYjZb8TaA55Hd2WIafeGSPIn7_nbD4RfgSi00jSWVDSCDqObDz465WX-iKqbTlzZKJJTaYvfQBWPt"/>
+</div>
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-widest block mb-space-4">MOOD 01</span>
+<h3 class="font-headline-sm text-headline-sm uppercase text-on-surface mb-space-12 group-hover:text-primary transition-colors">
+              MINIMAL
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Stripped of excess, quiet command. Pure unbleached textures that allow your presence to dominate without visual clutter.
+            </p>
+</div>
+<div class="mt-space-24 pt-space-16 bg-surface p-space-12 flex items-center justify-between text-on-surface">
+<span class="font-label-caps text-label-caps uppercase">SHOP MINIMAL</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</a>
+<!-- Mood Card 2: POWER -->
+<a class="group bg-surface-container-low p-space-32 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all" href="#">
+<div>
+<div class="w-full aspect-[16/10] bg-surface-container overflow-hidden mb-space-24">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Rich deep handloom silk textile with intense density, architectural fold, deep warm shadows with ochre accents, luxury editorial framing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCI5weprkQTyUO-nvrPhcZ-w-bJJyqJgyFIT1kjPBepglzPAAmn5lQTtYpB5NlFFtTWssTwoICwYN3NdxKUJ9tkOi4G8x38dfjuy7qovM7d6LoCYc0BPhA_5ZJh0xJpVHjRox8ftYUfy6mAehsiMvR_HX_dhY2w0hzbPsL_Zu6Efldk4Ha_4qf5gvpScaBUyCpaB7zoGJx278KVMlGNGpCznLpnqTZq_dPC5J5TZtE6zvBTLIiPoBh_"/>
+</div>
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-widest block mb-space-4">MOOD 02</span>
+<h3 class="font-headline-sm text-headline-sm uppercase text-on-surface mb-space-12 group-hover:text-primary transition-colors">
+              POWER
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Grounded clarity. Dense wild silks that hold posture through twelve hours of meetings without collapsing or creasing.
+            </p>
+</div>
+<div class="mt-space-24 pt-space-16 bg-surface p-space-12 flex items-center justify-between text-on-surface">
+<span class="font-label-caps text-label-caps uppercase">SHOP POWER</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</a>
+<!-- Mood Card 3: BRUNCH -->
+<a class="group bg-surface-container-low p-space-32 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all" href="#">
+<div>
+<div class="w-full aspect-[16/10] bg-surface-container overflow-hidden mb-space-24">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Airy handwoven lightweight khadi catching morning golden hour sunlight through a courtyard window, serene effortless luxury." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDK5KVLAVucGwvwAL-e8Dmnq_c-2-1zgdUGmWtUaM8PLw7L5d-2xhBbeY6FHFZDKcwVpplMp9qVklZW1ku0dfAAA1v_SpWVPULYV2MfT7LVG7h9wqLJirE5U1GigRVJllFS7YICFDm-_AjXXA0DcfCiZfXrBfabafND5juZFqk3dbXEvGFMbgNR2NAW9BGGqJ2z0gr22hI96mRZ1aKGmXySoQvW967eLUxKWBZzRa0PheO9q5x9pb86"/>
+</div>
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-widest block mb-space-4">MOOD 03</span>
+<h3 class="font-headline-sm text-headline-sm uppercase text-on-surface mb-space-12 group-hover:text-primary transition-colors">
+              BRUNCH
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Tactile, effortless morning light handlooms. Relaxed silhouettes engineered for unhurried weekend exchanges and salon conversations.
+            </p>
+</div>
+<div class="mt-space-24 pt-space-16 bg-surface p-space-12 flex items-center justify-between text-on-surface">
+<span class="font-label-caps text-label-caps uppercase">SHOP BRUNCH</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</a>
+</div>
+</div>
+</section>
+<!-- SECTION 10: IDENTITY MULTIPLICITY ("WHAT OTHER VERSION OF YOU IS WAITING?") -->
+<section class="w-full bg-surface-container-high py-space-96 px-margin-mobile md:px-margin-tablet lg:px-margin-desktop">
+<div class="max-w-[1440px] mx-auto">
+<div class="text-center max-w-2xl mx-auto mb-space-64">
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-[0.16em] block mb-space-8">
+          THE CONTINUUM OF MULTIPLICITY
+        </span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface uppercase tracking-[-0.025em]">
+          WHAT OTHER VERSION OF YOU IS WAITING?
+        </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-space-12">
+          You are never just one role. Explore the companion archetype collections crafted for sovereign individuals.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-32">
+<!-- Archetype 01: THE LEADER -->
+<a class="group bg-surface p-space-32 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all" href="#">
+<div>
+<div class="flex items-center justify-between mb-space-16">
+<span class="font-label-caps text-label-caps bg-on-surface text-surface px-space-8 py-space-4">CHAPTER 01</span>
+<span class="font-label-caps text-label-caps text-outline uppercase">14 SILHOUETTES</span>
+</div>
+<h3 class="font-headline-md text-headline-md uppercase text-on-surface mb-space-8 group-hover:text-primary transition-colors">
+              THE LEADER
+            </h3>
+<p class="font-label-md text-label-md text-primary uppercase tracking-wider mb-space-16">
+              Confident. Composed. Decisive.
+            </p>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Monolithic architectural lines, crisp pleats, and dark wine accents engineered for executive presence and clear command.
+            </p>
+</div>
+<div class="mt-space-24 pt-space-16 bg-surface-container p-space-12 flex items-center justify-between text-on-surface">
+<span class="font-label-caps text-label-caps uppercase">ENTER ARCHETYPE 01</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</a>
+<!-- Archetype 03: THE CREATOR -->
+<a class="group bg-surface p-space-32 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all" href="#">
+<div>
+<div class="flex items-center justify-between mb-space-16">
+<span class="font-label-caps text-label-caps bg-on-surface text-surface px-space-8 py-space-4">CHAPTER 03</span>
+<span class="font-label-caps text-label-caps text-outline uppercase">16 SILHOUETTES</span>
+</div>
+<h3 class="font-headline-md text-headline-md uppercase text-on-surface mb-space-8 group-hover:text-primary transition-colors">
+              THE CREATOR
+            </h3>
+<p class="font-label-md text-label-md text-primary uppercase tracking-wider mb-space-16">
+              Original. Expressive. Independent.
+            </p>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Asymmetric proportions, raw selvedge releases, and experimental botanical dyes designed for unbounded expressive momentum.
+            </p>
+</div>
+<div class="mt-space-24 pt-space-16 bg-surface-container p-space-12 flex items-center justify-between text-on-surface">
+<span class="font-label-caps text-label-caps uppercase">ENTER ARCHETYPE 03</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</a>
+<!-- Archetype 04: THE HOME MANAGER -->
+<a class="group bg-surface p-space-32 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all" href="#">
+<div>
+<div class="flex items-center justify-between mb-space-16">
+<span class="font-label-caps text-label-caps bg-on-surface text-surface px-space-8 py-space-4">CHAPTER 04</span>
+<span class="font-label-caps text-label-caps text-outline uppercase">11 SILHOUETTES</span>
+</div>
+<h3 class="font-headline-md text-headline-md uppercase text-on-surface mb-space-8 group-hover:text-primary transition-colors">
+              THE HOME MANAGER
+            </h3>
+<p class="font-label-md text-label-md text-primary uppercase tracking-wider mb-space-16">
+              Capable. Effortless. Completely Herself.
+            </p>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              Featherweight handlooms with fluid movement, reinforced armholes, and tactile softness that transitions through daily domestic mastery.
+            </p>
+</div>
+<div class="mt-space-24 pt-space-16 bg-surface-container p-space-12 flex items-center justify-between text-on-surface">
+<span class="font-label-caps text-label-caps uppercase">ENTER ARCHETYPE 04</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</a>
+</div>
+</div>
+</section>
+<!-- SECTION 11: BRAND SIGN-OFF -->
+<section class="w-full bg-surface py-space-120 px-margin-mobile md:px-margin-tablet lg:px-margin-desktop text-center">
+<div class="max-w-4xl mx-auto flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-[0.2em] mb-space-16 block">
+        THE SVASTRA ETHOS
+      </span>
+<h2 class="font-headline-2xl text-headline-2xl uppercase tracking-[-0.03em] text-on-surface mb-space-24 leading-none">
+        WEAR YOURSELF.
+      </h2>
+<p class="font-body-xl text-body-xl text-on-surface-variant max-w-xl leading-relaxed mb-space-32">
+        Never an ornament. Never an apology. Just sovereign handcraft for sovereign identities.
+      </p>
+<div class="w-16 h-1 bg-primary mb-space-32"></div>
+<p class="font-label-caps text-label-caps text-outline uppercase tracking-widest">
+        ARCHIVAL HANDLOOM WEAVING · CHANDERI, KUTCH &amp; VARANASI
+      </p>
+</div>
+</section>
+<!-- CLIENT-SIDE SCRIPT FOR DYNAMIC VIEW TOGGLE -->
+<script>
+    (function() {
+      const btn4Col = document.getElementById('view-4-col');
+      const btn3Col = document.getElementById('view-3-col');
+      const grid = document.getElementById('product-grid-container');
+
+      if (btn4Col && btn3Col && grid) {
+        btn4Col.addEventListener('click', function() {
+          grid.classList.remove('lg:grid-cols-3');
+          grid.classList.add('lg:grid-cols-4');
+          btn4Col.classList.add('bg-on-surface', 'text-surface');
+          btn4Col.classList.remove('text-on-surface');
+          btn3Col.classList.remove('bg-on-surface', 'text-surface');
+          btn3Col.classList.add('text-on-surface');
+        });
+
+        btn3Col.addEventListener('click', function() {
+          grid.classList.remove('lg:grid-cols-4');
+          grid.classList.add('lg:grid-cols-3');
+          btn3Col.classList.add('bg-on-surface', 'text-surface');
+          btn3Col.classList.remove('text-on-surface');
+          btn4Col.classList.remove('bg-on-surface', 'text-surface');
+          btn4Col.classList.add('text-on-surface');
+        });
+      }
+    })();
+  </script>
+</div></main><footer class="w-full bg-surface-container-low border-t border-outline-variant/50"><div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop py-space-64 lg:py-space-96"><div class="grid grid-cols-1 md:grid-cols-12 gap-space-32 lg:gap-gutter-desktop mb-space-64"><div class="md:col-span-5 space-y-space-24"><span class="font-headline-sm text-headline-sm uppercase tracking-tight text-on-surface block">SVASTRA</span><p class="font-body-lg text-body-lg text-on-surface-variant max-w-md leading-relaxed">Wear Yourself. Rooted in architectural modernism and archival Indian artistry, crafting fluid luxury silhouettes for sovereign identities.</p><div class="pt-space-16"><p class="font-label-caps text-label-caps uppercase text-on-surface-variant mb-space-8">THE DISPATCH</p><form class="flex items-end gap-space-8 max-w-md"><div class="flex-1 border-b border-on-surface py-space-4"><input class="w-full bg-transparent font-label-caps text-label-caps text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none uppercase" placeholder="ENTER YOUR EMAIL" type="email"/></div><button class="bg-on-surface hover:bg-primary-container text-surface transition-colors px-space-16 py-space-8 font-label-caps text-label-caps uppercase" type="button">JOIN</button></form></div></div><div class="md:col-span-2 md:col-start-7 space-y-space-16"><h4 class="font-label-caps text-label-caps uppercase text-on-surface tracking-widest">COLLECTIONS</h4><ul class="space-y-space-8 font-body-sm text-body-sm text-on-surface-variant"><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="shop-who-you-are" href="#">Architectural Silhouettes</a></li><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="shop-how-you-feel" href="#">Sensorial Handlooms</a></li><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="the-edit" href="#">Couture Capsule</a></li><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="the-edit" href="#">Curated Objects</a></li></ul></div><div class="md:col-span-2 space-y-space-16"><h4 class="font-label-caps text-label-caps uppercase text-on-surface tracking-widest">EDITORIAL</h4><ul class="space-y-space-8 font-body-sm text-body-sm text-on-surface-variant"><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="manifesto" href="#">The SVastra Manifesto</a></li><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="stories" href="#">Stories of Handcraft</a></li><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="the-edit" href="#">Atelier Notes</a></li><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="stories" href="#">Archival Dialogues</a></li></ul></div><div class="md:col-span-2 space-y-space-16"><h4 class="font-label-caps text-label-caps uppercase text-on-surface tracking-widest">SERVICES</h4><ul class="space-y-space-8 font-body-sm text-body-sm text-on-surface-variant"><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="concierge" href="#">Private Concierge</a></li><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="the-edit" href="#">Bespoke Fitting</a></li><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="concierge" href="#">Worldwide Shipping</a></li><li class="hover:text-primary transition-colors cursor-pointer"><a data-path="concierge" href="#">Care &amp; Preservation</a></li></ul></div></div><div class="border-t border-outline-variant/30 pt-space-24 flex flex-col sm:flex-row items-center justify-between gap-space-16 text-label-caps font-label-caps text-on-surface-variant uppercase"><p>© 2025 SVASTRA LUXURY ATELIER. ALL RIGHTS RESERVED.</p><div class="flex items-center gap-space-24"><span>TERMS OF SERVICE</span><span>PRIVACY POLICY</span><span>AUTHENTICITY GUARANTEE</span></div></div></div></footer></body></html>

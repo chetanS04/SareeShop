@@ -54,7 +54,7 @@ async function initDb() {
 
   // Step 4: Seed Data
   console.log('Seeding initial data...');
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@sareeapp.com.com';
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@sareeapp.com';
   const adminPassword = process.env.ADMIN_PASSWORD || 'root1234';
   const adminName = process.env.ADMIN_NAME || 'Admin User';
 

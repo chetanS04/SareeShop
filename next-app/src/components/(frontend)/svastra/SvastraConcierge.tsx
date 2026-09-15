@@ -16,34 +16,43 @@ export default function SvastraConcierge() {
   };
 
   return (
-    <section id="concierge" className="w-full bg-surface-subtle border-b border-border-line scroll-mt-24" aria-labelledby="concierge-title">
+    <section
+      id="concierge"
+      className="w-full bg-surface-subtle border-b border-border-line scroll-mt-24"
+      aria-labelledby="concierge-title"
+    >
       <div className="max-w-site mx-auto site-pad section-y">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-stretch">
           <div className="lg:col-span-6 bg-surface p-6 sm:p-8 lg:p-12 border border-border-line space-y-5 flex flex-col">
-            <div className="flex items-center gap-2 text-primary">
-              <span className="label-caps">Bespoke Services</span>
-            </div>
+            <span className="label-caps text-primary">Help &amp; Support</span>
             <h3 id="concierge-title" className="text-2xl sm:text-3xl font-bold uppercase tracking-tight">
-              The Private Atelier Concierge
+              Need help choosing?
             </h3>
             <p className="text-[15px] leading-[1.6] text-body-slate flex-grow">
-              Need bespoke drape engineering for a key global keynote or a private fitting in New Delhi, Mumbai, or London? Our private sartorial concierge offers direct dialogue with our pattern-makers.
+              Not sure which weave suits the occasion, or need help with sizing, blouse fabric or a gift?
+              Message us and someone from the team will get back to you.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
-              <Link href="/contact-us" className="bg-surface-dark hover:bg-primary text-surface px-6 py-3.5 text-[11px] font-semibold tracking-[0.08em] uppercase text-center transition-colors min-h-[48px] flex items-center justify-center">
-                Book Private Salon
+              <Link
+                href="/contact-us"
+                className="bg-surface-dark hover:bg-primary text-surface px-6 py-3.5 text-[11px] font-semibold tracking-[0.08em] uppercase text-center transition-colors min-h-[48px] flex items-center justify-center"
+              >
+                Contact Us
               </Link>
-              <Link href="/contact-us" className="sv-btn-outline">
-                Drape Consultation
+              <Link href="/track-shipment" className="sv-btn-outline">
+                Track Order
               </Link>
             </div>
           </div>
 
           <div className="lg:col-span-6 space-y-5 flex flex-col justify-center">
-            <span className="label-caps text-primary block">The Dispatch // Archival Access</span>
-            <h3 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight">Join the Conversation</h3>
+            <span className="label-caps text-primary block">Newsletter</span>
+            <h3 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight">
+              New arrivals &amp; offers
+            </h3>
             <p className="text-[15px] leading-[1.6] text-body-slate">
-              A quiet monthly dispatch of cultural essays, invitations to private listening salons, and 48-hour early access to limited handloom edition drops. Strictly substance.
+              Add your email to hear when new sarees drop and when there&apos;s a sale. No spam — a few
+              emails a month at most.
             </p>
             <form className="space-y-4 pt-1" onSubmit={handleDispatch} noValidate>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -54,26 +63,27 @@ export default function SvastraConcierge() {
                   id="dispatch-email"
                   name="email"
                   autoComplete="email"
-                  className="flex-1 bg-surface border border-on-surface px-4 py-3.5 text-[11px] font-semibold tracking-wider text-on-surface placeholder:text-body-slate/60 focus:outline-none uppercase min-h-[48px]"
-                  placeholder="Your preferred email address"
+                  className="flex-1 bg-surface border border-on-surface px-4 py-3.5 text-[13px] text-on-surface placeholder:text-body-slate/60 focus:outline-none focus:border-primary min-h-[48px]"
+                  placeholder="you@example.com"
                   required
                   type="email"
                 />
                 <button className="sv-btn-primary" type="submit">
-                  Join Dispatch
+                  Subscribe
                 </button>
               </div>
               {msgVisible && (
-                <p className="text-[12px] text-primary font-semibold" role="status" aria-live="polite">
-                  Thank you. You have been added to the private SVastra editorial ledger.
+                <p className="text-[13px] text-primary font-semibold" role="status" aria-live="polite">
+                  Thanks — you&apos;re subscribed.
                 </p>
               )}
-              <div className="flex items-center gap-2 text-[10px] font-semibold tracking-wider uppercase text-body-slate">
-                <span className="text-primary" aria-hidden="true">
-                  ✓
-                </span>
-                <span>Confidential Archive &amp; Worldwide Client Protection</span>
-              </div>
+              <p className="text-[12px] text-body-slate">
+                By subscribing you agree to our{" "}
+                <Link href="/privacy-policy" className="underline hover:text-primary">
+                  privacy policy
+                </Link>
+                .
+              </p>
             </form>
           </div>
         </div>

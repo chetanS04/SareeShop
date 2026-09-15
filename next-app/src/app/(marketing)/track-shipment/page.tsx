@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Search, Loader2, Package, AlertCircle } from 'lucide-react';
-import TrackingTimeline from '@/components/TrackingTimeline';
-import { DelhiveryTrackingData, trackByWaybill } from '../../../../utils/delhiveryApi';
-import ErrorMessage from '@/components/(sheared)/ErrorMessage';
-import SuccessMessage from '@/components/(sheared)/SuccessMessage';
-import { useLoader } from '@/context/LoaderContext';
+import React, { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Search, Loader2, Package, AlertCircle, HelpCircle, ScanLine, Mail } from "lucide-react";
+import TrackingTimelineSv from "@/components/(frontend)/TrackingTimelineSv";
+import { DelhiveryTrackingData, trackByWaybill } from "../../../../utils/delhiveryApi";
+import ErrorMessage from "@/components/(sheared)/ErrorMessage";
+import SuccessMessage from "@/components/(sheared)/SuccessMessage";
+import { useLoader } from "@/context/LoaderContext";
 
 function PublicTrackingContent() {
     const searchParams = useSearchParams();
-    const [waybill, setWaybill] = useState('');
+    const [waybill, setWaybill] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [trackingData, setTrackingData] = useState<DelhiveryTrackingData | null>(null);
@@ -21,17 +22,22 @@ function PublicTrackingContent() {
     const { showLoader, hideLoader } = useLoader();
 
     useEffect(() => {
-        const qAwb = searchParams.get('waybill') || searchParams.get('awb') || searchParams.get('tracking_id') || searchParams.get('id');
+        const qAwb =
+            searchParams.get("waybill") ||
+            searchParams.get("awb") ||
+            searchParams.get("tracking_id") ||
+            searchParams.get("id");
         if (qAwb && !waybill) {
             setWaybill(qAwb);
             executeTrack(qAwb);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams]);
 
     const executeTrack = async (awbNumber: string) => {
         if (!awbNumber.trim()) {
-            setError('Please enter a waybill number');
-            setErrorMessage('Please enter a waybill number');
+            setError("Please enter a waybill number");
+            setErrorMessage("Please enter a waybill number");
             return;
         }
 
@@ -44,9 +50,9 @@ function PublicTrackingContent() {
 
             const response = await trackByWaybill(awbNumber.trim());
             setTrackingData(response.tracking_data);
-            setSuccessMessage('Shipment tracking information loaded successfully!');
+            setSuccessMessage("Tracking details loaded.");
         } catch (err: any) {
-            const errorMsg = err?.error || err?.message || 'Failed to fetch tracking information';
+            const errorMsg = err?.error || err?.message || "Failed to fetch tracking information";
             setError(errorMsg);
             setErrorMessage(errorMsg);
             setTrackingData(null);
@@ -62,162 +68,174 @@ function PublicTrackingContent() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 py-12 px-4">
+        <div className="min-h-screen bg-surface text-on-surface">
             {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
             {successMessage && <SuccessMessage message={successMessage} onClose={() => setSuccessMessage(null)} />}
-            <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center p-4 bg-blue-100 rounded-full mb-4">
-                        <Package className="w-12 h-12 text-blue-600" />
+
+            {/* MASTHEAD */}
+            <section className="w-full bg-surface border-b border-border-line">
+                <div className="max-w-site mx-auto site-pad pt-8 sm:pt-10 pb-10 sm:pb-14">
+                    <nav className="label-caps text-body-slate mb-8 flex flex-wrap items-center gap-2">
+                        <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                        <span className="text-on-surface/30" aria-hidden="true">/</span>
+                        <span className="text-body-slate">Orders</span>
+                        <span className="text-on-surface/30" aria-hidden="true">/</span>
+                        <span className="text-on-surface">Track Shipment</span>
+                    </nav>
+
+                    <div className="max-w-2xl mx-auto text-center flex flex-col items-center space-y-5">
+                        <div className="inline-flex items-center gap-2 bg-surface-ivory px-3 py-1.5 border border-border-line label-caps text-primary">
+                            <ScanLine className="w-3.5 h-3.5" />
+                            <span>Live Courier Tracking</span>
+                        </div>
+                        <h1 className="display-hero text-on-surface">
+                            Track Your
+                            <br />
+                            <span className="text-primary">Shipment</span>
+                        </h1>
+                        <p className="text-[15px] sm:text-base leading-[1.6] text-body-slate">
+                            Enter the waybill (AWB) number from your dispatch email to see the latest
+                            status and scan history.
+                        </p>
                     </div>
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                        Track Your Shipment
-                    </h1>
-                    <p className="text-gray-600">
-                        Enter your waybill number to track your package in real-time
-                    </p>
                 </div>
+            </section>
 
-                {/* Search Form */}
-                <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-                    <form onSubmit={handleTrack} className="space-y-4">
-                        <div>
-                            <label htmlFor="waybill" className="block text-sm font-medium text-gray-700 mb-2">
-                                Waybill Number
-                            </label>
-                            <div className="flex gap-3">
-                                <input
-                                    type="text"
-                                    id="waybill"
-                                    value={waybill}
-                                    onChange={(e) => setWaybill(e.target.value)}
-                                    placeholder="Enter waybill number (e.g., DEL2025121012345)"
-                                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                    disabled={loading}
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={loading || !waybill.trim()}
-                                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors font-medium cursor-pointer"
-                                >
-                                    {loading ? (
-                                        <>
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                            Tracking...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Search className="w-5 h-5" />
-                                            Track
-                                        </>
-                                    )}
-                                </button>
-                            </div>
+            {/* BODY */}
+            <section className="w-full bg-surface-subtle border-b border-border-line">
+                <div className="max-w-site mx-auto site-pad section-y">
+                    <div className="max-w-3xl mx-auto space-y-8">
+
+                        {/* Search Form */}
+                        <div className="bg-pure-white border border-border-line p-5 sm:p-7">
+                            <form onSubmit={handleTrack} className="space-y-4">
+                                <label htmlFor="waybill" className="label-caps text-body-slate block">
+                                    Waybill / AWB Number
+                                </label>
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <input
+                                        type="text"
+                                        id="waybill"
+                                        value={waybill}
+                                        onChange={(e) => setWaybill(e.target.value)}
+                                        placeholder="e.g. 1234567890123"
+                                        className="flex-1 px-4 py-3 bg-surface border border-border-line text-[14px] text-on-surface placeholder:text-body-slate/60 outline-none focus:border-on-surface transition-colors"
+                                        disabled={loading}
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={loading || !waybill.trim()}
+                                        className="sv-btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Tracking…
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Search className="w-4 h-4" />
+                                                Track
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+
+                                <div className="flex items-start gap-3 p-4 bg-surface-ivory border border-border-line">
+                                    <HelpCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                                    <div className="text-[13px] leading-[1.55] text-body-slate">
+                                        <p className="label-caps text-on-surface mb-1">Where to find it</p>
+                                        <p>
+                                            The waybill number is in your shipment dispatch email and SMS, and on
+                                            the <Link href="/orders" className="text-primary underline hover:text-on-surface">My Orders</Link> page once your order ships.
+                                        </p>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
 
-                        <div className="flex items-start gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                            <div className="text-sm text-blue-800">
-                                <p className="font-semibold mb-1">Where to find your waybill number?</p>
-                                <p>Your waybill number can be found in your order confirmation email or on your shipping label.</p>
+                        {/* Error */}
+                        {error && (
+                            <div className="bg-pure-white border-l-2 border-l-primary border-y border-r border-border-line p-5 sm:p-6 flex items-start gap-3">
+                                <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <h3 className="label-caps text-on-surface mb-1.5">Unable to Track</h3>
+                                    <p className="text-[14px] text-body-slate leading-[1.55]">{error}</p>
+                                    <p className="text-[13px] text-body-slate/80 mt-2 leading-[1.55]">
+                                        Check the number and try again. Tracking can take a few hours to appear
+                                        after dispatch.
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    </form>
-                </div>
+                        )}
 
-                {/* Error Message */}
-                {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-6 h-6 text-red-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                                <h3 className="text-lg font-semibold text-red-900 mb-1">
-                                    Unable to Track Shipment
-                                </h3>
-                                <p className="text-red-800">{error}</p>
-                                <p className="text-sm text-red-700 mt-2">
-                                    Please verify your waybill number and try again.
+                        {/* Results */}
+                        {trackingData && <TrackingTimelineSv trackingData={trackingData} />}
+
+                        {/* No results */}
+                        {searched && !trackingData && !loading && !error && (
+                            <div className="bg-pure-white border border-border-line p-10 flex flex-col items-center text-center">
+                                <Package className="w-12 h-12 text-on-surface/20 mb-4" strokeWidth={1} />
+                                <p className="label-caps text-on-surface mb-2">No Tracking Found</p>
+                                <p className="text-[14px] text-body-slate max-w-sm leading-[1.55]">
+                                    We couldn&apos;t find any information for this waybill number yet.
                                 </p>
                             </div>
+                        )}
+
+                        {/* Pre-search info */}
+                        {!searched && (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {[
+                                    { icon: ScanLine, title: "Live Status", body: "See the current status straight from the courier." },
+                                    { icon: Package, title: "Full Scan History", body: "Every scan with location and timestamp." },
+                                    { icon: AlertCircle, title: "Delay Alerts", body: "Spot exceptions like address issues early." },
+                                ].map((c) => {
+                                    const Icon = c.icon;
+                                    return (
+                                        <div key={c.title} className="bg-pure-white border border-border-line p-5 space-y-2.5">
+                                            <Icon className="w-5 h-5 text-primary" strokeWidth={1.5} />
+                                            <h3 className="label-caps text-on-surface">{c.title}</h3>
+                                            <p className="text-[13px] text-body-slate leading-[1.55]">{c.body}</p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* Help */}
+                        <div className="border-t border-border-line pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                            <p className="text-[13px] text-body-slate">
+                                Timelines and courier details are in our{" "}
+                                <Link href="/shipping-policy" className="text-primary underline hover:text-on-surface">
+                                    Shipping &amp; Delivery Policy
+                                </Link>.
+                            </p>
+                            <a
+                                href="mailto:svastrastore@gmail.com"
+                                className="label-caps text-on-surface hover:text-primary transition-colors inline-flex items-center gap-2"
+                            >
+                                <Mail className="w-3.5 h-3.5" />
+                                <span>Email Support</span>
+                            </a>
                         </div>
                     </div>
-                )}
-
-                {/* Tracking Results */}
-                {trackingData && (
-                    <TrackingTimeline trackingData={trackingData} />
-                )}
-
-                {/* No Results */}
-                {searched && !trackingData && !loading && !error && (
-                    <div className="bg-white rounded-lg shadow-md p-8">
-                        <div className="flex flex-col items-center justify-center text-gray-500">
-                            <Package className="w-16 h-16 mb-4 text-gray-300" />
-                            <p className="text-lg font-semibold mb-2">No Tracking Information Found</p>
-                            <p className="text-sm text-center">
-                                We couldn't find any tracking information for this waybill number.
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Info Cards */}
-                {!searched && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                        <div className="bg-white rounded-lg shadow-md p-6 text-center">
-                            <div className="inline-flex items-center justify-center p-3 bg-green-100 rounded-full mb-4">
-                                <Package className="w-6 h-6 text-green-600" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Real-Time Updates</h3>
-                            <p className="text-sm text-gray-600">
-                                Get live updates on your package location and status
-                            </p>
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-md p-6 text-center">
-                            <div className="inline-flex items-center justify-center p-3 bg-blue-100 rounded-full mb-4">
-                                <Search className="w-6 h-6 text-blue-600" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Easy Tracking</h3>
-                            <p className="text-sm text-gray-600">
-                                Simply enter your waybill number to track your shipment
-                            </p>
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-md p-6 text-center">
-                            <div className="inline-flex items-center justify-center p-3 bg-purple-100 rounded-full mb-4">
-                                <AlertCircle className="w-6 h-6 text-purple-600" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Detailed History</h3>
-                            <p className="text-sm text-gray-600">
-                                View complete scan history with locations and timestamps
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Footer */}
-                <div className="mt-12 text-center">
-                    <p className="text-sm text-gray-500">
-                        Powered by <span className="font-semibold">Delhivery</span> •
-                        Need help? <a href="/contact-us" className="text-blue-600 hover:text-blue-700 font-medium">Contact Support</a>
-                    </p>
                 </div>
-            </div>
+            </section>
         </div>
     );
 }
 
 export default function PublicTrackingPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            </div>
-        }>
+        <Suspense
+            fallback={
+                <div className="min-h-screen bg-surface flex items-center justify-center">
+                    <div className="w-10 h-10 border-2 border-border-line border-t-primary animate-spin" />
+                </div>
+            }
+        >
             <PublicTrackingContent />
         </Suspense>
     );
 }
-

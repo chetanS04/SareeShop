@@ -61,7 +61,7 @@ export default function PrivacyPolicyPage() {
                     <div className="mt-10 pt-6 border-t border-border-line grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-4">
                         <div className="flex items-center gap-2 label-caps text-body-slate sm:border-l sm:first:border-l-0 border-border-line sm:pl-5 first:pl-0">
                             <Clock className="w-3.5 h-3.5 text-primary" />
-                            <span>Effective February 2026</span>
+                            <span>Last updated: September 2026</span>
                         </div>
                         <div className="flex items-center gap-2 label-caps text-body-slate sm:border-l border-border-line sm:pl-5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-accent-ochre" />
@@ -199,10 +199,42 @@ export default function PrivacyPolicyPage() {
                             </div>
                         </article>
 
-                        {/* Section 5: Customer Rights */}
+                        {/* Section 5: Sharing With Service Partners */}
                         <article>
                             <div className="flex items-baseline gap-4 border-b border-border-line pb-4 mb-5">
                                 <span className="label-caps text-primary">05</span>
+                                <h2 className="display-section text-on-surface">Sharing With Service Partners</h2>
+                            </div>
+                            <p className="text-[15px] sm:text-base leading-[1.55] text-body-slate mb-5">
+                                We share the minimum information required to fulfil your order. We do not sell your data. Information is shared only with:
+                            </p>
+                            <div className="bg-surface border border-border-line p-5 sm:p-7 divide-y divide-border-line text-[15px] leading-[1.55] text-body-slate">
+                                <div className="flex items-start gap-3 pb-3.5">
+                                    <span className="text-primary mt-0.5" aria-hidden="true">—</span>
+                                    <span><strong className="text-on-surface font-semibold">Payment partners:</strong> Card, UPI and netbanking payments are processed by PCI-DSS compliant payment aggregators (including GoKwik and its partner gateways). We do not see or store your full card number, CVV or UPI PIN.</span>
+                                </div>
+                                <div className="flex items-start gap-3 py-3.5">
+                                    <span className="text-primary mt-0.5" aria-hidden="true">—</span>
+                                    <span><strong className="text-on-surface font-semibold">Logistics partners:</strong> Your name, address and phone number are shared with courier companies to deliver your order and provide tracking.</span>
+                                </div>
+                                <div className="flex items-start gap-3 py-3.5">
+                                    <span className="text-primary mt-0.5" aria-hidden="true">—</span>
+                                    <span><strong className="text-on-surface font-semibold">Communication tools:</strong> Email and SMS/WhatsApp providers used to send order confirmations and delivery updates.</span>
+                                </div>
+                                <div className="flex items-start gap-3 pt-3.5">
+                                    <span className="text-primary mt-0.5" aria-hidden="true">—</span>
+                                    <span><strong className="text-on-surface font-semibold">Legal requirement:</strong> Where disclosure is required by law, court order or a valid request from a government authority.</span>
+                                </div>
+                            </div>
+                            <p className="text-[14px] leading-[1.55] text-body-slate mt-4">
+                                We retain order and account records for as long as your account is active and thereafter only as required for tax, accounting and legal purposes.
+                            </p>
+                        </article>
+
+                        {/* Section 6: Customer Rights */}
+                        <article>
+                            <div className="flex items-baseline gap-4 border-b border-border-line pb-4 mb-5">
+                                <span className="label-caps text-primary">06</span>
                                 <h2 className="display-section text-on-surface">Your Privacy Rights &amp; Choices</h2>
                             </div>
                             <p className="text-[15px] sm:text-base leading-[1.55] text-body-slate mb-5">
@@ -234,16 +266,18 @@ export default function PrivacyPolicyPage() {
                                 <AlertCircle className="w-5 h-5" />
                             </div>
                             <div className="space-y-2">
-                                <span className="label-caps text-accent-ochre block">Privacy &amp; Compliance Desk</span>
+                                <span className="label-caps text-accent-ochre block">Grievance &amp; Privacy Contact</span>
                                 <h3 className="text-lg sm:text-xl font-bold uppercase tracking-tight text-surface">
-                                    Contact the Compliance Team
+                                    Questions About Your Data?
                                 </h3>
                                 <p className="text-[14px] leading-[1.55] text-surface/70">
-                                    If you have questions regarding our data collection policies or wish to exercise your data rights:
+                                    To ask a question about this policy, access or delete your data, or raise a grievance, write to us and we will respond within a reasonable timeframe (typically within 15 days).
                                 </p>
                                 <div className="pt-2 flex flex-wrap gap-x-8 gap-y-2 label-caps text-surface/80">
-                                    <span>Email: <a href="mailto:privacy@SVastra.co.in" className="text-accent-ochre hover:text-surface transition-colors">privacy@SVastra.co.in</a></span>
-                                    <span>Desk: <a href="tel:+919729310456" className="text-accent-ochre hover:text-surface transition-colors">+91 9729310456</a></span>
+                                    <span>Email: <a href="mailto:svastrastore@gmail.com" className="text-accent-ochre hover:text-surface transition-colors">svastrastore@gmail.com</a></span>
+                                    <span>Phone / WhatsApp: <a href="tel:+917507599315" className="text-accent-ochre hover:text-surface transition-colors">+91 75075 99315</a></span>
+                                    <span>Hours: 9:00 AM – 9:00 PM, all days</span>
+                                    <span>Location: Nagpur, Maharashtra, India</span>
                                 </div>
                             </div>
                         </div>
