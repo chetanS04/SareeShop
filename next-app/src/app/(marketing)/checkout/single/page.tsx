@@ -9,7 +9,7 @@ const SingleItemCheckoutPage = () => {
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
                 <div className="container mx-auto px-4 py-16">
                     <div className="text-center">
-                        <div className="w-16 h-16 border-4 border-blue-200 border-t-[#007FFF] rounded-full animate-spin mx-auto mb-4"></div>
+                        <div className="w-16 h-16 border-4 border-border-line border-t-[#8B1313] rounded-full animate-spin mx-auto mb-4"></div>
                         <p className="text-gray-600">Loading For Checkout...</p>
                     </div>
                 </div>

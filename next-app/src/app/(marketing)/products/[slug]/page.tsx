@@ -1164,7 +1164,6 @@ const ProductPage = () => {
     const renderActionButtons = (fullWidth = false) => (
         selectedVariant && (
             <div className={`flex flex-col gap-2.5 ${fullWidth ? 'w-full' : ''}`}>
-            <div className={`flex flex-col gap-2.5 ${fullWidth ? 'w-full' : ''}`}>
                 <button
                     onClick={isInCart ? handleViewCart : handleAddToCart}
                     disabled={selectedVariant.stock === 0 || addingToCart || cartLoading}
@@ -1326,45 +1325,6 @@ const ProductPage = () => {
             )}
 
             {/* ══════════════════════════════════════════════════════
-                MOBILE LAYOUT  (SVastra editorial - visible only below lg)
-            ══════════════════════════════════════════════════════ */}
-            <div className="lg:hidden bg-[#FFF8F2]">
-                {/* 1. Breadcrumb / delivery-to strip */}
-                <div className="bg-[#0E0E0D] text-[#FFF8F2] px-4 py-2.5 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 truncate">
-                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                        <span className="label-caps text-[10px] truncate">
-                            Deliver to {(user as any)?.city || (user as any)?.address || 'India'}
-                        </span>
-                    </div>
-                    <ChevronDown className="w-3.5 h-3.5 opacity-70 flex-shrink-0" />
-                </div>
-
-                {/* 2. Brand Header, Title & Rating (Above Image) */}
-                <div className="px-4 pt-4 pb-3 bg-[#FFF8F2] border-b border-[#0E0E0D]/10">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2.5">
-                            {product.brand && (
-                                <div className="w-8 h-8 bg-[#0E0E0D] text-[#FFF8F2] font-semibold text-[11px] flex items-center justify-center flex-shrink-0">
-                                    {product.brand.name.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                            <div>
-                                {product.brand && (
-                                    <p className="label-caps text-[10px] text-[#0E0E0D] leading-tight">
-                                        {product.brand.name}
-                                    </p>
-                                )}
-                                <button
-                                    onClick={() => product.brand ? router.push(`/brands/${getBrandSlug(product.brand)}`) : null}
-                                    className="label-caps text-[9.5px] text-[#8B1313] hover:text-[#0E0E0D] block leading-tight text-left mt-0.5"
-                                >
-                                    Visit the store →
-                                </button>
-                            </div>
-                        </div>
-
-            {/* ══════════════════════════════════════════════════════
                 MOBILE LAYOUT (SVastra Editorial - Visible on <lg)
             ══════════════════════════════════════════════════════ */}
             <div className="lg:hidden">
@@ -1404,12 +1364,16 @@ const ProductPage = () => {
                         {product.name}
                     </h1>
 
-                    {/* Social Proof / Bought tag (Only if real sales_count > 0) */}
-                    {(product as any).sales_count && (product as any).sales_count > 10 ? (
-                        <p className="label-caps text-[10px] text-[#4A4742] mt-1.5">
-                            {(product as any).sales_count}+ bought in past month
-                        </p>
-                    )}
+                    {/* Social Proof / Bought tag */}
+                    {(() => {
+                        const sold = Number((product as any)?.sales_count || 0);
+                        if (sold < 11) return null;
+                        return (
+                            <p className="label-caps text-[10px] text-[#4A4742] mt-1.5">
+                                {sold}+ bought in past month
+                            </p>
+                        );
+                    })()}
                 </div>
 
                 {/* 2. Image Carousel */}

@@ -402,7 +402,7 @@ const SearchPage = () => {
         return (
             <div className="min-h-[70vh] bg-white flex items-center justify-center p-6">
                 <div className="text-center max-w-md">
-                    <div className="w-16 h-16 bg-blue-50 text-[#8B1313] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                    <div className="w-16 h-16 bg-surface-ivory text-[#8B1313] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-border-line">
                         <Search className="w-8 h-8" />
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Search Products on Zelton</h2>
@@ -459,7 +459,7 @@ const SearchPage = () => {
                                 return (
                                     <label
                                         key={cat.id}
-                                        className="flex items-center gap-2.5 cursor-pointer select-none text-xs hover:text-[#8B1313]"
+                                        className="flex items-center gap-2.5 cursor-pointer select-none text-xs hover:text-primary"
                                     >
                                         <input
                                             type="checkbox"
@@ -522,7 +522,7 @@ const SearchPage = () => {
                                 return (
                                     <label
                                         key={brand.id}
-                                        className="flex items-center gap-2.5 cursor-pointer select-none text-xs hover:text-[#8B1313]"
+                                        className="flex items-center gap-2.5 cursor-pointer select-none text-xs hover:text-primary"
                                     >
                                         <input
                                             type="checkbox"
@@ -569,7 +569,7 @@ const SearchPage = () => {
                             key={key}
                             type="button"
                             onClick={() => setPriceBracket(priceBracket === key ? null : key)}
-                            className={`block text-left w-full transition-colors hover:text-[#8B1313] cursor-pointer ${priceBracket === key ? "font-bold text-[#8B1313]" : "text-gray-700"
+                            className={`block text-left w-full transition-colors hover:text-primary cursor-pointer ${priceBracket === key ? "font-bold text-[#8B1313]" : "text-gray-700"
                                 }`}
                         >
                             {label}
@@ -587,7 +587,7 @@ const SearchPage = () => {
                             setPriceBracket(null);
                             setCustomMinPrice(e.target.value);
                         }}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-[#8B1313]"
+                        className="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-primary"
                     />
                     <span className="text-gray-400 text-xs">-</span>
                     <input
@@ -598,7 +598,7 @@ const SearchPage = () => {
                             setPriceBracket(null);
                             setCustomMaxPrice(e.target.value);
                         }}
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-[#8B1313]"
+                        className="w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-primary"
                     />
                 </div>
             </div>
@@ -619,7 +619,7 @@ const SearchPage = () => {
                             key={stars}
                             type="button"
                             onClick={() => setMinRating(minRating === stars ? null : stars)}
-                            className={`flex items-center justify-between text-xs w-full text-left transition-colors hover:text-[#8B1313] cursor-pointer ${minRating === stars ? "font-bold text-[#8B1313]" : "text-gray-700"
+                            className={`flex items-center justify-between text-xs w-full text-left transition-colors hover:text-primary cursor-pointer ${minRating === stars ? "font-bold text-[#8B1313]" : "text-gray-700"
                                 }`}
                         >
                             <div className="flex items-center gap-1.5">
@@ -656,7 +656,7 @@ const SearchPage = () => {
                             key={pct}
                             type="button"
                             onClick={() => setMinDiscount(minDiscount === pct ? null : pct)}
-                            className={`flex items-center justify-between text-left w-full transition-colors hover:text-[#8B1313] cursor-pointer ${minDiscount === pct ? "font-bold text-[#8B1313]" : "text-gray-700"
+                            className={`flex items-center justify-between text-left w-full transition-colors hover:text-primary cursor-pointer ${minDiscount === pct ? "font-bold text-[#8B1313]" : "text-gray-700"
                                 }`}
                         >
                             <span>{pct}% Off or more</span>
@@ -710,7 +710,7 @@ const SearchPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-surface">
             {/* Top Amazon Results Header Bar */}
             <div className="border-b border-gray-200 bg-white">
                 <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -745,7 +745,7 @@ const SearchPage = () => {
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-md focus:ring-1 focus:ring-[#8B1313] focus:border-[#8B1313] block px-2.5 py-1.5 font-medium shadow-2xs cursor-pointer"
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-md focus:ring-1 focus:ring-[#8B1313] focus:border-primary block px-2.5 py-1.5 font-medium shadow-2xs cursor-pointer"
                             >
                                 <option value="featured">Featured</option>
                                 <option value="price_low_high">Price: Low to High</option>

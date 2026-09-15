@@ -163,15 +163,14 @@ const Popular_Products = () => {
 
     if (error && products.length === 0) {
         return (
-            <section className="py-8 sm:py-12 md:py-16 min-h-screen bg-[#FAFAFA]">
-                <div className="container mx-auto px-4 md:px-8">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-8 md:mb-12">Most Ordered Products</h2>
-                    <div className="text-center py-12 bg-white border border-gray-100 rounded-2xl shadow-xs max-w-lg mx-auto">
-                        <p className="text-red-500 mb-4 text-sm sm:text-base font-medium">{error}</p>
+            <section className="py-8 sm:py-12 md:py-16 min-h-screen bg-surface">
+                <div className="max-w-site mx-auto site-pad">
+                    <h2 className="display-section text-on-surface mb-6 sm:mb-8">Most Ordered</h2>
+                    <div className="text-center py-12 bg-pure-white border border-border-line max-w-lg mx-auto px-6">
+                        <p className="text-primary mb-4 text-sm sm:text-base font-medium">{error}</p>
                         <button
                             onClick={() => loadProducts(1, false)}
-                            style={{ backgroundColor: 'var(--theme-blue, #007FFF)', color: '#FFFAFB' }}
-                            className="px-6 py-2.5 text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                            className="sv-btn-primary"
                         >
                             Retry
                         </button>
@@ -182,23 +181,22 @@ const Popular_Products = () => {
     }
 
     return (
-        <section className="py-8 sm:py-12 md:py-16 min-h-screen bg-[#FAFAFA]">
-            <div className="container mx-auto px-4 md:px-8">
-                {/* Header */}
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 sm:mb-8 md:mb-12">
+        <section className="py-8 sm:py-12 md:py-16 min-h-screen bg-surface">
+            <div className="max-w-site mx-auto site-pad">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 sm:mb-8 md:mb-12 border-b border-border-line pb-6">
                     <div>
                         <div className="flex items-center gap-3 sm:gap-4 mb-1 sm:mb-2">
                             <button
                                 onClick={() => router.back()}
-                                className="p-2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full text-gray-600 hover:text-[#007FFF] transition-colors cursor-pointer shadow-xs"
+                                className="p-2 bg-pure-white hover:bg-surface-subtle border border-border-line text-body-slate hover:text-primary transition-colors cursor-pointer"
                                 aria-label="Go back"
                             >
                                 <FaArrowLeft className="w-4 h-4" />
                             </button>
-                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">Most Ordered Products</h1>
+                            <h1 className="display-section text-on-surface uppercase">Most Ordered</h1>
                         </div>
-                        <p className="text-xs sm:text-sm md:text-base text-gray-600 ml-0 sm:ml-12">
-                            Based on actual customer order volume and trending items
+                        <p className="text-xs sm:text-sm md:text-base text-body-slate ml-0 sm:ml-12">
+                            Based on live order volume from the catalog
                         </p>
                     </div>
                 </div>
@@ -220,7 +218,7 @@ const Popular_Products = () => {
                 {/* Loading More Spinner */}
                 {isLoadingMore && (
                     <div className="flex items-center justify-center gap-2.5 py-8 text-sm text-gray-600">
-                        <Loader2 className="w-5 h-5 animate-spin text-[#007FFF]" />
+                        <Loader2 className="w-5 h-5 animate-spin text-[#8B1313]" />
                         <span className="font-semibold text-gray-700">Loading more popular products...</span>
                     </div>
                 )}

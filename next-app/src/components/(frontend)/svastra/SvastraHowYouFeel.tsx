@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { fetchProductsList, productImageUrl } from "@/utils/archetypeCatalog";
 
 const MOODS: Record<
   string,
@@ -14,8 +15,6 @@ const MOODS: Record<
     points: string[];
     btn: string;
     query: string;
-    img1Title: string;
-    img2Title: string;
   }
 > = {
   power: {
@@ -31,8 +30,6 @@ const MOODS: Record<
     ],
     btn: "Shop Power Capsule",
     query: "silk",
-    img1Title: "Crimson Raw Silk Overcoat & Noir Slip",
-    img2Title: "Architectural Pallu & Structured Collar",
   },
   minimal: {
     num: "02",
@@ -47,8 +44,6 @@ const MOODS: Record<
     ],
     btn: "Shop Minimal Capsule",
     query: "linen",
-    img1Title: "Kora Ivory Pure Muslin Tunic",
-    img2Title: "Natural Selvage Tailored Saree",
   },
   festive: {
     num: "03",
@@ -63,8 +58,6 @@ const MOODS: Record<
     ],
     btn: "Shop Festive Capsule",
     query: "banarasi",
-    img1Title: "Burnished Copper Shot Silk Drape",
-    img2Title: "Geometric Zari Cape Set",
   },
   brunch: {
     num: "04",
@@ -79,8 +72,6 @@ const MOODS: Record<
     ],
     btn: "Shop Brunch Capsule",
     query: "chanderi",
-    img1Title: "Ochre Handloom Overlay",
-    img2Title: "Chanderi Linen Modular Co-ord",
   },
   travel: {
     num: "05",
@@ -95,8 +86,6 @@ const MOODS: Record<
     ],
     btn: "Shop Travel Capsule",
     query: "tussar",
-    img1Title: "Travel-Grade Raw Tussar Kimono Suit",
-    img2Title: "Packable Reversible Silk Wrap",
   },
   celebration: {
     num: "06",
@@ -111,21 +100,46 @@ const MOODS: Record<
     ],
     btn: "Shop Celebration Capsule",
     query: "georgette",
-    img1Title: "Midnight Indigo Silk Column Gown",
-    img2Title: "Noir Georgette Architectural Saree",
   },
 };
 
 const TAB_KEYS = ["power", "minimal", "festive", "brunch", "travel", "celebration"] as const;
-
-const IMG1 =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDiLQ3a2MgZr9KnPaqozyDYR-9CJ3w3kP1wGnjIfJIsxFhNZKaiWnBPPb3nJkEI8-3Q-3Drgzj4CeU7XFJ8ui7nprDbAsEDMDbT6XloESGXv64_MZ9K6eJ4azr3FVBOBgYQn66Y6LVQYziH6hicfZLcIyeZR_jO6zarCYG9Bbyj-PaRF717-9umXvZIP0YMOw3lsSlrCvX3ig5XqfzmEnPKKgqjSeJkQ7uaG23C4J4PnD9-F0oFNRSb";
-const IMG2 =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCaUoAocyNjIioz-caVKI3RsZL7yjvzimzb5uImOHUcxvQ6lV7gOr1ZzY5mKuupieKEbZwxFYFEQJKVhqVwan9jBqAZOFd1ZNJntmaaGjnVwMznS63kG4C1CKoTumFEc7QFUHB4WNJuxRZ-WnyiRNujTWoXYoLlQ1-E1SOSzLNbG4YI_LcEF8PO_HYOrJVwnREC0YsNzVgDL1A1LqK8S3GIBhjKxwXUz6VV5lzqZjpx3Iltzg5W1gv7";
+const FALLBACK = "/svastra/logo-mark.png";
 
 export default function SvastraHowYouFeel() {
   const [active, setActive] = useState<(typeof TAB_KEYS)[number]>("power");
   const data = MOODS[active];
+  const [looks, setLooks] = useState<{ img: string; title: string; id?: number }[]>([]);
+  const [loadingLooks, setLoadingLooks] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingLooks(true);
+    (async () => {
+      let list = await fetchProductsList({
+        per_page: 8,
+        page: 1,
+        search: data.query,
+      });
+      if (!list.length) {
+        list = await fetchProductsList({ per_page: 8, page: 1 });
+      }
+      if (cancelled) return;
+      const mapped = list.slice(0, 2).map((p) => ({
+        img: productImageUrl(p) || FALLBACK,
+        title: String(p.name || "Archive piece"),
+        id: Number(p.id) || undefined,
+      }));
+      while (mapped.length < 2) {
+        mapped.push({ img: FALLBACK, title: "Archive piece" });
+      }
+      setLooks(mapped);
+      setLoadingLooks(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [data.query]);
 
   return (
     <section
@@ -146,8 +160,8 @@ export default function SvastraHowYouFeel() {
             Shop How You Feel
           </h2>
           <p className="text-[15px] sm:text-[17px] leading-[1.6] text-body-slate mt-3">
-            Curations driven by inner frequency, not calendar seasons or conventional market categories.
-            Select the state of being you wish to embody.
+            Curations driven by inner frequency, not calendar seasons or conventional market
+            categories. Select the state of being you wish to embody.
           </p>
         </div>
 
@@ -171,7 +185,9 @@ export default function SvastraHowYouFeel() {
                 <span className="text-[10px] tracking-widest block opacity-70 mb-1">
                   {mood.num} // Frequency
                 </span>
-                <span className="text-[12px] font-bold tracking-[0.12em] uppercase">{mood.label}</span>
+                <span className="text-[12px] font-bold tracking-[0.12em] uppercase">
+                  {mood.label}
+                </span>
               </button>
             );
           })}
@@ -206,32 +222,25 @@ export default function SvastraHowYouFeel() {
             </div>
 
             <div className="lg:col-span-6 grid grid-cols-2 gap-3 sm:gap-4">
-              <figure className="space-y-2">
-                <div className="aspect-[3/4] overflow-hidden border border-border-line bg-surface-ivory">
-                  <img
-                    src={IMG1}
-                    alt={data.img1Title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <figcaption className="text-[11px] font-semibold tracking-[0.06em] uppercase text-body-slate">
-                  {data.img1Title}
-                </figcaption>
-              </figure>
-              <figure className="space-y-2 mt-6 sm:mt-10">
-                <div className="aspect-[3/4] overflow-hidden border border-border-line bg-surface-ivory">
-                  <img
-                    src={IMG2}
-                    alt={data.img2Title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <figcaption className="text-[11px] font-semibold tracking-[0.06em] uppercase text-body-slate">
-                  {data.img2Title}
-                </figcaption>
-              </figure>
+              {looks.map((look, i) => (
+                <figure key={`${look.title}-${i}`} className={`space-y-2 ${i === 1 ? "mt-6 sm:mt-10" : ""}`}>
+                  <div
+                    className={`aspect-[3/4] overflow-hidden border border-border-line bg-surface-ivory ${
+                      loadingLooks ? "animate-pulse" : ""
+                    }`}
+                  >
+                    <img
+                      src={look.img}
+                      alt={look.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <figcaption className="text-[11px] font-semibold tracking-[0.06em] uppercase text-body-slate line-clamp-2">
+                    {look.title}
+                  </figcaption>
+                </figure>
+              ))}
             </div>
           </div>
         </div>

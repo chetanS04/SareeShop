@@ -2,36 +2,26 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import axios from "../../../../utils/axios";
 import ProductCard from "@/components/(frontend)/ProductCard";
+import { ArchetypeConfig, otherArchetypes } from "@/data/archetypes";
 import {
-  ArchetypeConfig,
-  otherArchetypes,
-} from "@/data/archetypes";
+  fetchArchetypeProducts,
+  loadArchetypeCardsMedia,
+} from "@/utils/archetypeCatalog";
 
 type Props = {
   archetype: ArchetypeConfig;
 };
 
-function matchCategories(categories: any[], names: string[]) {
-  const lowered = names.map((n) => n.toLowerCase());
-  const exact = categories.filter((c) =>
-    lowered.includes(String(c.name || "").toLowerCase())
-  );
-  if (exact.length) return exact;
-
-  // Soft match: archetype keyword inside catalog category name
-  return categories.filter((c) => {
-    const cn = String(c.name || "").toLowerCase();
-    return lowered.some((n) => {
-      const key = n.replace(/^the\s+/, "").trim();
-      return key.length > 2 && (cn.includes(key) || key.includes(cn));
-    });
-  });
-}
+const FALLBACK = "/svastra/logo-mark.png";
 
 export default function ArchetypePageContent({ archetype }: Props) {
   const [products, setProducts] = useState<any[]>([]);
+  const [heroSrc, setHeroSrc] = useState<string>(FALLBACK);
+  const [otherMedia, setOtherMedia] = useState<
+    Record<string, { imageUrl: string | null; productCount: number; categoryName?: string }>
+  >({});
+  const [categoryLabel, setCategoryLabel] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [cols, setCols] = useState<3 | 4>(4);
   const [sortBy, setSortBy] = useState("newest");
@@ -43,69 +33,21 @@ export default function ArchetypePageContent({ archetype }: Props) {
     const load = async () => {
       setLoading(true);
       try {
-        const catRes = await axios.get("/api/categories-with-products").catch(() =>
-          axios.get("/api/categories")
-        );
-        let cats: any[] = [];
-        if (Array.isArray(catRes.data)) cats = catRes.data;
-        else if (Array.isArray(catRes.data?.data)) cats = catRes.data.data;
-
-        const pool = cats.filter((c) => !(c.parentId ?? c.parent_id));
-        const matched = matchCategories(pool.length ? pool : cats, archetype.categoryNames);
-        const matchedIds = new Set(matched.map((c) => Number(c.id)).filter(Boolean));
-
-        let list: any[] = [];
-
-        // Prefer catalog products whose category matches mapped archetype categories
-        const allRes = await axios.get("/api/products-paginated?per_page=48&page=1").catch(() => null);
-        let all: any[] =
-          allRes?.data?.data?.products ||
-          allRes?.data?.products ||
-          allRes?.data?.data ||
-          [];
-        if (!Array.isArray(all) || all.length === 0) {
-          const fallback = await axios.get("/api/products");
-          all = Array.isArray(fallback.data)
-            ? fallback.data
-            : fallback.data?.data || fallback.data?.products || [];
-        }
-        all = Array.isArray(all) ? all : [];
-
-        if (matchedIds.size > 0) {
-          list = all.filter((p) => {
-            const cid = Number(p.category_id ?? p.category?.id ?? 0);
-            return matchedIds.has(cid);
-          });
-        }
-
-        // If an exact archetype category exists in admin, also fetch by id
-        if (list.length === 0 && matched[0]?.id) {
-          const res = await axios.get(
-            `/api/products-paginated?per_page=24&page=1&category_id=${matched[0].id}`
-          );
-          list =
-            res.data?.data?.products ||
-            res.data?.products ||
-            res.data?.data ||
-            [];
-        }
-
-        // Deterministic partition so each archetype still gets a distinct edit
-        if (!Array.isArray(list) || list.length === 0) {
-          const idx = Math.max(
-            0,
-            ["the-leader", "the-mentor", "the-creator", "the-home-manager"].indexOf(
-              archetype.slug
-            )
-          );
-          list = all.filter((_, i) => i % 4 === idx);
-          if (list.length === 0) list = all;
-        }
-
-        if (!cancelled) setProducts(Array.isArray(list) ? list : []);
+        const [{ products: list, imageUrl, matched }, media] = await Promise.all([
+          fetchArchetypeProducts(archetype),
+          loadArchetypeCardsMedia(),
+        ]);
+        if (cancelled) return;
+        setProducts(list);
+        setHeroSrc(imageUrl || FALLBACK);
+        setCategoryLabel(matched[0]?.name || null);
+        setOtherMedia(media);
       } catch (e) {
         console.error("Archetype products failed", e);
-        if (!cancelled) setProducts([]);
+        if (!cancelled) {
+          setProducts([]);
+          setHeroSrc(FALLBACK);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -141,7 +83,6 @@ export default function ArchetypePageContent({ archetype }: Props) {
 
   return (
     <div className="w-full bg-surface">
-      {/* Breadcrumb */}
       <section className="w-full bg-pure-white border-b border-border-line">
         <div className="max-w-site mx-auto site-pad py-3.5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 label-caps text-body-slate">
@@ -158,12 +99,11 @@ export default function ArchetypePageContent({ archetype }: Props) {
               {loading ? "…" : `${count} Edited Silhouettes`}
             </span>
             <span className="text-on-surface/25">•</span>
-            <span>Autumn / Winter Archive</span>
+            <span>Live Catalog</span>
           </div>
         </div>
       </section>
 
-      {/* Role Hero */}
       <section className="w-full bg-surface overflow-hidden border-b border-border-line">
         <div className="max-w-site mx-auto site-pad py-12 sm:py-16 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
@@ -173,8 +113,11 @@ export default function ArchetypePageContent({ archetype }: Props) {
                   Role Study · Archetype {archetype.roleNo}
                 </span>
                 <h1 className="text-[clamp(2.4rem,6vw,4rem)] font-bold uppercase tracking-[-0.03em] leading-[0.95] text-on-surface mb-3">
-                  {archetype.name}
+                  {categoryLabel || archetype.name}
                 </h1>
+                {categoryLabel ? (
+                  <p className="label-caps text-primary mb-2">Catalog · {archetype.name}</p>
+                ) : null}
                 <p className="text-lg sm:text-xl text-body-slate font-medium tracking-tight">
                   {archetype.tagline}
                 </p>
@@ -203,7 +146,7 @@ export default function ArchetypePageContent({ archetype }: Props) {
 
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <a href="#curated-collection" className="sv-btn-primary">
-                  View The Edit ({count || 12})
+                  View The Edit ({count})
                 </a>
                 <a
                   href="#story"
@@ -217,7 +160,7 @@ export default function ArchetypePageContent({ archetype }: Props) {
             <div className="lg:col-span-6 relative">
               <div className="relative w-full aspect-[4/5] bg-surface-ivory overflow-hidden border border-border-line">
                 <img
-                  src={archetype.heroImg}
+                  src={heroSrc}
                   alt={archetype.name}
                   className="w-full h-full object-cover"
                   loading="eager"
@@ -229,7 +172,9 @@ export default function ArchetypePageContent({ archetype }: Props) {
                   <span className="text-[10px] font-semibold tracking-[0.1em] uppercase text-primary block mb-1">
                     {archetype.heroCaptionTitle}
                   </span>
-                  <p className="text-[13px] text-on-surface leading-relaxed">{archetype.heroCaptionBody}</p>
+                  <p className="text-[13px] text-on-surface leading-relaxed">
+                    {archetype.heroCaptionBody}
+                  </p>
                 </div>
               </div>
             </div>
@@ -237,13 +182,14 @@ export default function ArchetypePageContent({ archetype }: Props) {
         </div>
       </section>
 
-      {/* Story */}
       <section id="story" className="w-full bg-surface-subtle border-b border-border-line scroll-mt-24">
         <div className="max-w-site mx-auto site-pad py-16 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             <div className="lg:col-span-4">
               <span className="label-caps text-primary block mb-3">{archetype.storyEyebrow}</span>
-              <h2 className="display-section text-on-surface uppercase mb-4">{archetype.storyTitle}</h2>
+              <h2 className="display-section text-on-surface uppercase mb-4">
+                {archetype.storyTitle}
+              </h2>
               <div className="w-16 h-1 bg-primary mb-6" />
               <p className="text-[16px] text-body-slate leading-relaxed">{archetype.storyBody}</p>
             </div>
@@ -264,13 +210,14 @@ export default function ArchetypePageContent({ archetype }: Props) {
         </div>
       </section>
 
-      {/* Collection */}
       <section id="curated-collection" className="w-full bg-surface scroll-mt-24">
         <div className="max-w-site mx-auto site-pad pt-14 pb-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8 border-b border-border-line pb-6">
             <div>
               <span className="label-caps text-body-slate block mb-2">Curated Collection</span>
-              <h2 className="display-section text-on-surface uppercase">The {archetype.name.replace(/^The\s+/i, "")} Edit</h2>
+              <h2 className="display-section text-on-surface uppercase">
+                The {archetype.name.replace(/^The\s+/i, "")} Edit
+              </h2>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex border border-border-line">
@@ -302,7 +249,7 @@ export default function ArchetypePageContent({ archetype }: Props) {
                 <option value="price_low">Price: Low to High</option>
                 <option value="price_high">Price: High to Low</option>
               </select>
-              <Link href={`/products`} className="label-caps text-primary hover:text-on-surface">
+              <Link href="/products" className="label-caps text-primary hover:text-on-surface">
                 All Collections →
               </Link>
             </div>
@@ -318,7 +265,8 @@ export default function ArchetypePageContent({ archetype }: Props) {
               <span className="label-caps text-primary block mb-3">Archive Quiet</span>
               <h3 className="text-2xl font-bold uppercase mb-3">No pieces in this edit yet</h3>
               <p className="text-body-slate mb-6 max-w-md mx-auto">
-                Create a category named “{archetype.name}” in the dashboard and assign products to it.
+                Assign products in the dashboard to categories mapped to “{archetype.name}” (or create
+                a category with that name).
               </p>
               <Link href="/products" className="sv-btn-primary inline-flex">
                 Browse Collections
@@ -372,7 +320,6 @@ export default function ArchetypePageContent({ archetype }: Props) {
         </div>
       </section>
 
-      {/* Moods */}
       <section className="w-full bg-surface-subtle border-y border-border-line">
         <div className="max-w-site mx-auto site-pad py-14 lg:py-20">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
@@ -402,7 +349,6 @@ export default function ArchetypePageContent({ archetype }: Props) {
         </div>
       </section>
 
-      {/* Other archetypes */}
       <section className="w-full bg-surface">
         <div className="max-w-site mx-auto site-pad py-14 lg:py-20">
           <div className="mb-8">
@@ -420,7 +366,7 @@ export default function ArchetypePageContent({ archetype }: Props) {
               >
                 <div className="aspect-[4/5] overflow-hidden bg-surface-ivory">
                   <img
-                    src={a.heroImg}
+                    src={otherMedia[a.slug]?.imageUrl || FALLBACK}
                     alt={a.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
@@ -428,7 +374,9 @@ export default function ArchetypePageContent({ archetype }: Props) {
                 </div>
                 <div className="p-5">
                   <span className="label-caps text-primary block mb-1">{a.chapter}</span>
-                  <h3 className="text-lg font-bold uppercase tracking-tight mb-2">{a.name}</h3>
+                  <h3 className="text-lg font-bold uppercase tracking-tight mb-2">
+                    {otherMedia[a.slug]?.categoryName || a.name}
+                  </h3>
                   <p className="text-[13px] text-body-slate line-clamp-2 mb-4">{a.blurb}</p>
                   <span className="text-[11px] font-semibold tracking-[0.1em] uppercase group-hover:text-primary">
                     View Chapter →
@@ -440,14 +388,16 @@ export default function ArchetypePageContent({ archetype }: Props) {
         </div>
       </section>
 
-      {/* Sign-off */}
       <section className="w-full bg-surface-dark text-surface">
         <div className="max-w-site mx-auto site-pad py-16 lg:py-24 text-center">
           <span className="label-caps text-surface/50 block mb-4">SVastra Ethos</span>
           <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-[-0.03em] mb-6">
             Wear Yourself.
           </h2>
-          <Link href="/#manifesto" className="sv-btn-outline !border-surface/30 !text-surface hover:!bg-surface hover:!text-on-surface inline-flex">
+          <Link
+            href="/#manifesto"
+            className="sv-btn-outline !border-surface/30 !text-surface hover:!bg-surface hover:!text-on-surface inline-flex"
+          >
             Read The Manifesto
           </Link>
         </div>

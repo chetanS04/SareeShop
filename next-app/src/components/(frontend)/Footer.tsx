@@ -70,28 +70,23 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link className="hover:text-primary transition-colors" href="/shop/the-leader">
-                  The Leader
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-primary transition-colors" href="/shop/the-mentor">
-                  The Mentor
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-primary transition-colors" href="/shop/the-creator">
-                  The Creator
-                </Link>
-              </li>
-              <li>
-                <Link className="hover:text-primary transition-colors" href="/shop/the-home-manager">
-                  The Home Manager
+                <Link className="hover:text-primary transition-colors" href="/categories">
+                  Categories
                 </Link>
               </li>
               <li>
                 <Link className="hover:text-primary transition-colors" href="/products">
                   The Edit
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-primary transition-colors" href="/brands">
+                  Brands
+                </Link>
+              </li>
+              <li>
+                <Link className="hover:text-primary transition-colors" href="/new-arrivals">
+                  New Arrivals
                 </Link>
               </li>
             </ul>

@@ -683,7 +683,7 @@ function CheckoutPageContent() {
                             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
                                 <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                        <div className="w-10 h-10 bg-surface-ivory text-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0">
                                             <MapPin className="w-5 h-5" />
                                         </div>
                                         <div>
@@ -691,7 +691,7 @@ function CheckoutPageContent() {
                                             <p className="text-xs text-slate-500">Your address is automatically saved as you type</p>
                                         </div>
                                     </div>
-                                    <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                    <span className="text-[11px] font-bold text-blue-600 bg-surface-ivory px-2.5 py-1 rounded-full uppercase tracking-wider">
                                         Step 1 of 3
                                     </span>
                                 </div>
@@ -935,7 +935,7 @@ function CheckoutPageContent() {
                                     <label
                                         htmlFor="pay-online"
                                         className={`flex items-start gap-4 p-5 sm:p-6 transition-all cursor-pointer select-none ${paymentMethod === 'online'
-                                                ? 'bg-blue-50/40'
+                                                ? 'bg-surface-ivory/40'
                                                 : 'bg-white hover:bg-slate-50/70'
                                             }`}
                                     >
@@ -971,7 +971,7 @@ function CheckoutPageContent() {
                                             <PaymentIconsStrip />
 
                                             {paymentMethod === 'online' && (
-                                                <div className="mt-3.5 pt-3 border-t border-blue-100 flex items-center gap-2 text-xs text-blue-700">
+                                                <div className="mt-3.5 pt-3 border-t border-border-line flex items-center gap-2 text-xs text-primary">
                                                     <span className="font-semibold">ℹ️</span>
                                                     <span>You will complete payment securely on the next screen with zero extra fees.</span>
                                                 </div>
@@ -985,7 +985,7 @@ function CheckoutPageContent() {
                                         className={`flex items-start gap-4 p-5 sm:p-6 transition-all select-none ${isCodDisabled
                                                 ? 'bg-slate-50/80 opacity-70 cursor-not-allowed'
                                                 : paymentMethod === 'cod'
-                                                    ? 'bg-blue-50/40 cursor-pointer'
+                                                    ? 'bg-surface-ivory/40 cursor-pointer'
                                                     : 'bg-white hover:bg-slate-50/70 cursor-pointer'
                                             }`}
                                     >
@@ -1046,7 +1046,7 @@ function CheckoutPageContent() {
                                             )}
 
                                             {!isCodDisabled && paymentMethod === 'cod' && (
-                                                <div className="mt-3.5 pt-3 border-t border-blue-100 flex items-center gap-2 text-xs text-amber-800">
+                                                <div className="mt-3.5 pt-3 border-t border-border-line flex items-center gap-2 text-xs text-amber-800">
                                                     <span className="font-semibold">💡</span>
                                                     <span>Please keep exact change of <strong>₹{finalTotal}</strong> ready for a quick delivery.</span>
                                                 </div>
@@ -1100,7 +1100,7 @@ function CheckoutPageContent() {
                                             <button
                                                 type="button"
                                                 onClick={() => setCurrentStep(1)}
-                                                className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                                                className="text-xs font-bold text-blue-600 hover:text-primary hover:underline"
                                             >
                                                 Edit
                                             </button>
@@ -1125,7 +1125,7 @@ function CheckoutPageContent() {
                                             <button
                                                 type="button"
                                                 onClick={() => setCurrentStep(2)}
-                                                className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                                                className="text-xs font-bold text-blue-600 hover:text-primary hover:underline"
                                             >
                                                 Change
                                             </button>
@@ -1170,7 +1170,7 @@ function CheckoutPageContent() {
                                                         </span>
                                                         {/* Return policy badge */}
                                                         {((item.variant as any)?.is_returnable ?? (item.variant as any)?.isReturnable ?? true) ? (
-                                                            <span className="text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                                                            <span className="text-xs font-medium text-primary bg-surface-ivory border border-border-line px-2 py-0.5 rounded">
                                                                 {((item.variant as any)?.return_window_days ?? (item.variant as any)?.returnWindowDays ?? 7)} Days Returnable
                                                             </span>
                                                         ) : (
@@ -1243,7 +1243,7 @@ function CheckoutPageContent() {
                                                     {/* Variant Badges */}
                                                     <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                                                         {((item.variant as any)?.is_returnable ?? (item.variant as any)?.isReturnable ?? true) ? (
-                                                            <span className="text-[10px] font-medium text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                                                            <span className="text-[10px] font-medium text-primary bg-surface-ivory border border-border-line px-1.5 py-0.5 rounded">
                                                                 {((item.variant as any)?.return_window_days ?? (item.variant as any)?.returnWindowDays ?? 7)}d Returns
                                                             </span>
                                                         ) : (

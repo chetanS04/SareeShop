@@ -1,9 +1,44 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  fetchActiveSliderImage,
+  fetchProductsList,
+  productImageUrl,
+} from "@/utils/archetypeCatalog";
 
-const HERO_IMG =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuBtCE2WnzpoelmZQhqQX0KCkDNT1n1pi3OVz4po-0G4iwkp0YrC9-jut34UTPEb3iYQbkWJ8a1D7RVjxQq3RVzWcR0c0CyfWzOOygtcrDkU8DDayb6R-TJa9BIDnsk9pV723QKQhgSil0orX6sPksk1wAimpcRmG4fkOt26nd0OW7uVRNFzrTf7O_rg66oupa-xZ6oxIKkz5NfUZGPw7m1gSx5I74b8qU0wQBR7ijfyLM-8f1xZS9gdo2OnNRmgawlTuA";
+const FALLBACK = "/svastra/logo-mark.png";
 
-export default function SvastraHero() {
+type Props = {
+  heroImage?: string | null;
+};
+
+export default function SvastraHero({ heroImage }: Props) {
+  const [img, setImg] = useState<string | null>(heroImage ?? null);
+
+  useEffect(() => {
+    if (heroImage) {
+      setImg(heroImage);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const slider = await fetchActiveSliderImage();
+      if (cancelled) return;
+      if (slider) {
+        setImg(slider);
+        return;
+      }
+      const products = await fetchProductsList({ per_page: 4, page: 1 });
+      if (cancelled) return;
+      setImg(productImageUrl(products[0]) || FALLBACK);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [heroImage]);
+
   return (
     <section className="w-full bg-surface border-b border-border-line" aria-labelledby="hero-title">
       <div className="max-w-site mx-auto site-pad pt-8 sm:pt-10 pb-12 sm:pb-16 lg:pb-24">
@@ -32,7 +67,8 @@ export default function SvastraHero() {
                 One SVastra.
               </h1>
               <p className="text-[15px] sm:text-base lg:text-[19px] leading-[1.58] text-body-slate mt-5 sm:mt-7 max-w-xl">
-                Which version of you is showing up today? Crafted at the convergence of Indian textile mastery and contemporary razor-sharp tailoring. Unapologetic. Grounded. Sovereign.
+                Which version of you is showing up today? Crafted at the convergence of Indian textile
+                mastery and contemporary razor-sharp tailoring. Unapologetic. Grounded. Sovereign.
               </p>
             </div>
 
@@ -72,28 +108,28 @@ export default function SvastraHero() {
           <div className="lg:col-span-6 relative order-1 lg:order-2">
             <div className="media-frame hero-media border border-on-surface/20 bg-surface-dark">
               <img
-                alt="She Knows Who She Is — SVastra Hero Editorial"
+                alt="SVastra archival edit"
                 className="w-full h-full object-cover object-center grayscale contrast-110 hover:grayscale-0 transition-all duration-700"
                 width={1200}
                 height={750}
                 decoding="async"
                 fetchPriority="high"
-                src={HERO_IMG}
+                src={img || FALLBACK}
               />
               <div className="absolute bottom-0 inset-x-0 bg-surface-dark/90 text-surface p-3.5 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-surface/15">
                 <div className="min-w-0">
                   <span className="text-[10px] font-semibold tracking-[0.08em] uppercase text-surface/60 block">
-                    Archival Keynote
+                    Live Archive
                   </span>
                   <p className="text-[12px] sm:text-[13px] font-semibold tracking-tight text-surface uppercase truncate">
-                    Facet 01 // The Strategist in Raw Tussar
+                    Curated from the current collection
                   </p>
                 </div>
                 <div className="sm:text-right shrink-0">
                   <span className="text-[10px] font-semibold tracking-[0.08em] uppercase text-surface/60 block">
-                    Origin
+                    Source
                   </span>
-                  <span className="text-[12px] font-semibold text-accent-ochre">Bhagalpur Weave</span>
+                  <span className="text-[12px] font-semibold text-accent-ochre">Catalog</span>
                 </div>
               </div>
             </div>

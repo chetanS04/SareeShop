@@ -1,66 +1,61 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  fetchActiveSliderImage,
+  fetchProductsList,
+  loadShopWhoYouAreFacets,
+  productImageUrl,
+  type ShopFacetCard,
+} from "@/utils/archetypeCatalog";
 
-const MATRIX_IMG =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuC3p8dJiP3tP5b9DqkcMnsdnmemTj4fYT8tvQ_fdiZRHjVNHWsMNAYBtNI2zyTfbjjGqIXVGhfBbu_hKFcn32mnQyqLh8C4a34XiWcJ-9-ioaLsMpKXmlQVxOBIQHEHO6XrIkGcoDx2eNtkrvcGuMWb90UL6IO7WfAGgC2fuscKgnJhFXNcBsbz6nG7pACp9-5KAwwPe6zs7PiIU1YEMJ3PknYhRvUVruEQTGiwMxUJKgvunI4j-CqC2JRwvphFyVJmYQ';
-
-const HERO_IMG =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuB-Je9M0u_55q0wHrmqWEMsBDbXWPlohDaHcOthm2xdUaMDIDFH1SibWapnFx7cC3cOaYGG8jJdj8GO3kJVswgXEOHWAGh8wOPlKMXGlQNKnUn0LwfJLNpVb5HBbs7W8s9nSDYkBgd5uoy99Eh0xTcsJwIPPA63NlksemhlWtsqIf2s6SaMloO3CAAw1R4q7ftWeeEE_dobeQtFETk7wjZmHEoD6XOY8luMSxN2tq62o5Mo3DVCyCuo';
-
-const RHEA =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuDWzk91P7wT9g7xbJTg-xt0a7rdUfd8EhBqFa_5d9qeUXKwQBHqlFbLSGzRIJ1eXVkmpyRs7yrLi3U41wFaykMzQMp0lzkzuxaoquynssqV3tuuRIKSuvok-3Fe0oLbXbvtuDQXLBdb6rTvZ4UKwNrMz4pTdEOajPsOZ5y5rw46mpQbdrOcp_v9OdTBuBqQW84HQta81KWKE0ls0et8Yo_RDGEvWUZvskHT_OI02Hrb3GOl15RMMGoN';
-
-const FACETS = [
-  {
-    num: '01',
-    title: 'The Strategist',
-    line: 'Presence & Strategy',
-    copy: 'Structured silhouettes for rooms where decisions are authored, not borrowed.',
-  },
-  {
-    num: '02',
-    title: 'The Contemplative',
-    line: 'Depth & Equanimity',
-    copy: 'Quiet weight in fiber — pieces that hold stillness without disappearing.',
-  },
-  {
-    num: '03',
-    title: 'The Fluid',
-    line: 'Fluidity & Visceral Poise',
-    copy: 'Movement engineered into drape; softness with undeniable backbone.',
-  },
-  {
-    num: '04',
-    title: 'The Sanctuary',
-    line: 'Tactile Sanctuary',
-    copy: 'At-home armour — tactile luxury that never performs ornament.',
-  },
-];
+const FALLBACK = "/svastra/logo-mark.png";
 
 const COMMITMENTS = [
   {
-    title: '100% Handloom',
-    copy: 'Pure fiber architecture. No synthetic polyester. Weaver hours over shortcuts.',
+    title: "100% Handloom",
+    copy: "Pure fiber architecture. No synthetic polyester. Weaver hours over shortcuts.",
   },
   {
-    title: 'Zero Filigree',
-    copy: 'We reject nostalgic costume. Ornament never replaces structure.',
+    title: "Zero Filigree",
+    copy: "We reject nostalgic costume. Ornament never replaces structure.",
   },
   {
-    title: 'Concierge Care',
-    copy: 'Complimentary atelier guidance — fit, occasion, and edit curation.',
+    title: "Concierge Care",
+    copy: "Complimentary atelier guidance — fit, occasion, and edit curation.",
   },
   {
-    title: 'Global Dispatch',
-    copy: 'Curated edits ship with archival packing and tracked delivery.',
+    title: "Global Dispatch",
+    copy: "Curated edits ship with archival packing and tracked delivery.",
   },
 ];
 
 export default function AboutUsPage() {
+  const [heroImg, setHeroImg] = useState(FALLBACK);
+  const [matrixImg, setMatrixImg] = useState(FALLBACK);
+  const [facets, setFacets] = useState<ShopFacetCard[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [slider, products, cards] = await Promise.all([
+        fetchActiveSliderImage(),
+        fetchProductsList({ per_page: 8, page: 1 }),
+        loadShopWhoYouAreFacets(4),
+      ]);
+      if (cancelled) return;
+      setHeroImg(slider || productImageUrl(products[0]) || FALLBACK);
+      setMatrixImg(productImageUrl(products[1] || products[0]) || FALLBACK);
+      setFacets(cards);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-surface text-on-surface">
-      {/* Hero */}
       <section className="w-full bg-surface border-b border-border-line">
         <div className="max-w-site mx-auto site-pad section-y">
           <nav className="label-caps text-body-slate mb-8 flex flex-wrap items-center gap-2">
@@ -86,8 +81,8 @@ export default function AboutUsPage() {
                 Many Moods.
               </h1>
               <p className="text-[15px] sm:text-lg leading-relaxed text-body-slate max-w-xl">
-                SVastra crafts architectural Indian handlooms for sovereign identities —
-                rooted in modernism and archival artistry, never in costume or cliché.
+                SVastra crafts architectural Indian handlooms for sovereign identities — rooted in
+                modernism and archival artistry, never in costume or cliché.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 pt-1">
                 <Link href="/products" className="sv-btn-primary">
@@ -102,9 +97,9 @@ export default function AboutUsPage() {
             <div className="lg:col-span-6">
               <div className="media-frame hero-media border border-on-surface/20 bg-surface-dark">
                 <img
-                  src={HERO_IMG}
+                  src={heroImg}
                   alt="SVastra atelier portrait"
-                  className="object-cover"
+                  className="object-cover w-full h-full"
                   loading="eager"
                   width={960}
                   height={720}
@@ -123,17 +118,19 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* Stats */}
       <section className="w-full bg-surface-subtle border-b border-border-line">
         <div className="max-w-site mx-auto site-pad py-10 sm:py-12">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
             {[
-              { value: '4,200+', label: 'Weaver Hours Per Piece' },
-              { value: '0%', label: 'Synthetic Polyester' },
-              { value: '4', label: 'Identity Facets' },
-              { value: '∞', label: 'Roles · One Wardrobe' },
+              { value: "4", label: "Identity Facets" },
+              { value: "0%", label: "Synthetic Polyester" },
+              { value: "100%", label: "Handloom Focus" },
+              { value: "∞", label: "Roles · One Wardrobe" },
             ].map((stat) => (
-              <div key={stat.label} className="text-center lg:text-left lg:border-l lg:first:border-l-0 border-border-line lg:pl-6 first:pl-0">
+              <div
+                key={stat.label}
+                className="text-center lg:text-left lg:border-l lg:first:border-l-0 border-border-line lg:pl-6 first:pl-0"
+              >
                 <span className="text-3xl sm:text-4xl font-bold text-primary tracking-tight block">
                   {stat.value}
                 </span>
@@ -144,8 +141,10 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* Manifesto / Tension Matrix */}
-      <section id="manifesto" className="w-full bg-surface-dark text-surface border-b border-border-line scroll-mt-24">
+      <section
+        id="manifesto"
+        className="w-full bg-surface-dark text-surface border-b border-border-line scroll-mt-24"
+      >
         <div className="max-w-site mx-auto site-pad section-y">
           <div className="border-b border-border-line-dark pb-5 sm:pb-6 mb-8 sm:mb-12">
             <span className="label-caps text-accent-ochre block tracking-[0.18em]">
@@ -157,12 +156,12 @@ export default function AboutUsPage() {
             <div className="lg:col-span-6">
               <div className="media-frame aspect-video sm:aspect-[16/9] bg-black border border-surface/20">
                 <img
-                  alt="Indian Feminine Bold Modern — SVastra Tension Matrix"
-                  className="object-contain bg-black"
+                  alt="SVastra archive"
+                  className="object-cover w-full h-full"
                   loading="lazy"
                   width={960}
                   height={540}
-                  src={MATRIX_IMG}
+                  src={matrixImg}
                 />
               </div>
             </div>
@@ -172,7 +171,8 @@ export default function AboutUsPage() {
               </h2>
               <p className="text-[15px] sm:text-lg leading-[1.6] text-surface/80">
                 SVastra operates in the creative tension between ancestral heritage and modern
-                sovereign identity. We reject nostalgic ornamentalism in favor of pure fiber architecture.
+                sovereign identity. We reject nostalgic ornamentalism in favor of pure fiber
+                architecture.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 pt-2 text-[13px]">
                 <div className="border-l-2 border-primary pl-4">
@@ -206,7 +206,6 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* Story */}
       <section className="w-full bg-surface border-b border-border-line">
         <div className="max-w-site mx-auto site-pad section-y">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
@@ -216,153 +215,113 @@ export default function AboutUsPage() {
             </div>
             <div className="lg:col-span-8 space-y-5 text-[15px] sm:text-base leading-relaxed text-body-slate">
               <p>
-                SVastra is a small, independent saree label. We started it because we wanted
-                handloom sarees that felt modern and easy to wear — without heavy ornament or
-                inflated pricing.
+                SVastra is a small, independent saree label. We started it because we wanted handloom
+                sarees that felt modern and easy to wear — without heavy ornament or inflated pricing.
               </p>
               <p>
-                We work directly with weavers on handloom cotton, tussar, chanderi and linen, and
-                keep the design clean: restrained borders, considered colour, honest finishing.
+                We work directly with weavers on handloom cotton, tussar, chanderi and linen, and keep
+                the design clean: restrained borders, considered colour, honest finishing.
               </p>
               <p>
                 Everything is checked before it&apos;s packed, priced on the fabric rather than the
                 label, and backed by a straightforward returns policy. If something isn&apos;t right,
-                write to us at{' '}
-                <a href="mailto:svastrastore@gmail.com" className="text-primary hover:text-on-surface transition-colors">
+                write to us at{" "}
+                <a
+                  href="mailto:svastrastore@gmail.com"
+                  className="text-primary hover:text-on-surface transition-colors"
+                >
                   svastrastore@gmail.com
-                </a>.
+                </a>
+                .
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Facets */}
       <section className="w-full bg-surface-subtle border-b border-border-line">
         <div className="max-w-site mx-auto site-pad section-y">
           <div className="border-b border-on-surface/15 pb-6 sm:pb-8 mb-8 sm:mb-12">
             <span className="label-caps text-primary block mb-2">Shop Who You Are</span>
-            <h2 className="display-section text-on-surface">Four Identity Facets</h2>
+            <h2 className="display-section text-on-surface">Live Categories</h2>
             <p className="text-[15px] text-body-slate mt-2 max-w-2xl">
-              Not seasons. Not trends. Roles and moods — mapped into edits you can live in.
+              Names and images from the atelier catalog — not placeholder facets.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-            {FACETS.map((facet) => (
+            {facets.map((facet, index) => (
               <article
-                key={facet.num}
-                className="bg-surface border border-border-line p-5 sm:p-7 flex flex-col justify-between gap-6 hover:border-on-surface transition-colors"
+                key={facet.id}
+                className="bg-surface border border-border-line overflow-hidden flex flex-col hover:border-on-surface transition-colors"
               >
-                <div>
-                  <span className="inline-block bg-surface-dark text-surface px-2 py-1 text-[10px] font-semibold tracking-widest uppercase mb-4">
-                    {facet.num}
-                  </span>
-                  <span className="label-caps text-primary block mb-2">{facet.line}</span>
-                  <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-on-surface">
-                    {facet.title}
-                  </h3>
-                  <p className="text-[14px] text-body-slate mt-3 leading-relaxed">{facet.copy}</p>
+                <div className="aspect-[16/10] bg-surface-ivory overflow-hidden border-b border-border-line">
+                  <img
+                    src={facet.imageUrl || FALLBACK}
+                    alt={facet.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
-                <Link
-                  href="/#shop-who"
-                  className="label-caps text-on-surface hover:text-primary transition-colors inline-flex items-center gap-2"
-                >
-                  Enter Facet <span aria-hidden="true">→</span>
-                </Link>
+                <div className="p-5 sm:p-7 flex flex-col justify-between gap-6 flex-1">
+                  <div>
+                    <span className="inline-block bg-surface-dark text-surface px-2 py-1 text-[10px] font-semibold tracking-widest uppercase mb-4">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="label-caps text-primary block mb-2">Category</span>
+                    <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-on-surface">
+                      {facet.name}
+                    </h3>
+                    {facet.description ? (
+                      <p className="text-[14px] text-body-slate mt-3 leading-relaxed line-clamp-3">
+                        {facet.description}
+                      </p>
+                    ) : null}
+                    <p className="text-[11px] tracking-wider uppercase text-body-slate mt-3">
+                      {facet.productCount} pieces in edit
+                    </p>
+                  </div>
+                  <Link
+                    href={facet.href}
+                    className="label-caps text-on-surface hover:text-primary transition-colors inline-flex items-center gap-2"
+                  >
+                    Shop Category →
+                  </Link>
+                </div>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Commitments */}
       <section className="w-full bg-surface border-b border-border-line">
         <div className="max-w-site mx-auto site-pad section-y">
-          <div className="border-b border-on-surface/15 pb-6 sm:pb-8 mb-8 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <span className="label-caps text-primary block mb-2">Why SVastra</span>
-              <h2 className="display-section text-on-surface">Atelier Commitments</h2>
-            </div>
+          <div className="mb-8 sm:mb-10">
+            <span className="label-caps text-primary block mb-2">Commitments</span>
+            <h2 className="display-section text-on-surface">What We Stand For</h2>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {COMMITMENTS.map((item) => (
-              <div
-                key={item.title}
-                className="border border-border-line bg-surface-ivory p-5 sm:p-6 hover:border-on-surface transition-colors"
-              >
-                <h3 className="text-[14px] font-bold uppercase tracking-tight text-on-surface mb-3">
-                  {item.title}
+            {COMMITMENTS.map((c) => (
+              <div key={c.title} className="border border-border-line bg-surface-subtle p-5 sm:p-6">
+                <h3 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-on-surface mb-3">
+                  {c.title}
                 </h3>
-                <p className="text-[13px] text-body-slate leading-relaxed">{item.copy}</p>
+                <p className="text-[13px] text-body-slate leading-relaxed">{c.copy}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Voice / essay */}
-      <section id="voices" className="w-full bg-surface-subtle border-b border-border-line scroll-mt-24">
-        <div className="max-w-site mx-auto site-pad section-y">
-          <div className="border-b border-on-surface/15 pb-6 sm:pb-8 mb-8 sm:mb-12">
-            <span className="label-caps text-primary block mb-2">Cultural Voices</span>
-            <h2 className="display-section text-on-surface">Women of SVastra</h2>
-          </div>
-
-          <div className="bg-surface border border-border-line p-6 sm:p-10 lg:p-12">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-line pb-4 label-caps text-body-slate mb-6">
-              <span>Essay № 18 · Urban Neurology</span>
-              <span>Mumbai</span>
-            </div>
-            <blockquote className="text-lg sm:text-2xl lg:text-[26px] leading-[1.35] font-semibold tracking-tight m-0 text-on-surface max-w-4xl">
-              “I don’t dress to fit into an expectation or validate someone’s nostalgic ideal of an
-              Indian woman. I dress as the primary author of my own room.”
-            </blockquote>
-            <div className="pt-8 mt-8 border-t border-border-line flex items-center gap-4">
-              <img
-                alt=""
-                className="w-12 h-12 object-cover border border-on-surface shrink-0"
-                width={48}
-                height={48}
-                loading="lazy"
-                src={RHEA}
-              />
-              <div>
-                <span className="text-[14px] font-bold uppercase tracking-tight block">
-                  Dr. Rhea Verma
-                </span>
-                <span className="text-[12px] text-body-slate">
-                  Chief Neurological Researcher &amp; Author
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="w-full bg-surface-dark text-surface border-b border-border-line">
-        <div className="max-w-site mx-auto site-pad section-y text-center">
-          <span className="label-caps text-accent-ochre block mb-4">Begin the Edit</span>
-          <h2 className="display-section text-surface max-w-3xl mx-auto">
-            Experience the SVastra difference.
+      <section className="w-full bg-surface-dark text-surface">
+        <div className="max-w-site mx-auto site-pad py-16 lg:py-24 text-center">
+          <span className="label-caps text-surface/50 block mb-4">SVastra Ethos</span>
+          <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-[-0.03em] mb-6">
+            Wear Yourself.
           </h2>
-          <p className="text-[15px] text-surface/70 mt-4 max-w-xl mx-auto leading-relaxed">
-            Architectural handlooms. Independent cuts. A wardrobe built for one woman, many roles,
-            many moods.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
-            <Link href="/products" className="sv-btn-primary w-full sm:w-auto">
-              Browse the Archive
-            </Link>
-            <Link
-              href="/contact-us"
-              className="inline-flex items-center justify-center min-h-[48px] px-8 text-[11px] font-semibold tracking-[0.12em] uppercase border border-surface/40 text-surface hover:bg-surface hover:text-on-surface transition-colors w-full sm:w-auto"
-            >
-              Speak to Concierge
-            </Link>
-          </div>
+          <Link href="/#shop-who" className="sv-btn-outline !border-surface/30 !text-surface hover:!bg-surface hover:!text-on-surface inline-flex">
+            Shop Who You Are
+          </Link>
         </div>
       </section>
     </div>

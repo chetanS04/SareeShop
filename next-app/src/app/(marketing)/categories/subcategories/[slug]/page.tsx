@@ -185,7 +185,7 @@ export default function SubCategoriesPage() {
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
                 <div className="container mx-auto px-4 py-16">
                     <div className="text-center">
-                        <div className="w-16 h-16 border-4 border-blue-200 border-t-[#007FFF] rounded-full animate-spin mx-auto mb-4"></div>
+                        <div className="w-16 h-16 border-4 border-border-line border-t-[#8B1313] rounded-full animate-spin mx-auto mb-4"></div>
                         <p className="text-gray-600">Loading subcategories...</p>
                     </div>
                 </div>
@@ -209,7 +209,7 @@ export default function SubCategoriesPage() {
                         <button
                             onClick={() => window.history.back()}
                             style={{ backgroundColor: 'var(--theme-blue)', color: '#FFFAFB' }}
-                            className="px-8 py-3 font-semibold rounded-full hover:bg-[#0066CC] hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                            className="px-8 py-3 font-semibold rounded-full hover:bg-[#680D0D] hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                         >
                             Go Back
                         </button>
@@ -227,14 +227,11 @@ export default function SubCategoriesPage() {
 
     return (
         <>
-            <section className="py-6 container mx-auto relative px-4 md:px-10">
-                {/* Header: COLLECTIONS LIST title (Centered) */}
-                <div className="flex justify-center items-center mb-6">
-                    <h1 className="text-xl md:text-3xl font-serif font-bold tracking-widest text-[#0A0908] uppercase flex items-center gap-1.5">
-                        <span>COLLECTIONS</span>
-                        <span className="text-xs md:text-sm font-sans font-bold text-red-500 border-2 border-red-500 rounded-full px-2 py-0.5 tracking-tight not-italic inline-block transform -rotate-3">
-                            LIST
-                        </span>
+            <section className="py-8 max-w-site mx-auto site-pad relative">
+                <div className="flex flex-col items-start mb-8 border-b border-border-line pb-6">
+                    <span className="label-caps text-primary mb-2">Browse</span>
+                    <h1 className="display-section text-on-surface uppercase">
+                      {parentName || "Collections"}
                     </h1>
                 </div>
 
@@ -278,8 +275,8 @@ export default function SubCategoriesPage() {
                                     >
                                         <div
                                             className={`p-0.5 rounded-full border-2 transition-all duration-300 group-hover:scale-105 ${isSelected
-                                                ? 'border-[#007FFF] ring-2 ring-[#007FFF]/20 scale-105 shadow-md'
-                                                : 'border-gray-200 group-hover:border-[#007FFF] shadow-xs'
+                                                ? 'border-[#8B1313] ring-2 ring-[#8B1313]/20 scale-105 shadow-md'
+                                                : 'border-gray-200 group-hover:border-[#8B1313] shadow-xs'
                                                 }`}
                                         >
                                             <div className={`w-13 h-13 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden flex items-center justify-center p-2 transition-colors ${bgColor}`}>
@@ -290,7 +287,7 @@ export default function SubCategoriesPage() {
                                                 />
                                             </div>
                                         </div>
-                                        <span className={`mt-1.5 text-[10px] sm:text-xs font-semibold text-center leading-tight line-clamp-2 capitalize transition-colors px-0.5 ${isSelected ? 'text-[#007FFF] font-bold' : 'text-gray-700 group-hover:text-[#007FFF]'
+                                        <span className={`mt-1.5 text-[10px] sm:text-xs font-semibold text-center leading-tight line-clamp-2 capitalize transition-colors px-0.5 ${isSelected ? 'text-[#8B1313] font-bold' : 'text-gray-700 group-hover:text-primary'
                                             }`}>
                                             {sub.name}
                                         </span>

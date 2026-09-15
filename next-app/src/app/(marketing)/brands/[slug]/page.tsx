@@ -134,9 +134,9 @@ export default function BrandDetailPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+            <div className="min-h-screen bg-surface flex items-center justify-center">
                 <div className="text-center">
-                    <Loader2 className="w-12 h-12 text-[#007FFF] animate-spin mx-auto mb-4" />
+                    <Loader2 className="w-12 h-12 text-[#8B1313] animate-spin mx-auto mb-4" />
                     <p className="text-gray-600">Loading brand details...</p>
                 </div>
             </div>
@@ -145,15 +145,15 @@ export default function BrandDetailPage() {
 
     if (error || !brand) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-surface flex items-center justify-center">
                 <div className="text-center">
                     <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">Brand Not Found</h1>
                     <p className="text-gray-600 mb-6">{error || "The brand you're looking for doesn't exist."}</p>
                     <button
                         onClick={() => router.push("/")}
-                        style={{ backgroundColor: 'var(--theme-blue)', color: '#FFFAFB' }}
-                        className="px-6 py-3 rounded-xl hover:bg-[#0066CC] transition-all duration-300 font-medium"
+                        style={{ backgroundColor: '#8B1313', color: '#FFFAFB' }}
+                        className="px-6 py-3 hover:bg-[#680D0D] transition-all duration-300 font-medium"
                     >
                         Go to Home
                     </button>
@@ -181,10 +181,10 @@ export default function BrandDetailPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-white">
+        <div className="min-h-screen bg-surface">
             {/* Hero Header with Background */}
-            <div style={{ backgroundColor: 'var(--theme-blue)', color: '#FFFAFB' }} className="relative">
-                <div className="container mx-auto px-4 py-10 md:py-14 relative z-10">
+            <div style={{ backgroundColor: '#8B1313', color: '#FFFAFB' }} className="relative">
+                <div className="max-w-site mx-auto site-pad py-10 md:py-14 relative z-10">
 
                     {/* Back Button */}
                     <button
@@ -301,9 +301,9 @@ export default function BrandDetailPage() {
 
                                         {/* Decorative element */}
                                         <div className="flex items-center gap-2 pt-4">
-                                            <div className="w-2 h-2 bg-[#007FFF] rounded-full"></div>
+                                            <div className="w-2 h-2 bg-[#8B1313] rounded-full"></div>
                                             <div className="w-2 h-2 bg-blue-300 rounded-full"></div>
-                                            <div className="w-2 h-2 bg-[#007FFF] rounded-full"></div>
+                                            <div className="w-2 h-2 bg-[#8B1313] rounded-full"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -372,7 +372,7 @@ export default function BrandDetailPage() {
 
                                         {/* Info */}
                                         <div className="p-2.5 flex flex-col gap-0.5 flex-1">
-                                            <h3 className="font-semibold text-gray-900 text-xs leading-snug line-clamp-2 group-hover:text-[#007FFF] transition-colors">
+                                            <h3 className="font-semibold text-gray-900 text-xs leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                                                 {product.name}
                                             </h3>
 
@@ -425,8 +425,8 @@ export default function BrandDetailPage() {
                         {/* Infinite Scroll Sentinel & Animated Scrollable Loader */}
                         <div ref={observerTargetRef} className="w-full py-8 flex flex-col items-center justify-center col-span-full">
                             {loadingMore && (
-                                <div className="flex items-center gap-3 px-6 py-3 bg-white shadow-md rounded-full border border-gray-100 text-[#007FFF] font-semibold text-sm animate-pulse">
-                                    <div className="w-5 h-5 border-2 border-[#007FFF] border-t-transparent rounded-full animate-spin" />
+                                <div className="flex items-center gap-3 px-6 py-3 bg-white shadow-md rounded-full border border-gray-100 text-[#8B1313] font-semibold text-sm animate-pulse">
+                                    <div className="w-5 h-5 border-2 border-[#8B1313] border-t-transparent rounded-full animate-spin" />
                                     <span>Loading more products...</span>
                                 </div>
                             )}
@@ -457,7 +457,7 @@ export default function BrandDetailPage() {
                     </p>
                     <button
                         onClick={() => router.push('/brands')}
-                        className="px-8 py-4 bg-white text-[#007FFF] rounded-xl hover:bg-gray-100 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        className="px-8 py-4 bg-white text-[#8B1313] rounded-xl hover:bg-gray-100 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
                         View All Brands
                     </button>

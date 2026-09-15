@@ -21,7 +21,8 @@ export type ArchetypeConfig = {
   storyBody: string;
   storyCards: { title: string; body: string }[];
   specs: { label: string; value: string; note: string }[];
-  heroImg: string;
+  /** Optional fallback only — live pages prefer category/product images from API */
+  heroImg?: string;
   heroBadge: string;
   heroCaptionTitle: string;
   heroCaptionBody: string;
@@ -71,9 +72,7 @@ export const ARCHETYPES: ArchetypeConfig[] = [
       { label: "Fabric Discipline", value: "380 GSM", note: "Heavy Raw Habotai" },
       { label: "Weave Origin", value: "Tussar", note: "Hand-Spun Bhagalpur" },
       { label: "Ornamentation", value: "0.0%", note: "Zero Decorative Filigree" },
-    ],
-    heroImg:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDhsEte3PZqLkgQAI02yjiFOEKd9b-aUiWpgywJdLO1KaTflGRsqhDaMDDxNiSoJH7aiwEzbKX0vrqijNI7cr-RBk-kcsIoOeumuiZ28pvxV0nOxWbIhlF4orETJNrRXUDFfNzkCiSKdxWWxvzRhbxGoiNDUcBB9rGmVMMKZlP3Q5dOxWHaZIRf2QQPIsO9-RnZ3xxOmAcU41NLfnha3NlhKPNwHTxH433CN_9ocfti5tvAGe3v-qEW",
+    ],
     heroBadge: "Role No. 01 / Sovereign",
     heroCaptionTitle: "Signature Drape",
     heroCaptionBody: "The Razor Pallu Overlay — engineered without safety pins or drape constraints.",
@@ -125,9 +124,7 @@ export const ARCHETYPES: ArchetypeConfig[] = [
       { label: "Density", value: "320 GSM", note: "Raw Tussar" },
       { label: "Provenance", value: "Chanderi", note: "& Kutch" },
       { label: "Construction", value: "Zero", note: "Ornamental Filigree" },
-    ],
-    heroImg:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuByw5QvvCuwi1VXVQhuyvrSupgZobwv5o77-SktP3mwQYu5z9AHFO-o7vSaaQOkVyo43VDCxfC1vOA0caxkJ8lnHlWqrP5aORIxFH68Ts-6-CbOXnH_X_JYzBFKA6YiNWbzJ2feN9cBOnChT6GqlXzE0yDOsgQBMKgwjIA0OhQucSXvPyhsV9InIxx71ofkwGrdanCRVmXMgzF40WOeKfTc8ieVu7NR6m79WQcV6actj37PKfliP-O-",
+    ],
     heroBadge: "Portrait No. 02",
     heroCaptionTitle: "100% Handloom",
     heroCaptionBody: "Unbleached wild silk with structured pleat.",
@@ -179,9 +176,7 @@ export const ARCHETYPES: ArchetypeConfig[] = [
       { label: "Density", value: "360 GSM", note: "Kinetic Twist Silk" },
       { label: "Weave Origin", value: "Bengal", note: "& Bagru" },
       { label: "Architecture", value: "Asymmetric", note: "Drape System" },
-    ],
-    heroImg:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCnfoWCZcVUPUTN3jF548dC3VMaCpceBs_iETtp7qW17l-TEdB1M3W9PuErgyTIVYgSd8FgdfM2ENQTRliZ6lB4Ze3Z8WFUbxc-MbS1beRlXd0iDo2-cTQ-UrZGb9t9etXrPwGOG87ZL09XnZrJ7bit3dcZs1xmTiTjoj9fa1J5z5Q_o5sd6kglY9aZZL3KNLVxM-pl4mHO5kIbHYir6jxoR1hQLj9_kfZK5_9ykhNJUxtK7if8Mdxd",
+    ],
     heroBadge: "Studio Series 03",
     heroCaptionTitle: "Kinetic Texture & Conviction",
     heroCaptionBody: "Calcutta & Bagru Handcraft Collaborative Edit",
@@ -232,9 +227,7 @@ export const ARCHETYPES: ArchetypeConfig[] = [
       { label: "Handfeel", value: "Soft", note: "Organic Handloom" },
       { label: "Transition", value: "Day→Eve", note: "Zero Pinch" },
       { label: "Ornament", value: "Quiet", note: "Tactile Only" },
-    ],
-    heroImg:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDqYLRPXMyq5mQT4yc4ZJr6HTfrvrRlta3Rh27xpH71m4QvHi165jeNfjnrmwL3ybObxcMjevt33kaD1Jla530kpb852YOXw51ythqtg4Jq-C9n_gZcWwi8uhSwrEl711ANK2ERz_3kTN_xqmPJK1-HMd4nNVbF7CSDbqg0KNnDZe59l_g8vQ7jk9wF6OAN66C8LJBsNjNdb79C3bH8e0ZxhFhI4Upwf27T6IRypEAuaRWJJXK9Dg95",
+    ],
     heroBadge: "Role No. 04 / Sanctuary",
     heroCaptionTitle: "Tactile Sanctuary",
     heroCaptionBody: "Breathable organics for private quiet and generous hosting.",

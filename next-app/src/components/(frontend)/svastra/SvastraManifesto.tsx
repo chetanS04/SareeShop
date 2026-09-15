@@ -1,9 +1,35 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { fetchProductsList, productImageUrl } from "@/utils/archetypeCatalog";
 
-const MATRIX_IMG =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuC3p8dJiP3tP5b9DqkcMnsdnmemTj4fYT8tvQ_fdiZRHjVNHWsMNAYBtNI2zyTfbjjGqIXVGhfBbu_hKFcn32mnQyqLh8C4a34XiWcJ-9-ioaLsMpKXmlQVxOBIQHEHO6XrIkGcoDx2eNtkrvcGuMWb90UL6IO7WfAGgC2fuscKgnJhFXNcBsbz6nG7pACp9-5KAwwPe6zs7PiIU1YEMJ3PknYhRvUVruEQTGiwMxUJKgvunI4j-CqC2JRwvphFyVJmYQ";
+type Props = {
+  imageUrl?: string | null;
+};
 
-export default function SvastraManifesto() {
+const FALLBACK = "/svastra/logo-mark.png";
+
+export default function SvastraManifesto({ imageUrl }: Props) {
+  const [img, setImg] = useState<string | null>(imageUrl ?? null);
+
+  useEffect(() => {
+    if (imageUrl) {
+      setImg(imageUrl);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const products = await fetchProductsList({ per_page: 6, page: 1 });
+      if (cancelled) return;
+      const pick = products[1] || products[0];
+      setImg(productImageUrl(pick) || FALLBACK);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [imageUrl]);
+
   return (
     <section
       id="manifesto"
@@ -12,21 +38,19 @@ export default function SvastraManifesto() {
     >
       <div className="max-w-site mx-auto site-pad section-y">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-          {/* Left: SVastra Tension Matrix image */}
           <div className="lg:col-span-6">
             <div className="media-frame aspect-video sm:aspect-[16/9] bg-black border border-surface/20">
               <img
-                alt="Indian, Feminine, Bold, Modern — the SVastra tension matrix"
-                className="object-contain bg-black"
+                alt="SVastra handloom archive"
+                className="object-cover w-full h-full"
                 loading="lazy"
                 width={960}
                 height={540}
-                src={MATRIX_IMG}
+                src={img || FALLBACK}
               />
             </div>
           </div>
 
-          {/* Right: copy + practical promises */}
           <div className="lg:col-span-6 space-y-5 sm:space-y-6">
             <span className="label-caps text-accent-ochre block">Our Approach</span>
             <h2
@@ -42,7 +66,9 @@ export default function SvastraManifesto() {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 pt-2 text-[13px]">
               <div className="border-l-2 border-primary pl-4">
-                <span className="font-bold text-surface uppercase block text-[14px]">Natural fabrics</span>
+                <span className="font-bold text-surface uppercase block text-[14px]">
+                  Natural fabrics
+                </span>
                 <span className="text-surface/60">Handloom cotton, tussar, chanderi and linen.</span>
               </div>
               <div className="border-l-2 border-accent-magenta pl-4">
