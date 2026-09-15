@@ -72,28 +72,22 @@ export default function SvastraHowYouFeel() {
 
     (async () => {
       let list = await fetchProductsList({
-        per_page: 8,
+        per_page: 4,
         page: 1,
         category_id: active.id,
       });
       if (!list.length) {
-        list = await fetchProductsList({ per_page: 8, page: 1 });
+        list = await fetchProductsList({ per_page: 4, page: 1 });
       }
       if (cancelled) return;
 
-      const mapped = list.slice(0, 2).map((p) => ({
-        img: productImageUrl(p) || active.imageUrl || FALLBACK,
-        title: String(p.name || active.name || "Archive piece"),
-      }));
-
-      while (mapped.length < 2) {
-        mapped.push({
-          img: active.imageUrl || FALLBACK,
-          title: active.name || "Archive piece",
-        });
-      }
-
-      setLooks(mapped);
+      const product = list[0];
+      setLooks([
+        {
+          img: productImageUrl(product) || active.imageUrl || FALLBACK,
+          title: String(product?.name || active.name || "Archive piece"),
+        },
+      ]);
       setLoadingLook(false);
     })();
 
@@ -189,58 +183,55 @@ export default function SvastraHowYouFeel() {
           </div>
         )}
 
-        {/* Previous balanced plate: copy left + two looks right */}
-        <div className="border border-on-surface bg-surface-subtle p-6 sm:p-8 lg:p-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-            <div className="lg:col-span-6 space-y-5">
-              <div className="inline-block px-3 py-1 bg-primary text-surface text-[11px] font-semibold tracking-[0.14em] uppercase">
+        {/* Compact plate: copy left + single look flush right */}
+        <div className="border border-on-surface bg-surface-subtle overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 lg:items-stretch">
+            <div className="lg:col-span-7 flex flex-col justify-center gap-3 sm:gap-3.5 p-5 sm:p-6 lg:p-7 lg:pr-8">
+              <div className="inline-block self-start px-2.5 py-1 bg-primary text-surface text-[10px] font-semibold tracking-[0.14em] uppercase">
                 {tag}
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight text-on-surface leading-tight">
+              <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-on-surface leading-tight">
                 {title}
               </h3>
-              <p className="text-[15px] sm:text-base leading-[1.6] text-body-slate line-clamp-4">
+              <p className="text-[13px] sm:text-[14px] leading-[1.55] text-body-slate line-clamp-3 max-w-xl">
                 {desc}
               </p>
-              <div className="space-y-2.5 pt-1 text-[14px] text-on-surface font-medium">
+              <div className="space-y-1.5 text-[12px] sm:text-[13px] text-on-surface font-medium">
                 {points.map((p) => (
-                  <div key={p} className="flex items-start gap-3">
-                    <span className="text-primary mt-0.5 shrink-0" aria-hidden="true">
+                  <div key={p} className="flex items-start gap-2">
+                    <span className="text-primary mt-0.5 shrink-0 text-[11px]" aria-hidden="true">
                       ✓
                     </span>
-                    <span>{p}</span>
+                    <span className="line-clamp-1">{p}</span>
                   </div>
                 ))}
               </div>
-              <Link href={shopHref} className="sv-btn-primary inline-flex mt-1">
+              <Link
+                href={shopHref}
+                className="sv-btn-primary inline-flex self-start mt-1 !py-3 !px-5 !text-[10px]"
+              >
                 {shopLabel}
               </Link>
             </div>
 
-            <div className="lg:col-span-6 grid grid-cols-2 gap-3 sm:gap-4">
-              {looks.map((look, i) => (
+            <div className="lg:col-span-5 relative min-h-[260px] sm:min-h-[300px] lg:min-h-0 border-t lg:border-t-0 lg:border-l border-border-line">
+              {looks[0] ? (
                 <figure
-                  key={`${look.title}-${i}`}
-                  className={`space-y-2 ${i === 1 ? "mt-6 sm:mt-10" : ""}`}
+                  className={`absolute inset-0 overflow-hidden bg-surface-ivory ${
+                    loadingLook ? "animate-pulse" : ""
+                  }`}
                 >
-                  <div
-                    className={`aspect-[3/4] overflow-hidden border border-border-line bg-surface-ivory ${
-                      loadingLook ? "animate-pulse" : ""
-                    }`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={look.img}
-                      alt={look.title}
-                      className="w-full h-full object-cover object-top"
-                      loading="lazy"
-                    />
-                  </div>
-                  <figcaption className="text-[11px] font-semibold tracking-[0.06em] uppercase text-body-slate line-clamp-2">
-                    {look.title}
-                  </figcaption>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={looks[0].img}
+                    alt={looks[0].title}
+                    className="absolute inset-0 w-full h-full object-cover object-top"
+                    loading="lazy"
+                  />
                 </figure>
-              ))}
+              ) : (
+                <div className="absolute inset-0 bg-surface-ivory animate-pulse" />
+              )}
             </div>
           </div>
         </div>

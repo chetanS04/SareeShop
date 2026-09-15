@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
 import Script from 'next/script';
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import {
@@ -22,7 +23,6 @@ import {
     Home,
     Building2,
     ChevronRight,
-    Zap,
     Check,
     AlertCircle,
     AlertTriangle,
@@ -35,12 +35,22 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import Modal from "@/components/(sheared)/Modal";
-import PaymentIconsStrip from "@/components/checkout/PaymentIconsStrip";
+import SecurePaymentPanel from "@/components/checkout/SecurePaymentPanel";
 import SearchableDropdown from "@/components/(sheared)/SearchableDropdown";
 import { fetchStates, fetchCitiesByState, StateItem, CityItem } from "../../../../../utils/locationApi";
 import { useProductSync } from "@/context/ProductSyncContext";
 
 const basePath = process.env.NEXT_PUBLIC_UPLOAD_BASE || "https://api.zelton.co.in";
+
+const formatINR = (val: number | string) =>
+    `₹${Math.round(Number(val) || 0).toLocaleString("en-IN")}`;
+
+const resolveItemImage = (raw?: string | null) => {
+    if (!raw) return imgPlaceholder.src;
+    const s = String(raw);
+    if (s.startsWith("http") || s.startsWith("data:")) return s;
+    return `${basePath}${s}`;
+};
 
 const STORAGE_KEY_ADDRESS = "zelton_checkout_single_address_v2";
 const STORAGE_KEY_STEP = "zelton_checkout_single_step_v2";
@@ -83,7 +93,6 @@ interface Variant {
 }
 
 import {
-    INDIAN_STATES,
     validateAddressLine1,
     validateAddressLine2,
     validateCity,
@@ -668,11 +677,12 @@ const CheckoutSingle = () => {
 
     if (productLoading || authLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                <div className="text-center bg-white p-8 rounded-3xl shadow-sm border border-slate-200/80 max-w-sm w-full">
-                    <div className="w-14 h-14 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin mx-auto mb-4" />
-                    <h3 className="text-base font-bold text-slate-900 mb-1">Preparing Express Checkout</h3>
-                    <p className="text-xs text-slate-500">Securing your item and fetching live inventory...</p>
+            <div className="min-h-screen bg-surface flex items-center justify-center p-4">
+                <div className="bg-surface-ivory border border-border-line p-8 max-w-sm w-full text-center flex flex-col items-center">
+                    <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+                    <span className="label-caps text-primary block mb-2">Express Checkout</span>
+                    <h3 className="display-section text-on-surface text-xl">Preparing Checkout</h3>
+                    <p className="text-[13px] text-body-slate mt-2">Securing your item and fetching live inventory...</p>
                 </div>
             </div>
         );
@@ -680,18 +690,20 @@ const CheckoutSingle = () => {
 
     if (!product || !variant) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                <div className="text-center bg-white p-8 rounded-3xl shadow-sm border border-slate-200/80 max-w-md w-full">
-                    <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <Package className="w-8 h-8" />
-                    </div>
-                    <h2 className="text-xl font-bold text-slate-900 mb-2">Item Unavailable</h2>
-                    <p className="text-sm text-slate-500 mb-6">The requested product could not be loaded. It might be sold out or moved.</p>
+            <div className="min-h-screen bg-surface flex items-center justify-center p-4">
+                <div className="bg-surface-ivory border border-border-line p-8 max-w-md w-full text-center flex flex-col items-center">
+                    <Package className="w-10 h-10 text-primary mb-5" strokeWidth={1.25} />
+                    <span className="label-caps text-primary block mb-2">Express Checkout</span>
+                    <h2 className="display-section text-on-surface">Item Unavailable</h2>
+                    <p className="text-[14px] text-body-slate mt-3 leading-relaxed">
+                        The requested product could not be loaded. It might be sold out or moved.
+                    </p>
                     <button
-                        onClick={() => router.push('/cart')}
-                        className="px-6 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition font-semibold text-sm"
+                        type="button"
+                        onClick={() => router.push("/cart")}
+                        className="sv-btn-primary mt-8 !min-h-[44px] !py-3 !px-8"
                     >
-                        Return to Cart
+                        Return to Bag
                     </button>
                 </div>
             </div>
@@ -714,252 +726,259 @@ const CheckoutSingle = () => {
     const displayUnitPrice = Math.round(unitBasePrice * (1 + gstRate / 100));
     const price = displayUnitPrice;
     const subtotal = taxableSubtotal;
-    const totalSavings = mrp > displayUnitPrice ? (Math.round(mrp) - displayUnitPrice) * quantity : 0;
     const currentFormData = getValues();
+    const imgSrc = resolveItemImage(variant.image_url || product.image_url || null);
+    const productHref = productId ? `/products/${productId}` : "/products";
 
     const steps = [
-        { step: 1, label: "Shipping Address", icon: MapPin, desc: "Where to deliver" },
-        { step: 2, label: "Payment Method", icon: CreditCard, desc: "Cash on delivery / UPI" },
-        { step: 3, label: "Review & Confirm", icon: CheckCircle2, desc: "Verify details" },
+        { step: 1, label: "Delivery" },
+        { step: 2, label: "Payment" },
+        { step: 3, label: "Review" },
     ];
 
+    const inputClass = (hasError?: boolean) =>
+        `w-full px-4 py-3 text-sm text-on-surface bg-pure-white border transition focus:outline-none focus:border-on-surface ${
+            hasError ? "border-primary" : "border-border-line"
+        }`;
+    const labelClass = "label-caps text-[10px] text-on-surface block mb-1.5";
+
     return (
-        <div className="min-h-screen bg-[#F8FAFC] py-8 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-6xl mx-auto space-y-6">
+        <div className="min-h-screen bg-surface">
+            <div className="max-w-site mx-auto site-pad py-8 sm:py-12 lg:py-14 space-y-8">
 
-                {/* Top Express Checkout Header Bar */}
-                <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => router.back()}
-                            className="w-11 h-11 bg-slate-100 hover:bg-slate-200/80 text-slate-700 rounded-2xl flex items-center justify-center transition-all duration-150 flex-shrink-0 group"
-                            title="Go back"
-                        >
-                            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-                        </button>
-                        <div>
-                            <div className="flex items-center gap-2.5">
-                                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Express Buy Now</h1>
-                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-50 border border-amber-200/70 text-amber-800 text-[11px] font-bold rounded-full uppercase tracking-wider">
-                                    <Zap className="w-3 h-3 fill-amber-500 text-amber-500" />
-                                    Instant Checkout
-                                </span>
-                            </div>
-                            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Quick direct purchase with free express delivery</p>
-                        </div>
+                {/* Top strip */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border-line">
+                    <div className="flex items-center gap-2 label-caps text-body-slate">
+                        <span className="text-primary">SVASTRA</span>
+                        <span className="opacity-40">|</span>
+                        <span className="text-on-surface">Express Checkout</span>
                     </div>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <p className="label-caps text-[10px] text-body-slate inline-flex items-center gap-1.5">
+                            <Lock className="w-3.5 h-3.5 text-primary" strokeWidth={1.5} />
+                            Encrypted Checkout
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (typeof window !== "undefined" && window.history.length > 1) {
+                                    router.back();
+                                } else {
+                                    router.push(productHref);
+                                }
+                            }}
+                            className="label-caps text-[10px] text-on-surface hover:text-primary inline-flex items-center gap-1.5 underline underline-offset-4 decoration-border-line hover:decoration-primary transition-colors"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                            Back
+                        </button>
+                    </div>
+                </div>
 
-                    {/* Step Breadcrumb Indicators */}
-                    <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto py-1">
+                {/* Progress */}
+                <div className="space-y-4">
+                    <p className="label-caps text-[10px] text-body-slate">
+                        Checkout Step {String(currentStep).padStart(2, "0")} of 03
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
                         {steps.map(({ step, label }) => {
                             const isDone = currentStep > step;
                             const isCurrent = currentStep === step;
                             return (
-                                <React.Fragment key={step}>
-                                    <div
-                                        onClick={() => isDone && setCurrentStep(step)}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all select-none ${isCurrent
-                                                ? "bg-slate-900 text-white shadow-sm"
-                                                : isDone
-                                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60 cursor-pointer hover:bg-emerald-100/70"
-                                                    : "bg-slate-100 text-slate-400"
+                                <button
+                                    key={step}
+                                    type="button"
+                                    onClick={() => isDone && setCurrentStep(step)}
+                                    disabled={!isDone && !isCurrent}
+                                    className={`text-left border px-3 py-3 sm:px-4 sm:py-4 transition-colors ${
+                                        isCurrent
+                                            ? "border-on-surface bg-surface-ivory"
+                                            : isDone
+                                                ? "border-border-line bg-surface hover:border-on-surface cursor-pointer"
+                                                : "border-border-line bg-surface-subtle opacity-70 cursor-default"
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span
+                                            className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold border ${
+                                                isCurrent
+                                                    ? "bg-on-surface text-surface border-on-surface"
+                                                    : isDone
+                                                        ? "bg-primary text-surface border-primary"
+                                                        : "bg-surface text-body-slate border-border-line"
                                             }`}
-                                    >
-                                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isCurrent
-                                                ? "bg-white text-slate-900"
-                                                : isDone
-                                                    ? "bg-emerald-600 text-white"
-                                                    : "bg-slate-200 text-slate-500"
-                                            }`}>
+                                        >
                                             {isDone ? <Check className="w-3 h-3 stroke-[3]" /> : step}
-                                        </div>
-                                        <span className="hidden sm:inline">{label}</span>
+                                        </span>
+                                        <span className={`label-caps text-[10px] ${isCurrent ? "text-on-surface" : "text-body-slate"}`}>
+                                            {label}
+                                        </span>
                                     </div>
-                                    {step < 3 && (
-                                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
-                                    )}
-                                </React.Fragment>
+                                </button>
                             );
                         })}
                     </div>
                 </div>
 
-                {/* Global Out of Stock Warning Banner */}
                 {isUnavailable && (
-                    <div className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl flex items-start justify-between gap-3 text-red-800 text-sm shadow-sm">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                                <h4 className="font-bold text-red-900">
-                                    {isOutOfStock ? "Product is Currently Out of Stock" : "Insufficient Stock Available"}
-                                </h4>
-                                <p className="text-xs text-red-700 mt-0.5">
-                                    {isOutOfStock
-                                        ? "This item is currently sold out. You cannot place an order for this item."
-                                        : `Only ${availableStock} units available in stock. Please adjust your order quantity to proceed.`}
-                                </p>
-                            </div>
+                    <div className="bg-surface-ivory border border-primary p-4 flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                        <div>
+                            <h4 className="label-caps text-primary">
+                                {isOutOfStock ? "Product Out of Stock" : "Insufficient Stock"}
+                            </h4>
+                            <p className="text-[13px] text-body-slate mt-1.5 leading-relaxed">
+                                {isOutOfStock
+                                    ? "This item is currently sold out. You cannot place an order for this item."
+                                    : `Only ${availableStock} units available in stock. Please adjust your order quantity to proceed.`}
+                            </p>
+                            <Link
+                                href={productHref}
+                                className="mt-2 inline-block label-caps text-[10px] text-primary underline underline-offset-4"
+                            >
+                                Return to Product
+                            </Link>
                         </div>
                     </div>
                 )}
 
-                {/* Error Banner */}
                 {errorMessage && (
-                    <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start justify-between gap-3 text-rose-800 text-sm">
-                        <div className="flex items-center gap-2">
-                            <X className="w-5 h-5 text-rose-600 flex-shrink-0" />
+                    <div className="bg-surface-ivory border border-primary p-4 flex items-start justify-between gap-3 text-[13px] text-on-surface">
+                        <div className="flex items-start gap-2">
+                            <X className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                             <span>{errorMessage}</span>
                         </div>
                         <button
                             type="button"
                             onClick={() => setErrorMessage(null)}
-                            className="text-rose-500 hover:text-rose-700 text-xs font-bold"
+                            className="label-caps text-[10px] text-body-slate hover:text-primary"
                         >
                             Dismiss
                         </button>
                     </div>
                 )}
 
-                {/* Main Content Layout Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-                    {/* Left Form Area (8 cols) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                     <div className="lg:col-span-8 space-y-6">
 
-                        {/* STEP 1: Shipping Address Form */}
+                        {/* STEP 1: Delivery */}
                         {currentStep === 1 && (
-                            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
-                                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                            <div className="bg-surface border border-border-line p-6 sm:p-8 space-y-6">
+                                <div className="flex items-center justify-between pb-4 border-b border-border-line">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0">
-                                            <MapPin className="w-5 h-5" />
+                                        <div className="w-10 h-10 bg-surface-ivory text-primary border border-border-line flex items-center justify-center shrink-0">
+                                            <MapPin className="w-5 h-5" strokeWidth={1.5} />
                                         </div>
                                         <div>
-                                            <h2 className="text-lg font-bold text-slate-900">Delivery Address</h2>
-                                            <p className="text-xs text-slate-500">Your address is automatically saved as you type</p>
+                                            <h2 className="text-lg font-bold uppercase tracking-tight text-on-surface">Delivery Address</h2>
+                                            <p className="text-[12px] text-body-slate mt-0.5">Your address is automatically saved as you type</p>
                                         </div>
                                     </div>
-                                    <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                                        Step 1 of 3
-                                    </span>
+                                    <span className="label-caps text-[10px] text-primary">Step 01</span>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    {/* Full Name */}
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                            Full Name <span className="text-rose-500">*</span>
+                                        <label className={labelClass}>
+                                            Full Name <span className="text-primary">*</span>
                                         </label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-body-slate">
                                                 <User className="w-4 h-4" />
                                             </div>
                                             <input
                                                 type="text"
-                                                {...register('fullName')}
-                                                className={`w-full pl-10 pr-4 py-3 bg-slate-50/50 hover:bg-white focus:bg-white text-sm text-slate-900 border rounded-2xl transition duration-150 focus:outline-none focus:ring-4 focus:ring-blue-500/10 ${errors.fullName ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-600'
-                                                    }`}
+                                                {...register("fullName")}
+                                                className={`${inputClass(!!errors.fullName)} pl-10`}
                                                 placeholder="e.g. Rahul Sharma"
                                             />
                                         </div>
                                         {errors.fullName && (
-                                            <p className="text-rose-500 text-xs mt-1.5 font-medium flex items-center gap-1">
-                                                <span>•</span> {errors.fullName.message}
-                                            </p>
+                                            <p className="text-primary text-xs mt-1.5">{errors.fullName.message}</p>
                                         )}
                                     </div>
 
-                                    {/* Phone Number */}
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                            Phone Number <span className="text-rose-500">*</span>
+                                        <label className={labelClass}>
+                                            Phone Number <span className="text-primary">*</span>
                                         </label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-body-slate">
                                                 <Phone className="w-4 h-4" />
                                             </div>
                                             <input
                                                 type="tel"
                                                 maxLength={10}
-                                                {...register('phoneNumber')}
-                                                className={`w-full pl-10 pr-4 py-3 bg-slate-50/50 hover:bg-white focus:bg-white text-sm text-slate-900 border rounded-2xl transition duration-150 focus:outline-none focus:ring-4 focus:ring-blue-500/10 ${errors.phoneNumber ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-600'
-                                                    }`}
+                                                {...register("phoneNumber")}
+                                                className={`${inputClass(!!errors.phoneNumber)} pl-10`}
                                                 placeholder="10-digit mobile number"
                                             />
                                         </div>
                                         {errors.phoneNumber && (
-                                            <p className="text-rose-500 text-xs mt-1.5 font-medium flex items-center gap-1">
-                                                <span>•</span> {errors.phoneNumber.message}
-                                            </p>
+                                            <p className="text-primary text-xs mt-1.5">{errors.phoneNumber.message}</p>
                                         )}
                                     </div>
 
-                                    {/* Address Line 1 */}
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                            Address Line 1 (Flat, House No., Building, Street) <span className="text-rose-500">*</span>
+                                        <label className={labelClass}>
+                                            Address Line 1 <span className="text-primary">*</span>
                                         </label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-body-slate">
                                                 <Home className="w-4 h-4" />
                                             </div>
                                             <input
                                                 type="text"
-                                                {...register('addressLine1')}
-                                                className={`w-full pl-10 pr-4 py-3 bg-slate-50/50 hover:bg-white focus:bg-white text-sm text-slate-900 border rounded-2xl transition duration-150 focus:outline-none focus:ring-4 focus:ring-blue-500/10 ${errors.addressLine1 ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-600'
-                                                    }`}
-                                                placeholder="e.g. Flat 402, Royal Palms, Gandhi Road"
+                                                {...register("addressLine1")}
+                                                className={`${inputClass(!!errors.addressLine1)} pl-10`}
+                                                placeholder="Flat, house no., building, street"
                                             />
                                         </div>
                                         {errors.addressLine1 && (
-                                            <p className="text-rose-500 text-xs mt-1.5 font-medium flex items-center gap-1">
-                                                <span>•</span> {errors.addressLine1.message}
-                                            </p>
+                                            <p className="text-primary text-xs mt-1.5">{errors.addressLine1.message}</p>
                                         )}
                                     </div>
 
-                                    {/* Address Line 2 */}
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                            Address Line 2 / Landmark <span className="text-slate-400 font-normal">(Optional)</span>
+                                        <label className={labelClass}>
+                                            Address Line 2 / Landmark <span className="text-body-slate font-normal">(Optional)</span>
                                         </label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-body-slate">
                                                 <Building2 className="w-4 h-4" />
                                             </div>
                                             <input
                                                 type="text"
-                                                {...register('addressLine2')}
-                                                className="w-full pl-10 pr-4 py-3 bg-slate-50/50 hover:bg-white focus:bg-white text-sm text-slate-900 border border-slate-200 rounded-2xl transition duration-150 focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10"
-                                                placeholder="e.g. Near City Hospital, Sector 14"
+                                                {...register("addressLine2")}
+                                                className={`${inputClass(false)} pl-10`}
+                                                placeholder="Landmark, sector, area"
                                             />
                                         </div>
                                     </div>
 
-                                    {/* State Dropdown */}
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                            State <span className="text-rose-500">*</span>
+                                        <label className={labelClass}>
+                                            State <span className="text-primary">*</span>
                                         </label>
                                         <SearchableDropdown
                                             items={statesList}
                                             placeholder={loadingStates ? "Loading states..." : "Select State"}
                                             displayProperty="name"
                                             valueProperty="name"
-                                            value={watch('state')}
+                                            value={watch("state")}
                                             showAddButton={false}
                                             disabled={loadingStates}
                                             error={errors.state?.message}
                                             onChange={(selectedStateName) => {
-                                                setValue('state', selectedStateName, { shouldValidate: true });
-                                                setValue('city', '', { shouldValidate: false });
+                                                setValue("state", selectedStateName, { shouldValidate: true });
+                                                setValue("city", "", { shouldValidate: false });
                                             }}
                                             onSelectionChange={(selectedState) => {
                                                 if (selectedState) {
-                                                    setValue('state', selectedState.name, { shouldValidate: true });
-                                                    setValue('city', '', { shouldValidate: false });
+                                                    setValue("state", selectedState.name, { shouldValidate: true });
+                                                    setValue("city", "", { shouldValidate: false });
                                                     setLoadingCities(true);
-                                                    fetchCitiesByState(selectedState.id).then(cities => {
+                                                    fetchCitiesByState(selectedState.id).then((cities) => {
                                                         setCitiesList(cities);
                                                         setLoadingCities(false);
                                                     });
@@ -967,21 +986,18 @@ const CheckoutSingle = () => {
                                             }}
                                         />
                                         {errors.state && (
-                                            <p className="text-rose-500 text-xs mt-1.5 font-medium flex items-center gap-1">
-                                                <span>•</span> {errors.state.message}
-                                            </p>
+                                            <p className="text-primary text-xs mt-1.5">{errors.state.message}</p>
                                         )}
                                     </div>
 
-                                    {/* City Dropdown */}
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                            City <span className="text-rose-500">*</span>
+                                        <label className={labelClass}>
+                                            City <span className="text-primary">*</span>
                                         </label>
                                         <SearchableDropdown
                                             items={citiesList}
                                             placeholder={
-                                                !watch('state')
+                                                !watch("state")
                                                     ? "Select state first"
                                                     : loadingCities
                                                         ? "Loading cities..."
@@ -989,524 +1005,423 @@ const CheckoutSingle = () => {
                                             }
                                             displayProperty="name"
                                             valueProperty="name"
-                                            value={watch('city')}
+                                            value={watch("city")}
                                             showAddButton={false}
-                                            disabled={!watch('state') || loadingCities}
+                                            disabled={!watch("state") || loadingCities}
                                             error={errors.city?.message}
                                             onChange={(selectedCityName) => {
-                                                setValue('city', selectedCityName, { shouldValidate: true });
+                                                setValue("city", selectedCityName, { shouldValidate: true });
                                             }}
                                             onSelectionChange={(selectedCity) => {
                                                 if (selectedCity) {
-                                                    setValue('city', selectedCity.name, { shouldValidate: true });
+                                                    setValue("city", selectedCity.name, { shouldValidate: true });
                                                 }
                                             }}
                                         />
                                         {errors.city && (
-                                            <p className="text-rose-500 text-xs mt-1.5 font-medium flex items-center gap-1">
-                                                <span>•</span> {errors.city.message}
-                                            </p>
+                                            <p className="text-primary text-xs mt-1.5">{errors.city.message}</p>
                                         )}
                                     </div>
 
-                                    {/* Postal Code */}
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                            Postal Code (PIN) <span className="text-rose-500">*</span>
+                                        <label className={labelClass}>
+                                            Postal Code (PIN) <span className="text-primary">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             maxLength={6}
-                                            {...register('postalCode')}
-                                            className={`w-full px-4 py-3 bg-slate-50/50 hover:bg-white focus:bg-white text-sm text-slate-900 border rounded-2xl transition duration-150 focus:outline-none focus:ring-4 focus:ring-blue-500/10 ${errors.postalCode ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-600'
-                                                }`}
+                                            {...register("postalCode")}
+                                            className={inputClass(!!errors.postalCode)}
                                             placeholder="6-digit PIN code"
                                         />
                                         {errors.postalCode && (
-                                            <p className="text-rose-500 text-xs mt-1.5 font-medium flex items-center gap-1">
-                                                <span>•</span> {errors.postalCode.message}
-                                            </p>
+                                            <p className="text-primary text-xs mt-1.5">{errors.postalCode.message}</p>
                                         )}
                                     </div>
 
-                                    {/* Country */}
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                            Country
-                                        </label>
+                                        <label className={labelClass}>Country</label>
                                         <input
                                             type="text"
                                             readOnly
                                             value="India"
-                                            {...register('country')}
-                                            className="w-full px-4 py-3 bg-slate-100 text-slate-600 text-sm font-semibold border border-slate-200 rounded-2xl cursor-not-allowed"
+                                            {...register("country")}
+                                            className="w-full px-4 py-3 bg-surface-subtle text-body-slate text-sm font-semibold border border-border-line cursor-not-allowed"
                                         />
                                     </div>
                                 </div>
 
-                                {/* Trust assurance footer */}
-                                <div className="pt-4 border-t border-slate-100 grid grid-cols-3 gap-2 text-center">
-                                    <div className="flex flex-col items-center">
-                                        <ShieldCheck className="w-5 h-5 text-emerald-600 mb-1" />
-                                        <span className="text-[11px] font-bold text-slate-700">100% Genuine</span>
-                                    </div>
-                                    <div className="flex flex-col items-center">
-                                        <Truck className="w-5 h-5 text-blue-600 mb-1" />
-                                        <span className="text-[11px] font-bold text-slate-700">Free Express Delivery</span>
-                                    </div>
-                                    <div className="flex flex-col items-center">
-                                        <RotateCcw className="w-5 h-5 text-purple-600 mb-1" />
-                                        <span className="text-[11px] font-bold text-slate-700">Easy Returns</span>
-                                    </div>
+                                <div className="pt-4 border-t border-border-line grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    {[
+                                        { icon: ShieldCheck, title: "Genuine Archive" },
+                                        { icon: Truck, title: "Tracked Delivery" },
+                                        { icon: RotateCcw, title: "Easy Returns" },
+                                    ].map(({ icon: Icon, title }) => (
+                                        <div key={title} className="flex items-center gap-2">
+                                            <Icon className="w-4 h-4 text-primary shrink-0" strokeWidth={1.5} />
+                                            <span className="label-caps text-[10px] text-on-surface">{title}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}
 
-                        {/* STEP 2: Payment Method (Amazon-style clean 2 options) */}
+                        {/* STEP 2: Payment */}
                         {currentStep === 2 && (
-                            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
-                                {/* Header */}
-                                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                                    <div>
-                                        <h2 className="text-xl font-bold text-slate-900">Payment method</h2>
-                                        <p className="text-xs text-slate-500 mt-0.5">Select how you would like to pay</p>
-                                    </div>
-                                    <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                                        Step 2 of 3
-                                    </span>
-                                </div>
-
-                                {/* Amazon Style 2-Option Card Container */}
-                                <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
-
-                                    {/* Option 1: Online Payment (UPI, Cards, NetBanking) */}
-                                    <label
-                                        htmlFor="pay-online"
-                                        className={`flex items-start gap-4 p-5 sm:p-6 transition-all cursor-pointer select-none ${paymentMethod === 'online'
-                                                ? 'bg-blue-50/40'
-                                                : 'bg-white hover:bg-slate-50/70'
-                                            }`}
-                                    >
-                                        <div className="pt-0.5">
-                                            <input
-                                                type="radio"
-                                                id="pay-online"
-                                                name="payment_choice"
-                                                value="online"
-                                                checked={paymentMethod === 'online'}
-                                                onChange={() => setPaymentMethod('online')}
-                                                className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
-                                            />
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-slate-900 text-base">
-                                                        Online Payment <span className="font-normal text-slate-600 text-sm">(UPI, Cards, Net Banking)</span>
-                                                    </span>
-                                                    <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold rounded uppercase">
-                                                        Instant &amp; Safe
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                Pay securely via Google Pay, PhonePe, Paytm, Debit/Credit Card, or Net Banking.
-                                            </p>
-
-                                            {/* Network Icons Strip */}
-                                            <PaymentIconsStrip />
-
-                                            {paymentMethod === 'online' && (
-                                                <div className="mt-3.5 pt-3 border-t border-blue-100 flex items-center gap-2 text-xs text-blue-700">
-                                                    <span className="font-semibold">ℹ️</span>
-                                                    <span>You will complete payment securely on the next screen with zero extra fees.</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </label>
-
-                                    {/* Option 2: Cash on Delivery (COD) */}
-                                    <label
-                                        htmlFor={isCodAllowed ? "pay-cod" : undefined}
-                                        className={`flex items-start gap-4 p-5 sm:p-6 transition-all select-none ${!isCodAllowed
-                                                ? 'bg-slate-50/50 opacity-70 cursor-not-allowed border-slate-200'
-                                                : paymentMethod === 'cod'
-                                                    ? 'bg-blue-50/40 cursor-pointer'
-                                                    : 'bg-white hover:bg-slate-50/70 cursor-pointer'
-                                            }`}
-                                    >
-                                        <div className="pt-0.5">
-                                            <input
-                                                type="radio"
-                                                id="pay-cod"
-                                                name="payment_choice"
-                                                value="cod"
-                                                disabled={!isCodAllowed}
-                                                checked={paymentMethod === 'cod' && isCodAllowed}
-                                                onChange={() => isCodAllowed && setPaymentMethod('cod')}
-                                                className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300 disabled:opacity-50 cursor-pointer"
-                                            />
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                                <span className="font-bold text-slate-900 text-base">
-                                                    Cash on Delivery / Pay on Delivery
-                                                </span>
-                                                <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${isCodAllowed ? 'bg-slate-100 text-slate-700' : 'bg-amber-100 text-amber-800'}`}>
-                                                    {isCodAllowed ? 'Doorstep Payment' : 'Unavailable'}
-                                                </span>
-                                            </div>
-
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                {isCodAllowed
-                                                    ? "Pay with Cash or scan the courier delivery agent's UPI QR code upon arrival."
-                                                    : "Cash on Delivery is unavailable for this product variant. Please choose Online Payment."}
-                                            </p>
-
-                                            {!isCodAllowed && (
-                                                <div className="mt-3 p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-center gap-2">
-                                                    <span>⚠️</span>
-                                                    <span>This item is only eligible for prepaid online orders.</span>
-                                                </div>
-                                            )}
-
-                                            {paymentMethod === 'cod' && isCodAllowed && (
-                                                <div className="mt-3.5 pt-3 border-t border-blue-100 flex items-center gap-2 text-xs text-amber-800">
-                                                    <span className="font-semibold">💡</span>
-                                                    <span>Please keep exact change of <strong>₹{finalTotal}</strong> ready for a quick delivery.</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </label>
-
-                                </div>
-
-                                {/* Simple Security Footer */}
-                                <div className="flex items-center justify-between text-xs text-slate-500 px-2 pt-1">
-                                    <span className="flex items-center gap-1.5">
-                                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                                        <span>GoKwik 256-Bit SSL Encrypted</span>
-                                    </span>
-                                    <span className="font-medium text-slate-400">100% Purchase Protection</span>
-                                </div>
-
+                            <div className="bg-surface border border-border-line p-6 sm:p-8">
+                                <SecurePaymentPanel
+                                    paymentMethod={paymentMethod}
+                                    onChange={(m) => setPaymentMethod(m)}
+                                    isCodDisabled={!isCodAllowed}
+                                    finalTotal={finalTotal}
+                                />
                             </div>
                         )}
 
-                        {/* STEP 3: Review Order */}
+                        {/* STEP 3: Review */}
                         {currentStep === 3 && (
-                            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6">
-                                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                            <div className="bg-surface border border-border-line p-6 sm:p-8 space-y-6">
+                                <div className="flex items-center justify-between pb-4 border-b border-border-line">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0">
-                                            <CheckCircle2 className="w-5 h-5" />
+                                        <div className="w-10 h-10 bg-surface-ivory text-primary border border-border-line flex items-center justify-center shrink-0">
+                                            <CheckCircle2 className="w-5 h-5" strokeWidth={1.5} />
                                         </div>
                                         <div>
-                                            <h2 className="text-lg font-bold text-slate-900">Review &amp; Place Order</h2>
-                                            <p className="text-xs text-slate-500">Please review your delivery details before placing order</p>
+                                            <h2 className="text-lg font-bold uppercase tracking-tight text-on-surface">Review &amp; Place Order</h2>
+                                            <p className="text-[12px] text-body-slate mt-0.5">Confirm delivery and payment before placing</p>
                                         </div>
                                     </div>
-                                    <span className="text-[11px] font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                                        Step 3 of 3
-                                    </span>
+                                    <span className="label-caps text-[10px] text-primary">Step 03</span>
                                 </div>
 
-                                {/* Summary Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Delivery Address Box */}
-                                    <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl relative">
+                                    <div className="p-4 bg-surface-ivory border border-border-line">
                                         <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                                                <MapPin className="w-4 h-4 text-blue-600" />
+                                            <div className="flex items-center gap-2 text-on-surface font-bold text-sm">
+                                                <MapPin className="w-4 h-4 text-primary" />
                                                 <span>Delivering To</span>
                                             </div>
                                             <button
                                                 type="button"
                                                 onClick={() => setCurrentStep(1)}
-                                                className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                                                className="label-caps text-[10px] text-primary hover:text-on-surface underline underline-offset-4"
                                             >
                                                 Edit
                                             </button>
                                         </div>
-                                        <p className="font-bold text-slate-800 text-sm">{currentFormData.fullName}</p>
-                                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                                        <p className="font-semibold text-on-surface text-sm">{currentFormData.fullName}</p>
+                                        <p className="text-[12px] text-body-slate mt-1 leading-relaxed">
                                             {currentFormData.addressLine1}
                                             {currentFormData.addressLine2 ? `, ${currentFormData.addressLine2}` : ""}
                                             <br />
-                                            {currentFormData.city}, {currentFormData.state} - <span className="font-semibold">{currentFormData.postalCode}</span>
+                                            {currentFormData.city}, {currentFormData.state} - {currentFormData.postalCode}
                                         </p>
-                                        <p className="text-xs text-slate-700 font-medium mt-1">📞 {currentFormData.phoneNumber}</p>
+                                        <p className="text-[12px] text-on-surface font-medium mt-1">{currentFormData.phoneNumber}</p>
                                     </div>
 
-                                    {/* Payment Method Box */}
-                                    <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl relative">
+                                    <div className="p-4 bg-surface-ivory border border-border-line">
                                         <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                                                <CreditCard className="w-4 h-4 text-emerald-600" />
+                                            <div className="flex items-center gap-2 text-on-surface font-bold text-sm">
+                                                <CreditCard className="w-4 h-4 text-primary" />
                                                 <span>Payment Type</span>
                                             </div>
                                             <button
                                                 type="button"
                                                 onClick={() => setCurrentStep(2)}
-                                                className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                                                className="label-caps text-[10px] text-primary hover:text-on-surface underline underline-offset-4"
                                             >
                                                 Change
                                             </button>
                                         </div>
-                                        <p className="font-bold text-slate-800 text-sm">
-                                            {paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'Online Payment (Prepaid)'}
+                                        <p className="font-semibold text-on-surface text-sm">
+                                            {paymentMethod === "cod" ? "Cash on Delivery (COD)" : "Online Payment (Prepaid)"}
                                         </p>
-                                        <p className="text-xs text-slate-500 mt-1">
-                                            {paymentMethod === 'cod'
-                                                ? 'Pay ₹' + finalTotal + ' in cash/UPI upon delivery.'
-                                                : 'Secure instant checkout via GoKwik Gateway.'}
+                                        <p className="text-[12px] text-body-slate mt-1">
+                                            {paymentMethod === "cod"
+                                                ? `Pay ${formatINR(finalTotal)} in cash/UPI upon delivery.`
+                                                : "Secure instant checkout via GoKwik Gateway."}
                                         </p>
                                     </div>
                                 </div>
 
-                                {/* Product Breakdown inside Step 3 */}
-                                <div className="border border-slate-200 rounded-2xl p-4 bg-white flex flex-col sm:flex-row items-center gap-4">
-                                    <div className="relative w-20 h-20 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden flex-shrink-0">
-                                        <Image
-                                            src={`${basePath}${variant.image_url || product.image_url || imgPlaceholder.src}`}
-                                            alt={product.name}
-                                            fill
-                                            unoptimized
-                                            className="object-contain p-1"
-                                        />
-                                    </div>
-                                    <div className="flex-1 text-center sm:text-left min-w-0">
-                                        <h4 className="font-bold text-slate-900 text-sm line-clamp-1">{product.name}</h4>
-                                        <p className="text-xs text-slate-500 mt-0.5">{variant.title} • SKU: <span className="font-mono">{variant.sku}</span></p>
-                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
-                                            <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                                                Qty: {quantity}
-                                            </span>
-                                            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-                                                ₹{price} / unit
-                                            </span>
-                                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${isReturnable ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
-                                                {isReturnable ? `${returnWindowDays} Days Returnable` : 'Non-Returnable'}
-                                            </span>
-                                            <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                                                {totalShippingFee === 0 ? 'Free Delivery' : `Shipping: ₹${totalShippingFee}`}
-                                            </span>
+                                <div className="space-y-3">
+                                    <h4 className="label-caps text-[10px] text-on-surface">Item to be delivered</h4>
+                                    <div className="divide-y divide-border-line border border-border-line bg-pure-white">
+                                        <div className="p-4 flex flex-col sm:flex-row items-start gap-4">
+                                            <div className="relative w-20 aspect-[3/4] bg-surface-ivory border border-border-line overflow-hidden shrink-0 media-frame">
+                                                <Image
+                                                    src={imgSrc}
+                                                    alt={product.name}
+                                                    fill
+                                                    unoptimized
+                                                    className="object-cover object-top"
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-bold uppercase tracking-tight text-on-surface text-sm line-clamp-2">
+                                                    {product.name}
+                                                </h4>
+                                                <p className="text-[12px] text-body-slate mt-0.5">
+                                                    {variant.title}
+                                                    {variant.sku ? ` • SKU: ${variant.sku}` : ""}
+                                                </p>
+                                                <div className="flex flex-wrap items-center gap-2 mt-2">
+                                                    <span className="label-caps text-[10px] text-body-slate">
+                                                        Qty: {quantity}
+                                                    </span>
+                                                    <span className="label-caps text-[10px] text-on-surface">
+                                                        {formatINR(price)} / unit
+                                                    </span>
+                                                    {isReturnable ? (
+                                                        <span className="label-caps text-[10px] text-body-slate">
+                                                            {returnWindowDays}d returns
+                                                        </span>
+                                                    ) : (
+                                                        <span className="label-caps text-[10px] text-primary">
+                                                            Non-returnable
+                                                        </span>
+                                                    )}
+                                                    <span className="label-caps text-[10px] text-body-slate">
+                                                        {totalShippingFee > 0
+                                                            ? `+ ${formatINR(totalShippingFee)} delivery`
+                                                            : "Free delivery"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right shrink-0 sm:ml-auto">
+                                                <p className="text-base font-bold text-on-surface">{formatINR(subtotal)}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="text-right flex-shrink-0">
-                                        <p className="text-lg font-black text-slate-900">₹{subtotal}</p>
                                     </div>
                                 </div>
                             </div>
                         )}
-
                     </div>
 
-                    {/* Right Order Summary Sidebar (4 cols) */}
-                    <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-8">
-                        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
-                            <h2 className="text-base font-bold text-slate-900 flex items-center justify-between">
-                                <span>Order Summary</span>
-                                <span className="text-xs font-semibold text-slate-400">1 Item</span>
-                            </h2>
+                    {/* Sidebar */}
+                    <aside className="lg:col-span-4 lg:sticky lg:top-24 space-y-4">
+                        <div className="bg-surface-ivory border border-[#E4D9C6] p-6 sm:p-7 space-y-5">
+                            <div className="flex items-center justify-between pb-4 border-b border-on-surface/10">
+                                <h2 className="text-base font-bold uppercase tracking-tight text-on-surface">Order Summary</h2>
+                                <span className="label-caps text-[9px] text-body-slate">1 Item</span>
+                            </div>
 
-                            {/* Product Card */}
-                            <div className="p-3.5 bg-slate-50 border border-slate-200/70 rounded-2xl space-y-3">
+                            <div className={`p-3 border space-y-3 ${
+                                isOutOfStock
+                                    ? "bg-surface border-primary"
+                                    : "bg-surface border-border-line"
+                            }`}>
                                 <div className="flex items-start gap-3">
-                                    <div className="relative w-16 h-16 bg-white border border-slate-200/80 rounded-xl overflow-hidden flex-shrink-0">
+                                    <div className="relative w-14 aspect-[3/4] bg-surface-ivory border border-border-line overflow-hidden shrink-0 media-frame">
                                         <Image
-                                            src={`${basePath}${variant.image_url || product.image_url || imgPlaceholder.src}`}
+                                            src={imgSrc}
                                             alt={product.name}
                                             fill
                                             unoptimized
-                                            className="object-contain p-1"
+                                            className={`object-cover object-top ${isOutOfStock ? "opacity-55 grayscale" : ""}`}
                                         />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-slate-900 text-xs line-clamp-2 leading-snug">
+                                        <h3 className="font-bold uppercase tracking-tight text-on-surface text-[11px] line-clamp-2 leading-snug">
                                             {product.name}
                                         </h3>
-                                        <p className="text-[11px] text-slate-500 mt-0.5">{variant.title}</p>
+                                        <p className="text-[11px] text-body-slate mt-0.5">{variant.title}</p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-xs font-black text-slate-900">₹{price}</span>
-                                            {mrp > price && (
-                                                <span className="text-[10px] text-slate-400 line-through">₹{mrp}</span>
-                                            )}
-                                        </div>
-
-                                        {/* Policy Badges */}
-                                        <div className="flex flex-wrap gap-1 mt-1.5">
-                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isReturnable ? 'bg-blue-50 text-blue-700' : 'bg-amber-100 text-amber-800'}`}>
-                                                {isReturnable ? `🔄 ${returnWindowDays}d Return` : '🚫 Non-Returnable'}
+                                            <span className="text-[12px] font-semibold text-on-surface">
+                                                {formatINR(price)}
                                             </span>
-                                            {!isCodAllowed && (
-                                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-50 text-purple-700">
-                                                    💳 Prepaid Only
+                                            {mrp > price && (
+                                                <span className="text-[10px] text-body-slate line-through">
+                                                    {formatINR(mrp)}
                                                 </span>
                                             )}
                                         </div>
-
-                                        {/* Stock Status Indicator */}
+                                        {!isCodAllowed && (
+                                            <p className="mt-1.5 label-caps text-[10px] text-primary">Prepaid only</p>
+                                        )}
                                         {isOutOfStock ? (
-                                            <div className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-red-600">
+                                            <div className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-primary">
                                                 <AlertCircle className="w-3 h-3" />
                                                 <span>Out of Stock</span>
                                             </div>
                                         ) : isInsufficientStock ? (
-                                            <div className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-amber-700">
+                                            <div className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-accent-ochre">
                                                 <AlertTriangle className="w-3 h-3" />
                                                 <span>Only {availableStock} in stock</span>
                                             </div>
                                         ) : null}
                                     </div>
                                 </div>
-
-                                {/* Quantity Display */}
-                                <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 text-xs">
-                                    <span className="font-semibold text-slate-600">Quantity:</span>
-                                    <span className={`font-bold px-3 py-1 rounded-lg text-xs shadow-2xs border ${isOutOfStock ? 'bg-red-100 text-red-700 border-red-200' : 'bg-white text-slate-900 border-slate-200'}`}>
-                                        {quantity}
-                                    </span>
+                                <div className="flex items-center justify-between pt-2 border-t border-border-line text-[11px]">
+                                    <span className="text-body-slate">Quantity</span>
+                                    <span className="font-semibold text-on-surface">{quantity}</span>
                                 </div>
                             </div>
 
-                            {/* Price Breakdown — Detailed & Transparent */}
-                            <div className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-4">
+                            <div className="space-y-2.5 text-[13px] text-body-slate border-t border-on-surface/10 pt-4">
                                 <div className="flex justify-between">
-                                    <span>Item Base Price ({quantity} {quantity === 1 ? 'item' : 'items'})</span>
-                                    <span className="font-semibold text-slate-800">₹{taxableSubtotal.toLocaleString('en-IN')}</span>
+                                    <span>Items Base Price</span>
+                                    <span className="font-semibold text-on-surface">{formatINR(taxableSubtotal)}</span>
                                 </div>
-
-                                <div className="flex justify-between items-center">
-                                    <span>Estimated GST ({gstRate}%)</span>
-                                    <span className="font-semibold text-slate-800">
-                                        ₹{totalTax.toLocaleString('en-IN')}
-                                    </span>
+                                <div className="flex justify-between">
+                                    <span>Estimated GST / Tax ({gstRate}%)</span>
+                                    <span className="font-semibold text-on-surface">{formatINR(totalTax)}</span>
                                 </div>
-
                                 <div className="flex justify-between items-center">
                                     <span>Delivery Charges</span>
-                                    {totalShippingFee === 0 ? (
-                                        <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                                            FREE
-                                        </span>
+                                    {totalShippingFee > 0 ? (
+                                        <span className="font-semibold text-on-surface">{formatINR(totalShippingFee)}</span>
                                     ) : (
-                                        <span className="font-bold text-slate-900">
-                                            ₹{totalShippingFee.toLocaleString('en-IN')}
-                                        </span>
+                                        <span className="label-caps text-[10px] text-primary font-bold">FREE</span>
                                     )}
                                 </div>
-
-                                <div className="pt-3 border-t border-slate-200 flex justify-between items-baseline text-slate-900">
+                                <div className="pt-3 border-t border-on-surface/10 flex justify-between items-baseline gap-3">
                                     <div>
-                                        <span className="text-sm font-bold block">Total Amount Payable</span>
-                                        <span className="text-[10px] text-slate-400 font-medium">All taxes &amp; shipping included</span>
+                                        <span className="text-sm font-bold uppercase tracking-tight text-on-surface block">Total Payable</span>
+                                        <span className="label-caps text-[9px] text-body-slate">All taxes &amp; shipping included</span>
                                     </div>
-                                    <span className="text-2xl font-black text-slate-900">₹{finalTotal.toLocaleString('en-IN')}</span>
+                                    <span className="text-xl font-bold text-on-surface tracking-tight">{formatINR(finalTotal)}</span>
                                 </div>
                             </div>
 
-                            {/* Security Badges */}
-                            <div className="pt-2 border-t border-slate-100 text-center">
-                                <p className="text-[11px] text-slate-400 font-semibold flex items-center justify-center gap-1.5">
-                                    <Lock className="w-3 h-3 text-slate-400" />
-                                    <span>Guaranteed Safe &amp; 256-Bit Encrypted Checkout</span>
-                                </p>
-                            </div>
+                            <p className="text-[11px] text-body-slate flex items-center justify-center gap-1.5 pt-1">
+                                <Lock className="w-3 h-3 text-primary" />
+                                Guaranteed Safe &amp; Encrypted Checkout
+                            </p>
                         </div>
 
-                        {/* Warning if unavailable */}
                         {isUnavailable && (
-                            <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-700 flex items-start gap-2">
-                                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                                <span>{isOutOfStock ? 'Item is out of stock. Checkout is disabled.' : `Only ${availableStock} available in stock.`}</span>
+                            <div className="p-3 bg-surface border border-primary text-[12px] text-primary flex items-start gap-2">
+                                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                <span>
+                                    {isOutOfStock
+                                        ? "Checkout disabled until this item is back in stock."
+                                        : `Only ${availableStock} available in stock.`}
+                                </span>
                             </div>
                         )}
 
-                        {/* Primary Action Button (Amazon Yellow / Orange Theme) */}
-                        <div>
+                        <div className="space-y-2.5">
                             {currentStep < 3 ? (
                                 <button
                                     type="button"
                                     onClick={handleNextStep}
                                     disabled={isUnavailable}
-                                    className="w-full py-3.5 bg-[#FFD814] hover:bg-[#F7CA00] active:bg-[#F2C200] disabled:bg-slate-300 disabled:border-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-slate-900 border border-[#FCD200] rounded-full font-bold text-sm transition-all shadow-sm flex items-center justify-center gap-2 hover:shadow"
+                                    className="sv-btn-primary w-full !min-h-[44px] !py-3 !px-4 !text-[11px] !gap-2 disabled:opacity-50"
                                 >
-                                    <span>{isUnavailable ? (isOutOfStock ? 'Item Out of Stock' : 'Insufficient Stock') : `Proceed to ${currentStep === 1 ? 'Payment' : 'Review'}`}</span>
-                                    <ChevronRight className="w-4 h-4" />
+                                    <span>
+                                        {isUnavailable
+                                            ? (isOutOfStock ? "Item Out of Stock" : "Insufficient Stock")
+                                            : `Proceed to ${currentStep === 1 ? "Payment" : "Review"}`}
+                                    </span>
+                                    {!isUnavailable && <ChevronRight className="w-4 h-4" />}
                                 </button>
                             ) : (
                                 <button
                                     type="button"
                                     onClick={handlePlaceOrder}
                                     disabled={loading || isUnavailable}
-                                    className="w-full py-3.5 bg-[#FFD814] hover:bg-[#F7CA00] active:bg-[#F2C200] disabled:bg-slate-300 disabled:border-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-slate-900 border border-[#FCD200] rounded-full font-bold text-base transition-all shadow-sm flex items-center justify-center gap-2 hover:shadow"
+                                    className="sv-btn-primary w-full !min-h-[44px] !py-3 !px-4 !text-[11px] !gap-2 disabled:opacity-50"
                                 >
                                     {loading ? (
                                         <>
-                                            <Loader2 className="w-5 h-5 animate-spin text-slate-900" />
+                                            <Loader2 className="w-4 h-4 animate-spin" />
                                             <span>Confirming Order...</span>
                                         </>
                                     ) : (
                                         <>
-                                            <Lock className="w-4 h-4 text-slate-900" />
-                                            <span>{isUnavailable ? (isOutOfStock ? 'Item Out of Stock' : 'Insufficient Stock') : `Place Order (₹${finalTotal})`}</span>
+                                            <Lock className="w-4 h-4" />
+                                            <span>
+                                                {isUnavailable
+                                                    ? (isOutOfStock ? "Item Out of Stock" : "Insufficient Stock")
+                                                    : `Place Order (${formatINR(finalTotal)})`}
+                                            </span>
                                         </>
                                     )}
                                 </button>
                             )}
-                        </div>
-                    </div>
 
+                            {currentStep > 1 ? (
+                                <button
+                                    type="button"
+                                    onClick={handlePreviousStep}
+                                    className="sv-btn-outline w-full !min-h-[44px] !py-3 !px-4 !text-[11px]"
+                                >
+                                    Back
+                                </button>
+                            ) : (
+                                <Link
+                                    href={productHref}
+                                    className="sv-btn-outline w-full !min-h-[44px] !py-3 !px-4 !text-[11px] inline-flex items-center justify-center"
+                                >
+                                    Continue Shopping
+                                </Link>
+                            )}
+                        </div>
+
+                        <div className="bg-surface-subtle border border-border-line px-5 py-4 flex items-center justify-between gap-3">
+                            <div>
+                                <p className="label-caps text-[10px] text-on-surface">Dedicated Concierge</p>
+                                <p className="text-[12px] text-body-slate mt-0.5">Need help with your edit?</p>
+                            </div>
+                            <Link
+                                href="/contact-us"
+                                className="label-caps text-[10px] text-primary hover:text-on-surface underline underline-offset-4"
+                            >
+                                Connect
+                            </Link>
+                        </div>
+                    </aside>
                 </div>
             </div>
 
-            {/* GoKwik Payment SDK */}
             <Script
                 id="gokwik-sdk"
                 src="https://pdp.gokwik.co/build/gokwik.js"
                 strategy="afterInteractive"
                 onLoad={() => {
-                    console.log('GoKwik SDK loaded successfully');
+                    console.log("GoKwik SDK loaded successfully");
                 }}
                 onError={() => {
-                    console.warn('GoKwik SDK script failed to load from pdp.gokwik.co');
+                    console.warn("GoKwik SDK script failed to load from pdp.gokwik.co");
                 }}
             />
 
-            {/* Payment Verification Status Modal */}
             <Modal
                 isOpen={showPaymentModal}
-                onClose={() => { }}
-                title={paymentStatus === 'verifying' ? "Verifying Payment" : paymentStatus === 'success' ? "Payment Successful" : "Payment Failed"}
+                onClose={() => {}}
+                title={
+                    paymentStatus === "verifying"
+                        ? "Verifying Payment"
+                        : paymentStatus === "success"
+                            ? "Payment Successful"
+                            : "Payment Failed"
+                }
                 width="max-w-md"
             >
                 <div className="flex flex-col items-center justify-center p-6 text-center">
-                    {paymentStatus === 'verifying' && (
+                    {paymentStatus === "verifying" && (
                         <>
-                            <Loader2 className="w-12 h-12 text-slate-900 animate-spin mb-4" />
-                            <p className="text-slate-600 text-sm font-medium">{paymentMessage}</p>
+                            <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+                            <p className="text-body-slate text-sm font-medium">{paymentMessage}</p>
                         </>
                     )}
-                    {paymentStatus === 'success' && (
+                    {paymentStatus === "success" && (
                         <>
-                            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
+                            <div className="w-16 h-16 bg-surface-ivory text-primary border border-border-line flex items-center justify-center mb-4">
                                 <CheckCircle2 className="w-9 h-9" />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">Order Confirmed!</h3>
-                            <p className="text-slate-600 text-sm">{paymentMessage}</p>
+                            <h3 className="text-xl font-bold uppercase tracking-tight text-on-surface mb-2">Order Confirmed</h3>
+                            <p className="text-body-slate text-sm">{paymentMessage}</p>
                         </>
                     )}
-                    {paymentStatus === 'failed' && (
+                    {paymentStatus === "failed" && (
                         <>
-                            <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-4">
+                            <div className="w-16 h-16 bg-surface-ivory text-primary border border-border-line flex items-center justify-center mb-4">
                                 <X className="w-9 h-9" />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">Payment Incomplete</h3>
-                            <p className="text-slate-600 text-sm">{paymentMessage}</p>
+                            <h3 className="text-xl font-bold uppercase tracking-tight text-on-surface mb-2">Payment Incomplete</h3>
+                            <p className="text-body-slate text-sm">{paymentMessage}</p>
                         </>
                     )}
                 </div>

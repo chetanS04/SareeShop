@@ -654,6 +654,29 @@ export class DelhiveryService {
       });
 
       const trackingData = this.parseTrackingData(response.data, order.delhiveryWaybill);
+      if (!trackingData) {
+        return {
+          success: true,
+          order_number: order.orderNumber,
+          waybill: order.delhiveryWaybill,
+          tracking_data: order.delhiveryTrackingData || {
+            waybill: order.delhiveryWaybill,
+            status: order.delhiveryStatus || 'In Transit',
+            status_code: 'IN_TRANSIT',
+            status_date: (order.delhiveryStatusUpdatedAt || new Date()).toISOString(),
+            expected_delivery: '',
+            current_location: this.pickupLocation || 'Ambala Hub',
+            scans: ((order as any).trackingRecords || []).map((r: any) => ({
+              scan_date: (r.trackedAt || r.createdAt || new Date()).toISOString(),
+              scan_type: r.status,
+              scan_detail: r.description || r.status,
+              location: r.location || 'Warehouse',
+              instructions: '',
+            })),
+          },
+          message: 'Live tracking unavailable; returning saved state.',
+        };
+      }
       if (trackingData.status) {
         await this.db.update(orders).set({
           delhiveryStatus: trackingData.status,
@@ -778,6 +801,22 @@ export class DelhiveryService {
       });
 
       const trackingData = this.parseTrackingData(response.data, order.delhiveryWaybill);
+      if (!trackingData) {
+        return {
+          success: true,
+          message: 'Live tracking unavailable; returning saved state.',
+          tracking_data: order.delhiveryTrackingData || {
+            waybill: order.delhiveryWaybill,
+            status: order.delhiveryStatus || 'Manifested',
+            status_code: order.delhiveryStatus || 'Manifested',
+            status_date: (order.delhiveryStatusUpdatedAt || new Date()).toISOString(),
+            expected_delivery: '',
+            current_location: this.pickupLocation || 'Ambala Hub',
+            scans: [],
+          },
+        };
+      }
+
       const mappedStatus = this.mapDelhiveryStatus(trackingData.status);
 
       const updateData: any = {
