@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { TensionMatrixGraphic } from "@/components/(frontend)/svastra/SvastraManifesto";
 import {
   fetchActiveSliderImage,
   fetchProductsList,
@@ -33,7 +34,6 @@ const COMMITMENTS = [
 
 export default function AboutUsPage() {
   const [heroImg, setHeroImg] = useState(FALLBACK);
-  const [matrixImg, setMatrixImg] = useState(FALLBACK);
   const [facets, setFacets] = useState<ShopFacetCard[]>([]);
 
   useEffect(() => {
@@ -46,7 +46,6 @@ export default function AboutUsPage() {
       ]);
       if (cancelled) return;
       setHeroImg(slider || productImageUrl(products[0]) || FALLBACK);
-      setMatrixImg(productImageUrl(products[1] || products[0]) || FALLBACK);
       setFacets(cards);
     })();
     return () => {
@@ -154,16 +153,7 @@ export default function AboutUsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center mb-12 sm:mb-16">
             <div className="lg:col-span-6">
-              <div className="media-frame aspect-video sm:aspect-[16/9] bg-black border border-surface/20">
-                <img
-                  alt="SVastra archive"
-                  className="object-cover w-full h-full"
-                  loading="lazy"
-                  width={960}
-                  height={540}
-                  src={matrixImg}
-                />
-              </div>
+              <TensionMatrixGraphic />
             </div>
             <div className="lg:col-span-6 space-y-5 sm:space-y-6">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tight">

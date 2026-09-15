@@ -17,6 +17,7 @@ function PublicTrackingContent() {
     const [error, setError] = useState<string | null>(null);
     const [trackingData, setTrackingData] = useState<DelhiveryTrackingData | null>(null);
     const [searched, setSearched] = useState(false);
+    const [notFound, setNotFound] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const { showLoader, hideLoader } = useLoader();
@@ -38,24 +39,52 @@ function PublicTrackingContent() {
         if (!awbNumber.trim()) {
             setError("Please enter a waybill number");
             setErrorMessage("Please enter a waybill number");
+            setNotFound(false);
             return;
         }
 
         try {
             setLoading(true);
             setError(null);
+            setNotFound(false);
             setSearched(true);
             setErrorMessage(null);
+            setTrackingData(null);
             showLoader();
 
             const response = await trackByWaybill(awbNumber.trim());
-            setTrackingData(response.tracking_data);
+            const data = response?.tracking_data ?? null;
+            const ok = response?.success !== false && Boolean(data);
+
+            if (!ok) {
+                setTrackingData(null);
+                setNotFound(true);
+                setError(null);
+                setSuccessMessage(null);
+                return;
+            }
+
+            setTrackingData(data);
+            setNotFound(false);
             setSuccessMessage("Tracking details loaded.");
         } catch (err: any) {
-            const errorMsg = err?.error || err?.message || "Failed to fetch tracking information";
-            setError(errorMsg);
-            setErrorMessage(errorMsg);
+            const errorMsg =
+                err?.message ||
+                err?.error ||
+                "Failed to fetch tracking information";
+            const looksMissing =
+                /not found|does not exist|invalid|no (tracking|shipment|data)/i.test(
+                    String(errorMsg),
+                );
             setTrackingData(null);
+            if (looksMissing) {
+                setNotFound(true);
+                setError(null);
+            } else {
+                setNotFound(false);
+                setError(errorMsg);
+                setErrorMessage(errorMsg);
+            }
         } finally {
             setLoading(false);
             hideLoader();
@@ -154,8 +183,8 @@ function PublicTrackingContent() {
                             </form>
                         </div>
 
-                        {/* Error */}
-                        {error && (
+                        {/* Error (non-missing failures only) */}
+                        {error && !notFound && (
                             <div className="bg-pure-white border-l-2 border-l-primary border-y border-r border-border-line p-5 sm:p-6 flex items-start gap-3">
                                 <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                                 <div>
@@ -172,14 +201,60 @@ function PublicTrackingContent() {
                         {/* Results */}
                         {trackingData && <TrackingTimelineSv trackingData={trackingData} />}
 
-                        {/* No results */}
-                        {searched && !trackingData && !loading && !error && (
-                            <div className="bg-pure-white border border-border-line p-10 flex flex-col items-center text-center">
-                                <Package className="w-12 h-12 text-on-surface/20 mb-4" strokeWidth={1} />
-                                <p className="label-caps text-on-surface mb-2">No Tracking Found</p>
-                                <p className="text-[14px] text-body-slate max-w-sm leading-[1.55]">
-                                    We couldn&apos;t find any information for this waybill number yet.
-                                </p>
+                        {/* Waybill does not exist — same empty-state language as scan history */}
+                        {searched && notFound && !loading && (
+                            <div className="bg-pure-white border border-border-line">
+                                <div className="p-5 sm:p-7 border-b border-border-line flex flex-wrap items-center justify-between gap-3">
+                                    <h3 className="display-section !text-lg sm:!text-xl text-on-surface">
+                                        Shipment Status
+                                    </h3>
+                                    <span className="inline-flex items-center gap-2 border border-primary px-3 py-1.5 label-caps text-primary">
+                                        <span className="w-1.5 h-1.5 bg-primary" aria-hidden="true" />
+                                        Not Found
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-border-line border-b border-border-line">
+                                    <div className="bg-surface p-4">
+                                        <p className="label-caps text-body-slate mb-1.5">Waybill</p>
+                                        <p className="text-[14px] font-semibold text-on-surface break-all">
+                                            {waybill.trim() || "—"}
+                                        </p>
+                                    </div>
+                                    <div className="bg-surface p-4">
+                                        <p className="label-caps text-body-slate mb-1.5">Current Location</p>
+                                        <p className="text-[14px] text-body-slate">—</p>
+                                    </div>
+                                    <div className="bg-surface p-4">
+                                        <p className="label-caps text-body-slate mb-1.5">Expected Delivery</p>
+                                        <p className="text-[14px] text-body-slate">—</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col items-center justify-center gap-2 py-14 px-6 text-center">
+                                    <AlertCircle className="w-5 h-5 text-body-slate" />
+                                    <p className="label-caps text-body-slate tracking-[0.12em]">
+                                        Waybill Number Does Not Exist
+                                    </p>
+                                    <p className="text-[13px] text-body-slate/80 max-w-sm leading-[1.55] mt-1">
+                                        No shipment record was found for this AWB. Check the number from your
+                                        dispatch email or{" "}
+                                        <Link href="/orders" className="text-primary underline hover:text-on-surface">
+                                            My Orders
+                                        </Link>
+                                        , then try again.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* No results fallback */}
+                        {searched && !trackingData && !loading && !error && !notFound && (
+                            <div className="bg-pure-white border border-border-line">
+                                <div className="flex items-center justify-center gap-2 py-14 label-caps text-body-slate">
+                                    <AlertCircle className="w-4 h-4" />
+                                    <span>No Tracking Found</span>
+                                </div>
                             </div>
                         )}
 

@@ -251,66 +251,70 @@ export type ShopFacetCard = {
   href: string;
 };
 
-/** Parent categories for Shop Who You Are — live names, images, counts from API. */
-export async function loadShopWhoYouAreFacets(limit = 8): Promise<ShopFacetCard[]> {
-  const categories = await fetchCategories();
-  const parents = categories.filter((c) => !(c.parentId ?? c.parent_id));
-  const pool = (parents.length ? parents : categories)
-    .filter((c) => Number(c.products_count ?? c.productsCount ?? 0) > 0 || true)
-    .sort(
-      (a, b) =>
-        Number(b.products_count ?? b.productsCount ?? 0) -
-        Number(a.products_count ?? a.productsCount ?? 0)
-    );
-
+async function buildFacetCards(
+  pool: CatalogCategory[],
+  skip: number,
+  limit: number
+): Promise<ShopFacetCard[]> {
   const cards: ShopFacetCard[] = [];
+  // Exact window — first N categories, do not skip for missing media
+  const slice = pool.slice(skip, skip + limit);
 
-  for (const cat of pool.slice(0, Math.max(limit, 12))) {
+  for (const cat of slice) {
     const count = Number(cat.products_count ?? cat.productsCount ?? 0);
     let imageUrl = categoryImageUrl(cat);
 
     if (!imageUrl) {
       const products = await fetchProductsList({
-        per_page: 1,
+        per_page: 2,
         page: 1,
         category_id: Number(cat.id),
       });
-      imageUrl = productImageUrl(products[0]);
+      imageUrl = productImageUrl(products[0]) || productImageUrl(products[1]);
     }
-
-    // Prefer facets that have media or products
-    if (!imageUrl && count === 0) continue;
 
     cards.push({
       id: Number(cat.id),
       name: String(cat.name || "Collection"),
-      description: String(cat.description || "").replace(/<[^>]+>/g, "").trim(),
+      description: String(cat.description || "")
+        .replace(/<[^>]+>/g, "")
+        .trim(),
       imageUrl,
       productCount: count,
       href: `/categories/subcategories/${getCategorySlug(cat)}`,
     });
-
-    if (cards.length >= limit) break;
-  }
-
-  // If nothing had products_count but categories exist, still show top parents with product lookup
-  if (cards.length === 0) {
-    for (const cat of pool.slice(0, limit)) {
-      const products = await fetchProductsList({
-        per_page: 4,
-        page: 1,
-        category_id: Number(cat.id),
-      });
-      cards.push({
-        id: Number(cat.id),
-        name: String(cat.name || "Collection"),
-        description: String(cat.description || "").replace(/<[^>]+>/g, "").trim(),
-        imageUrl: categoryImageUrl(cat) || productImageUrl(products[0]),
-        productCount: products.length,
-        href: `/categories/subcategories/${getCategorySlug(cat)}`,
-      });
-    }
   }
 
   return cards;
+}
+
+async function loadParentCategoryPool(): Promise<CatalogCategory[]> {
+  const categories = await fetchCategories();
+  const parents = categories.filter((c) => !(c.parentId ?? c.parent_id));
+  const pool = parents.length ? parents : categories;
+
+  // Stable catalog order: sort_order → id (not popularity), so "first four" is predictable
+  return [...pool].sort((a, b) => {
+    const ao = Number(a.sort_order ?? a.sortOrder ?? a.position ?? a.id ?? 0);
+    const bo = Number(b.sort_order ?? b.sortOrder ?? b.position ?? b.id ?? 0);
+    if (ao !== bo) return ao - bo;
+    return Number(a.id || 0) - Number(b.id || 0);
+  });
+}
+
+/** Parent categories for Shop Who You Are — strictly the first N from live catalog. */
+export async function loadShopWhoYouAreFacets(limit = 4): Promise<ShopFacetCard[]> {
+  const pool = await loadParentCategoryPool();
+  return buildFacetCards(pool, 0, limit);
+}
+
+/**
+ * Categories AFTER the Who You Are block (skip first 4) for Shop How You Feel tabs.
+ */
+export async function loadShopHowYouFeelFacets(
+  skip = 4,
+  limit = 6
+): Promise<ShopFacetCard[]> {
+  const pool = await loadParentCategoryPool();
+  return buildFacetCards(pool, skip, limit);
 }

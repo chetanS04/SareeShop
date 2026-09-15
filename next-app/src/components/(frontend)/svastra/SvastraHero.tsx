@@ -1,43 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  fetchActiveSliderImage,
-  fetchProductsList,
-  productImageUrl,
-} from "@/utils/archetypeCatalog";
+import { RiExternalLinkLine } from "react-icons/ri";
 
-const FALLBACK = "/svastra/logo-mark.png";
+/** Brand campaign artwork for the Live Archive panel */
+const HERO_ARCHIVE = "/svastra/hero-she-knows.png";
 
 type Props = {
+  /** Optional override; defaults to the SVastra campaign banner */
   heroImage?: string | null;
 };
 
 export default function SvastraHero({ heroImage }: Props) {
-  const [img, setImg] = useState<string | null>(heroImage ?? null);
-
-  useEffect(() => {
-    if (heroImage) {
-      setImg(heroImage);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const slider = await fetchActiveSliderImage();
-      if (cancelled) return;
-      if (slider) {
-        setImg(slider);
-        return;
-      }
-      const products = await fetchProductsList({ per_page: 4, page: 1 });
-      if (cancelled) return;
-      setImg(productImageUrl(products[0]) || FALLBACK);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [heroImage]);
+  const img = heroImage || HERO_ARCHIVE;
 
   return (
     <section className="w-full bg-surface border-b border-border-line" aria-labelledby="hero-title">
@@ -108,13 +83,13 @@ export default function SvastraHero({ heroImage }: Props) {
           <div className="lg:col-span-6 relative order-1 lg:order-2">
             <div className="media-frame hero-media border border-on-surface/20 bg-surface-dark">
               <img
-                alt="SVastra archival edit"
-                className="w-full h-full object-cover object-center grayscale contrast-110 hover:grayscale-0 transition-all duration-700"
+                alt="She knows who she is — SVastra Live Archive"
+                className="w-full h-full object-cover object-center"
                 width={1200}
-                height={750}
+                height={675}
                 decoding="async"
                 fetchPriority="high"
-                src={img || FALLBACK}
+                src={img}
               />
               <div className="absolute bottom-0 inset-x-0 bg-surface-dark/90 text-surface p-3.5 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-surface/15">
                 <div className="min-w-0">
@@ -129,7 +104,14 @@ export default function SvastraHero({ heroImage }: Props) {
                   <span className="text-[10px] font-semibold tracking-[0.08em] uppercase text-surface/60 block">
                     Source
                   </span>
-                  <span className="text-[12px] font-semibold text-accent-ochre">Catalog</span>
+                  <Link
+                    href="/products"
+                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-accent-ochre hover:text-surface transition-colors"
+                  >
+                    Catalog
+                    <RiExternalLinkLine className="text-[14px] shrink-0" aria-hidden="true" />
+                    <span className="sr-only"> (opens catalog)</span>
+                  </Link>
                 </div>
               </div>
             </div>

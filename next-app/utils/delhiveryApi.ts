@@ -40,7 +40,12 @@ export const trackByWaybill = async (waybill: string) => {
     return response.data;
   } catch (error: any) {
     console.error('Error tracking waybill:', error);
-    throw error?.response?.data || error;
+    const payload = error?.response?.data;
+    // Surface API not-found payloads cleanly for the UI
+    if (payload && (payload.success === false || payload.tracking_data === null)) {
+      return payload;
+    }
+    throw payload || error;
   }
 };
 

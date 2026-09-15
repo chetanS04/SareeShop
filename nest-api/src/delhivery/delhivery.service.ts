@@ -591,29 +591,25 @@ export class DelhiveryService {
         headers: this.headers(),
       });
 
-      return { success: true, waybill, tracking_data: this.parseTrackingData(response.data, waybill) };
+      const tracking_data = this.parseTrackingData(response.data, waybill);
+      if (!tracking_data) {
+        return {
+          success: false,
+          waybill,
+          message: 'Waybill number does not exist',
+          tracking_data: null,
+        };
+      }
+
+      return { success: true, waybill, tracking_data };
     } catch (err: any) {
       this.logger.warn(`Delhivery trackByWaybill error for ${waybill}: ${err.message}`);
+      // Do not invent fake "Manifested" rows for unknown AWBs
       return {
-        success: true,
+        success: false,
         waybill,
-        tracking_data: {
-          waybill,
-          status: 'Manifested',
-          status_code: 'MANIFESTED',
-          status_date: new Date().toISOString(),
-          expected_delivery: '',
-          current_location: this.pickupLocation || 'Ambala',
-          scans: [
-            {
-              scan_date: new Date().toISOString(),
-              scan_type: 'MANIFESTED',
-              scan_detail: 'Shipment Manifested & Dispatched',
-              location: this.pickupLocation || 'Ambala Hub',
-              instructions: '',
-            },
-          ],
-        },
+        message: 'Waybill number does not exist',
+        tracking_data: null,
       };
     }
   }
@@ -1147,45 +1143,32 @@ export class DelhiveryService {
   }
 
   private parseTrackingData(data: any, fallbackWaybill: string = '') {
-    if (!data) {
-      return {
-        waybill: fallbackWaybill,
-        status: 'Manifested',
-        status_code: 'MANIFESTED',
-        status_date: new Date().toISOString(),
-        expected_delivery: '',
-        current_location: this.pickupLocation || 'Ambala',
-        scans: [],
-      };
-    }
+    if (!data) return null;
 
-    // Check if error response
-    if (data.Error || data.error) {
-      return {
-        waybill: fallbackWaybill,
-        status: 'Manifested',
-        status_code: 'MANIFESTED',
-        status_date: new Date().toISOString(),
-        expected_delivery: '',
-        current_location: this.pickupLocation || 'Ambala',
-        scans: [],
-      };
+    // Delhivery error / unknown AWB
+    const errMsg = data.Error || data.error || data.message || data.Remark || '';
+    if (errMsg && typeof errMsg === 'string') {
+      const lower = errMsg.toLowerCase();
+      if (
+        lower.includes('not found') ||
+        lower.includes('does not exist') ||
+        lower.includes('invalid') ||
+        lower.includes('no data') ||
+        lower.includes('error')
+      ) {
+        return null;
+      }
     }
 
     const shipmentArr = data.ShipmentData || data.shipment_data || data.packages || data.data || [];
-    const firstItem = Array.isArray(shipmentArr) ? shipmentArr[0] : (typeof shipmentArr === 'object' ? shipmentArr : null);
+    const firstItem = Array.isArray(shipmentArr)
+      ? shipmentArr[0]
+      : typeof shipmentArr === 'object' && shipmentArr
+        ? shipmentArr
+        : null;
 
-    if (!firstItem) {
-      return {
-        waybill: data.AWB || data.waybill || fallbackWaybill,
-        status: data.Status?.Status || data.Status || data.status || 'Manifested',
-        status_code: data.Status?.StatusCode || data.status_code || '',
-        status_date: data.Status?.StatusDateTime || data.status_date || new Date().toISOString(),
-        expected_delivery: data.PromisedDeliveryDate || data.promised_delivery_date || '',
-        current_location: data.Status?.StatusLocation || data.current_location || this.pickupLocation || '',
-        scans: [],
-      };
-    }
+    // Empty ShipmentData = waybill does not exist in Delhivery
+    if (!firstItem) return null;
 
     const shipment = firstItem.Shipment || firstItem.shipment || firstItem;
     const statusObj = shipment.Status || shipment.status || {};
@@ -1193,7 +1176,12 @@ export class DelhiveryService {
 
     const rawStatus = typeof statusObj === 'string'
       ? statusObj
-      : (statusObj.Status || statusObj.status || statusObj.StatusType || statusObj.status_type || 'Manifested');
+      : (statusObj.Status || statusObj.status || statusObj.StatusType || statusObj.status_type || '');
+
+    // No usable status on the shipment → not a real tracking record
+    if (!rawStatus && (!Array.isArray(scans) || scans.length === 0)) {
+      return null;
+    }
 
     const rawStatusCode = typeof statusObj === 'object' ? (statusObj.StatusCode || statusObj.status_code || statusObj.StatusType || '') : '';
     const rawStatusDate = typeof statusObj === 'object' ? (statusObj.StatusDateTime || statusObj.status_date || '') : '';
@@ -1213,11 +1201,11 @@ export class DelhiveryService {
 
     return {
       waybill: shipment.AWB || shipment.waybill || fallbackWaybill,
-      status: rawStatus,
+      status: rawStatus || 'Unknown',
       status_code: rawStatusCode,
       status_date: rawStatusDate || new Date().toISOString(),
       expected_delivery: expectedDelivery,
-      current_location: rawLocation || this.pickupLocation || '',
+      current_location: rawLocation || '',
       scans: scanList,
     };
   }

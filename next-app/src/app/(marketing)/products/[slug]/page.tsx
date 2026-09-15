@@ -1160,24 +1160,10 @@ const ProductPage = () => {
         )
     );
 
-    // Shared SVastra action buttons (Add to Bag / Buy Now)
+    // Shared SVastra action buttons — compact, matched heights
     const renderActionButtons = (fullWidth = false) => (
         selectedVariant && (
-            <div className={`flex flex-col gap-2.5 ${fullWidth ? 'w-full' : ''}`}>
-                <button
-                    onClick={isInCart ? handleViewCart : handleAddToCart}
-                    disabled={selectedVariant.stock === 0 || addingToCart || cartLoading}
-                    className="sv-btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {addingToCart || cartLoading ? (
-                        <><div className="w-4 h-4 border-2 border-[#FFF8F2]/30 border-t-[#FFF8F2] rounded-full animate-spin" />Adding…</>
-                    ) : isInCart ? (
-                        <><ShoppingCart className="w-4 h-4" />Go to Bag</>
-                    ) : selectedVariant.stock > 0 ? (
-                        <><ShoppingCart className="w-4 h-4" />Add to Bag</>
-                    ) : 'Out of Stock'}
-                </button>
-
+            <div className={`flex flex-col gap-2 ${fullWidth ? 'w-full' : ''}`}>
                 <button
                     onClick={() => {
                         if (!user) { openAuthModal('login'); return; }
@@ -1185,14 +1171,28 @@ const ProductPage = () => {
                             router.push(`/checkout/single?productId=${product!.id}&variantId=${selectedVariant.id}&quantity=${quantity}`);
                     }}
                     disabled={selectedVariant.stock === 0}
-                    className="sv-btn-outline w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="sv-btn-primary w-full !min-h-[42px] !py-2.5 !px-3 !text-[11px] !gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {!user ? 'Login to Order' : selectedVariant.stock === 0 ? 'Archived' : (
                         <>
-                            <ShoppingBag className="w-4 h-4" />
-                            <span>Instant Atelier Checkout</span>
+                            <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+                            <span>Instant Checkout</span>
                         </>
                     )}
+                </button>
+
+                <button
+                    onClick={isInCart ? handleViewCart : handleAddToCart}
+                    disabled={selectedVariant.stock === 0 || addingToCart || cartLoading}
+                    className="sv-btn-outline w-full !min-h-[42px] !py-2.5 !px-3 !text-[11px] !gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {addingToCart || cartLoading ? (
+                        <><div className="w-3.5 h-3.5 border-2 border-on-surface/30 border-t-on-surface rounded-full animate-spin" />Adding…</>
+                    ) : isInCart ? (
+                        <><ShoppingCart className="w-3.5 h-3.5 shrink-0" />Go to Bag</>
+                    ) : selectedVariant.stock > 0 ? (
+                        <><ShoppingCart className="w-3.5 h-3.5 shrink-0" />Add to Bag</>
+                    ) : 'Out of Stock'}
                 </button>
             </div>
         )
@@ -1696,24 +1696,35 @@ const ProductPage = () => {
                     {/* ── Three-column master layout: [Sticky Images] | [Content + BuyBox] | [Related Products Sidebar] ── */}
                     <div className="flex gap-8 xl:gap-12 2xl:gap-16 items-start">
 
-                        {/* ── LEFT: Sticky Image Column ── */}
-                        <div className="w-[420px] xl:w-[480px] 2xl:w-[520px] flex-shrink-0 sticky top-4 self-start">
-                            <div className="flex gap-3">
+                        {/* ── LEFT: Compact sticky gallery (balanced with details column) ── */}
+                        <div className="w-[320px] xl:w-[360px] 2xl:w-[380px] flex-shrink-0 sticky top-24 self-start z-10">
+                            <div className="flex gap-2.5 items-start">
                                 {/* Vertical thumbnails */}
-                                <div className="flex flex-col gap-2.5 w-[68px] flex-shrink-0">
+                                <div
+                                    className="flex flex-col gap-2 w-[52px] xl:w-[56px] flex-shrink-0 overflow-y-auto max-h-[min(480px,calc(100vh-8rem))] scrollbar-hide"
+                                    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                                >
                                     {galleryImages.map((img, idx) => (
-                                        <div key={idx} onClick={() => setMainImage(img)}
-                                            className={`relative w-[68px] h-[84px] border cursor-pointer overflow-hidden transition-colors duration-200 ${mainImage === img ? 'border-[#8B1313] border-2' : 'border-[#0E0E0D]/12 hover:border-[#0E0E0D]'
-                                                }`}>
-                                            <Image src={img} alt={`thumb-${idx}`} fill unoptimized className="object-cover" />
-                                        </div>
+                                        <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={() => setMainImage(img)}
+                                            aria-label={`View image ${idx + 1}`}
+                                            className={`relative w-[52px] xl:w-[56px] h-[64px] xl:h-[70px] border overflow-hidden transition-colors duration-200 shrink-0 p-0 ${
+                                                mainImage === img
+                                                    ? "border-[#8B1313] border-2"
+                                                    : "border-[#0E0E0D]/12 hover:border-[#0E0E0D]"
+                                            }`}
+                                        >
+                                            <Image src={img} alt={`thumb-${idx}`} fill unoptimized className="object-cover object-top" />
+                                        </button>
                                     ))}
                                 </div>
 
-                                {/* Main Stage Image */}
-                                <div className="relative flex-1">
+                                {/* Main Stage Image — fixed frame, not oversized */}
+                                <div className="relative flex-1 min-w-0">
                                     <div
-                                        className="relative w-full aspect-[4/5] overflow-hidden cursor-crosshair bg-[#F1E5D2]"
+                                        className="relative w-full aspect-[3/4] max-h-[min(480px,calc(100vh-8rem))] overflow-hidden cursor-crosshair bg-[#F1E5D2] border border-[#0E0E0D]/10"
                                         onMouseMove={handleMouseMove}
                                         onMouseEnter={() => setIsHovering(true)}
                                         onMouseLeave={() => setIsHovering(false)}
@@ -1723,22 +1734,37 @@ const ProductPage = () => {
                                             setIsLightboxOpen(true);
                                         }}
                                     >
-                                        <Image src={mainImage || imgPlaceholder.src} alt={product.name} fill unoptimized className="object-cover" />
+                                        <Image
+                                            src={mainImage || imgPlaceholder.src}
+                                            alt={product.name}
+                                            fill
+                                            unoptimized
+                                            className="object-cover object-top"
+                                        />
                                         {isHovering && (
-                                            <div className="absolute bg-[#0E0E0D]/10 border border-[#0E0E0D]/30 pointer-events-none w-28 h-28"
-                                                style={{ left: `${Math.max(0, Math.min(74, zoomPosition.x - 14))}%`, top: `${Math.max(0, Math.min(74, zoomPosition.y - 14))}%` }} />
+                                            <div
+                                                className="absolute bg-[#0E0E0D]/10 border border-[#0E0E0D]/30 pointer-events-none w-20 h-20"
+                                                style={{
+                                                    left: `${Math.max(0, Math.min(78, zoomPosition.x - 10))}%`,
+                                                    top: `${Math.max(0, Math.min(78, zoomPosition.y - 10))}%`,
+                                                }}
+                                            />
                                         )}
-
-                                        <span className="absolute bottom-3 right-3 z-10 bg-surface-dark/70 text-surface text-[10px] font-semibold tracking-wider uppercase px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            Click to Expand View
-                                        </span>
                                     </div>
 
                                     {/* Wishlist on image */}
-                                    <button onClick={handleLike} disabled={likesLoading}
-                                        className={`absolute top-3 right-3 z-10 p-2.5 border transition-colors duration-200 ${isLiked(product.id) ? 'bg-[#8B1313] border-[#8B1313] text-[#FFF8F2]' : 'bg-[#FFF8F2] border-[#0E0E0D]/15 text-[#4A4742] hover:text-[#8B1313] hover:border-[#8B1313]'
-                                            } disabled:opacity-50`}>
-                                        <Heart className={`w-4 h-4 ${isLiked(product.id) ? 'fill-current' : ''}`} />
+                                    <button
+                                        onClick={handleLike}
+                                        disabled={likesLoading}
+                                        type="button"
+                                        aria-label="Wishlist"
+                                        className={`absolute top-2.5 right-2.5 z-10 p-2 border transition-colors duration-200 ${
+                                            isLiked(product.id)
+                                                ? "bg-[#8B1313] border-[#8B1313] text-[#FFF8F2]"
+                                                : "bg-[#FFF8F2] border-[#0E0E0D]/15 text-[#4A4742] hover:text-[#8B1313] hover:border-[#8B1313]"
+                                        } disabled:opacity-50`}
+                                    >
+                                        <Heart className={`w-3.5 h-3.5 ${isLiked(product.id) ? "fill-current" : ""}`} />
                                     </button>
                                 </div>
                             </div>
@@ -1841,7 +1867,7 @@ const ProductPage = () => {
                                 {/* Buy Box */}
                                 {selectedVariant && (
                                     <div className="w-[250px] xl:w-[270px] flex-shrink-0">
-                                        <div className="border border-[#0E0E0D]/12 p-5 sticky top-4 bg-white space-y-3.5">
+                                        <div className="border border-[#0E0E0D]/12 p-5 sticky top-24 bg-white space-y-3.5">
                                             {/* Price */}
                                             <div>
                                                 <div className="flex items-baseline gap-2 flex-wrap">
@@ -1859,60 +1885,11 @@ const ProductPage = () => {
                                                 </p>
                                             </div>
 
-                                            {/* Delivery, COD & Return Policy Badges (Real-Time Synchronized) */}
-                                            {(() => {
-                                                const isCod = selectedVariant
-                                                    ? ((selectedVariant as any).is_cod_allowed !== undefined
-                                                        ? ((selectedVariant as any).is_cod_allowed === true || (selectedVariant as any).is_cod_allowed === 1 || String((selectedVariant as any).is_cod_allowed) === '1' || String((selectedVariant as any).is_cod_allowed) === 'true')
-                                                        : (selectedVariant as any).isCodAllowed !== undefined
-                                                        ? ((selectedVariant as any).isCodAllowed === true || (selectedVariant as any).isCodAllowed === 1 || String((selectedVariant as any).isCodAllowed) === '1' || String((selectedVariant as any).isCodAllowed) === 'true')
-                                                        : true)
-                                                    : false;
-
-                                                const isRet = selectedVariant
-                                                    ? ((selectedVariant as any).is_returnable !== undefined
-                                                        ? ((selectedVariant as any).is_returnable === true || (selectedVariant as any).is_returnable === 1 || String((selectedVariant as any).is_returnable) === '1' || String((selectedVariant as any).is_returnable) === 'true')
-                                                        : (selectedVariant as any).isReturnable !== undefined
-                                                        ? ((selectedVariant as any).isReturnable === true || (selectedVariant as any).isReturnable === 1 || String((selectedVariant as any).isReturnable) === '1' || String((selectedVariant as any).isReturnable) === 'true')
-                                                        : true)
-                                                    : false;
-
-                                                const retDays = Number(selectedVariant?.return_window_days ?? (selectedVariant as any)?.returnWindowDays ?? 7);
-                                                const shipFee = Number(selectedVariant?.shipping_charges ?? (selectedVariant as any)?.shippingCharges ?? 0);
-
-                                                return (
-                                                    <div className="space-y-2 pt-3 border-t border-[#0E0E0D]/10 text-[12px] text-[#4A4742]">
-                                                        <p className="flex items-center gap-2">
-                                                            <Truck className="w-3.5 h-3.5 text-[#4A4742] flex-shrink-0" strokeWidth={1.5} />
-                                                            <span>
-                                                                {shipFee > 0
-                                                                    ? `Shipping ₹${shipFee.toLocaleString('en-IN')}`
-                                                                    : 'Complimentary Delivery'}
-                                                            </span>
-                                                        </p>
-                                                        <p className="flex items-center gap-2">
-                                                            <Banknote className={`w-3.5 h-3.5 flex-shrink-0 ${isCod ? 'text-[#4A4742]' : 'text-[#8B1313]'}`} strokeWidth={1.5} />
-                                                            <span className={isCod ? 'text-[#4A4742]' : 'text-[#8B1313] font-semibold'}>
-                                                                {isCod ? 'Pay on Delivery' : 'Prepaid Only'}
-                                                            </span>
-                                                        </p>
-                                                        <p className="flex items-center gap-2">
-                                                            <RotateCcw className={`w-3.5 h-3.5 flex-shrink-0 ${isRet && retDays > 0 ? 'text-[#4A4742]' : 'text-[#8B1313]'}`} strokeWidth={1.5} />
-                                                            <span className={isRet && retDays > 0 ? 'text-[#4A4742]' : 'text-[#8B1313] font-semibold'}>
-                                                                {isRet && retDays > 0
-                                                                    ? `${retDays}-Day Returns & Exchange`
-                                                                    : 'Non-Returnable'}
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                );
-                                            })()}
-
                                             {/* Stock */}
                                             {renderStock()}
                                             {/* Quantity */}
                                             {renderQuantity()}
-                                            {/* Buttons */}
+                                            {/* Instant Checkout (primary) + Add to Bag */}
                                             {renderActionButtons()}
                                             {/* Divider + wishlist */}
                                             <div className="border-t border-[#0E0E0D]/10 pt-3">
@@ -1941,7 +1918,7 @@ const ProductPage = () => {
 
                         {/* ── RIGHT: Related Products Scrollable Column (No header, no outer borders, standard ProductCard size, hidden scrollbar) ── */}
                         {similarProducts.length > 0 && (
-                            <div className="hidden xl:block w-[240px] xl:w-[260px] 2xl:w-[275px] flex-shrink-0 sticky top-4 self-start pl-2 xl:pl-6">
+                            <div className="hidden xl:block w-[240px] xl:w-[260px] 2xl:w-[275px] flex-shrink-0 sticky top-24 self-start pl-2 xl:pl-6">
                                 <div
                                     onScroll={(e) => {
                                         const el = e.currentTarget;

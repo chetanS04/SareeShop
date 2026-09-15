@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   RiCloseLine,
+  RiDashboardLine,
+  RiFileList3Line,
   RiHeartLine,
   RiLogoutBoxRLine,
   RiMenuLine,
@@ -12,7 +14,6 @@ import {
   RiShoppingBagLine,
   RiUserLine,
 } from 'react-icons/ri';
-import { TbLayoutDashboardFilled } from 'react-icons/tb';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useLike } from '@/context/LikeContext';
@@ -127,30 +128,41 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
-  // Scroll-spy + hash: highlight the home / about section in view.
+  // Scroll-spy + hash: highlight at most one home / about section.
   useEffect(() => {
     const applyHash = () => {
       const hash = window.location.hash.replace('#', '');
       if (hash) setActiveSection(hash);
+      else if (pathname === '/about-us') setActiveSection(null);
+      else if (pathname === '/') setActiveSection(null);
     };
 
     applyHash();
     window.addEventListener('hashchange', applyHash);
 
+    // Home: spy on marketing sections. About: only spy voices (Stories).
     if (pathname !== '/' && pathname !== '/about-us') {
+      setActiveSection(null);
       return () => window.removeEventListener('hashchange', applyHash);
     }
 
-    const ids = pathname === '/' ? HOME_SECTIONS : ['voices', 'manifesto'];
-    const elements = ids.map((id) => document.getElementById(id)).filter(
-      (el): el is HTMLElement => Boolean(el),
-    );
+    const ids = pathname === '/' ? HOME_SECTIONS : ['voices'];
+    const elements = ids
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => Boolean(el));
+
     if (elements.length === 0) {
       return () => window.removeEventListener('hashchange', applyHash);
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
+        // About page: Stories only while #voices is in view; otherwise About.
+        if (pathname === '/about-us') {
+          const voices = entries.find((entry) => entry.target.id === 'voices');
+          if (voices) setActiveSection(voices.isIntersecting ? 'voices' : null);
+          return;
+        }
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
@@ -217,18 +229,26 @@ export default function Navbar() {
       : 'Complimentary Concierge & Global Shipping on Curated Edits · Wear Yourself';
 
   const isActive = (link: NavLink) => {
-    if (link.label === 'About') {
-      return pathname === '/about-us' && activeSection !== 'voices';
-    }
+    // Exactly one nav item active at a time.
     if (link.label === 'Stories') {
       return pathname === '/about-us' && activeSection === 'voices';
     }
+    if (link.label === 'About') {
+      // About page, but not when Stories (#voices) is the focus
+      return pathname === '/about-us' && activeSection !== 'voices';
+    }
+    // Section links (Shop Who / Feel / Manifesto) only on the home page
     if (link.section) {
-      return (pathname === '/' || pathname === '/about-us') && activeSection === link.section;
+      return pathname === '/' && activeSection === link.section;
     }
     if (!link.route) return false;
     if (link.route === '/products') {
-      return pathname === '/products' || pathname.startsWith('/products/') || pathname.startsWith('/shop/');
+      return (
+        pathname === '/products' ||
+        pathname.startsWith('/products/') ||
+        pathname.startsWith('/shop/') ||
+        pathname.startsWith('/categories')
+      );
     }
     return pathname === link.route || pathname.startsWith(`${link.route}/`);
   };
@@ -273,8 +293,10 @@ export default function Navbar() {
                   className={`nav-link ${active ? 'is-active' : ''}`}
                   aria-current={active ? 'page' : undefined}
                   onClick={() => {
-                    if (link.section) setActiveSection(link.section);
                     if (link.label === 'About') setActiveSection(null);
+                    else if (link.label === 'Stories') setActiveSection('voices');
+                    else if (link.section) setActiveSection(link.section);
+                    else setActiveSection(null);
                   }}
                 >
                   {link.label}
@@ -310,22 +332,44 @@ export default function Navbar() {
               {accountOpen && user && (
                 <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-on-surface z-50">
                   <div className="px-4 py-3 border-b border-border-line">
-                    <p className="text-xs font-semibold uppercase tracking-wider truncate">{user.name || 'Client'}</p>
-                    <p className="text-[11px] text-body-slate truncate">{user.email}</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider truncate text-on-surface">{user.name || 'Client'}</p>
+                    <p className="text-[11px] text-body-slate truncate mt-0.5">{user.email}</p>
                   </div>
-                  <Link href="/profile" className="block px-4 py-3 text-[11px] font-semibold uppercase tracking-wider hover:bg-surface-subtle" onClick={() => setAccountOpen(false)}>
-                    Profile
-                  </Link>
-                  <Link href="/orders" className="block px-4 py-3 text-[11px] font-semibold uppercase tracking-wider hover:bg-surface-subtle" onClick={() => setAccountOpen(false)}>
-                    Orders
-                  </Link>
-                  {user.role === 'Admin' && (
-                    <Link href="/dashboard" className="flex items-center gap-2 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider hover:bg-surface-subtle" onClick={() => setAccountOpen(false)}>
-                      <TbLayoutDashboardFilled /> Dashboard
+                  <div className="py-1 border-b border-border-line">
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-on-surface hover:bg-surface-subtle"
+                      onClick={() => setAccountOpen(false)}
+                    >
+                      <RiUserLine className="text-[15px] shrink-0" aria-hidden="true" />
+                      Profile
                     </Link>
-                  )}
-                  <button type="button" onClick={handleLogout} className="w-full text-left flex items-center gap-2 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-primary hover:bg-surface-subtle border-t border-border-line">
-                    <RiLogoutBoxRLine /> Logout
+                    <Link
+                      href="/orders"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-on-surface hover:bg-surface-subtle"
+                      onClick={() => setAccountOpen(false)}
+                    >
+                      <RiFileList3Line className="text-[15px] shrink-0" aria-hidden="true" />
+                      Orders
+                    </Link>
+                    {user.role === 'Admin' && (
+                      <Link
+                        href="/dashboard"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-on-surface hover:bg-surface-subtle"
+                        onClick={() => setAccountOpen(false)}
+                      >
+                        <RiDashboardLine className="text-[15px] shrink-0" aria-hidden="true" />
+                        Dashboard
+                      </Link>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full text-left flex items-center gap-2.5 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-primary hover:bg-surface-subtle"
+                  >
+                    <RiLogoutBoxRLine className="text-[15px] shrink-0" aria-hidden="true" />
+                    Logout
                   </button>
                 </div>
               )}
@@ -415,7 +459,13 @@ export default function Navbar() {
                         ? 'text-on-surface border-l-2 border-l-primary pl-3 -ml-0.5'
                         : 'text-body-slate hover:text-on-surface'
                     }`}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={() => {
+                      if (link.label === 'About') setActiveSection(null);
+                      else if (link.label === 'Stories') setActiveSection('voices');
+                      else if ('section' in link && link.section) setActiveSection(link.section);
+                      else setActiveSection(null);
+                      setMobileOpen(false);
+                    }}
                   >
                     {link.label}
                   </Link>

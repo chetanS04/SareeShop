@@ -10,9 +10,11 @@ export class DelhiveryController {
   // PUBLIC
   @Post('delhivery/webhook') handleWebhook(@Body() b: any): Promise<any> { return this.svc.handleWebhook(b); }
 
+  // PUBLIC — guest track page
+  @Post('delhivery/track-waybill') trackByWaybill(@Body() b: any): Promise<any> { return this.svc.trackByWaybill(b); }
+
   // AUTH PROTECTED (any user)
   @UseGuards(JwtAuthGuard) @Post('delhivery/check-serviceability')                  checkServiceability(@Body() b: any): Promise<any>                 { return this.svc.checkServiceability(b); }
-  @UseGuards(JwtAuthGuard) @Post('delhivery/track-waybill')                         trackByWaybill(@Body() b: any): Promise<any>                      { return this.svc.trackByWaybill(b); }
   @UseGuards(JwtAuthGuard) @Get('orders/:orderId/delhivery-tracking')               trackByOrder(@Param('orderId') id: string): Promise<any>           { return this.svc.trackByOrder(id); }
 
   // ADMIN ONLY

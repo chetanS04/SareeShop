@@ -1,145 +1,119 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { fetchProductsList, productImageUrl } from "@/utils/archetypeCatalog";
+import {
+  fetchProductsList,
+  loadShopHowYouFeelFacets,
+  productImageUrl,
+  type ShopFacetCard,
+} from "@/utils/archetypeCatalog";
 
-const MOODS: Record<
-  string,
-  {
-    num: string;
-    label: string;
-    tag: string;
-    title: string;
-    desc: string;
-    points: string[];
-    btn: string;
-    query: string;
-  }
-> = {
-  power: {
-    num: "01",
-    label: "Power",
-    tag: "Frequency: Power & Presence",
-    title: "The Unapologetic Stance",
-    desc: "Structured shoulder articulation, deep Indian Red contrast drapes, and high-twist tussar silken weight. Tailored for days when the room must align with your voice before you speak.",
-    points: [
-      "Weighted architectural pallu with engineered stay-put friction",
-      "Zero needle-drop pure raw silk handloom base",
-      "Engineered concealed side seam utility pockets",
-    ],
-    btn: "Shop Power Capsule",
-    query: "silk",
-  },
-  minimal: {
-    num: "02",
-    label: "Minimal",
-    tag: "Frequency: Monochromatic Purity",
-    title: "Uncluttered Intellect",
-    desc: "Pristine raw ivory and unbleached cotton-silk blends with razor hairlines. A visual breath of fresh air that strips away excess to reveal supreme quiet confidence.",
-    points: [
-      "Undyed kora cotton spun on Amber Charkha",
-      "Concealed placket tunic shirts with seamless drapes",
-      "Zero zari, 100% natural selvage borders",
-    ],
-    btn: "Shop Minimal Capsule",
-    query: "linen",
-  },
-  festive: {
-    num: "03",
-    label: "Festive",
-    tag: "Frequency: Ceremonial Modernism",
-    title: "Contemporary Celebration",
-    desc: "Celebratory handcraft completely divorced from cliché. Deep jewel tones, burnished antique copper zari lines, and drapes designed to dance without pins.",
-    points: [
-      "Authentic real metal antique silver and copper zari",
-      "Dual-tone shot silk woven in Maheshwar looms",
-      "Architectural blouse patterns with sharp geometrics",
-    ],
-    btn: "Shop Festive Capsule",
-    query: "banarasi",
-  },
-  brunch: {
-    num: "04",
-    label: "Brunch",
-    tag: "Frequency: Daylight Ease",
-    title: "Effortless Horizons",
-    desc: "Crisp warm ivory, ochre sun pigments, and featherlight organic Chanderi weaves that breathe with ambient afternoon breezes.",
-    points: [
-      "Lightweight 200-count organic muslin and silk",
-      "Modular silhouettes that untie and flow freely",
-      "Sun-bleached natural madder and haldi tints",
-    ],
-    btn: "Shop Brunch Capsule",
-    query: "chanderi",
-  },
-  travel: {
-    num: "05",
-    label: "Travel",
-    tag: "Frequency: Transcontinental Fluidity",
-    title: "Transit & Horizons",
-    desc: "Crease-resistant hand-twisted wild tussar silk engineered for long-haul travel and immediate podium appearances upon arrival.",
-    points: [
-      "Resilient wild tussar fiber with natural spring",
-      "Integrated passport & notebook concealed pockets",
-      "Transitions effortlessly across climatic variations",
-    ],
-    btn: "Shop Travel Capsule",
-    query: "tussar",
-  },
-  celebration: {
-    num: "06",
-    label: "Celebration",
-    tag: "Frequency: Midnight Soiree",
-    title: "The Noir Monologue",
-    desc: "Deep indigo-black dyes, liquid draping georgette, and stark sculptural lines that capture low ambient candlelight and gallery spot lamps.",
-    points: [
-      "Natural fermented indigo dip-dyed multiple times",
-      "Bias-cut skirts with modular handloom pallus",
-      "High-contrast silhouette definition",
-    ],
-    btn: "Shop Celebration Capsule",
-    query: "georgette",
-  },
-};
-
-const TAB_KEYS = ["power", "minimal", "festive", "brunch", "travel", "celebration"] as const;
 const FALLBACK = "/svastra/logo-mark.png";
 
+const DEFAULT_POINTS = [
+  "Archive pieces curated from the live atelier catalog",
+  "Handloom provenance with documented weave characteristics",
+  "Ready for private fitting and concierge dispatch",
+];
+
+function buildPoints(description: string): string[] {
+  const clean = description.trim();
+  if (!clean) return DEFAULT_POINTS;
+  const parts = clean
+    .split(/[.\n|;•]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 18 && s.toLowerCase() !== clean.toLowerCase());
+  if (parts.length >= 2) return parts.slice(0, 3);
+  return DEFAULT_POINTS;
+}
+
 export default function SvastraHowYouFeel() {
-  const [active, setActive] = useState<(typeof TAB_KEYS)[number]>("power");
-  const data = MOODS[active];
-  const [looks, setLooks] = useState<{ img: string; title: string; id?: number }[]>([]);
-  const [loadingLooks, setLoadingLooks] = useState(true);
+  const [facets, setFacets] = useState<ShopFacetCard[]>([]);
+  const [loadingTabs, setLoadingTabs] = useState(true);
+  const [activeId, setActiveId] = useState<number | null>(null);
+  const [looks, setLooks] = useState<{ img: string; title: string }[]>([]);
+  const [loadingLook, setLoadingLook] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    setLoadingLooks(true);
+    setLoadingTabs(true);
+    loadShopHowYouFeelFacets(4, 6)
+      .then((list) => {
+        if (cancelled) return;
+        setFacets(list);
+        if (list.length) setActiveId(list[0].id);
+      })
+      .catch(() => {
+        if (!cancelled) setFacets([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingTabs(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const active = useMemo(
+    () => facets.find((f) => f.id === activeId) || facets[0] || null,
+    [facets, activeId]
+  );
+
+  useEffect(() => {
+    if (!active) {
+      setLooks([]);
+      setLoadingLook(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingLook(true);
+
     (async () => {
       let list = await fetchProductsList({
         per_page: 8,
         page: 1,
-        search: data.query,
+        category_id: active.id,
       });
       if (!list.length) {
         list = await fetchProductsList({ per_page: 8, page: 1 });
       }
       if (cancelled) return;
+
       const mapped = list.slice(0, 2).map((p) => ({
-        img: productImageUrl(p) || FALLBACK,
-        title: String(p.name || "Archive piece"),
-        id: Number(p.id) || undefined,
+        img: productImageUrl(p) || active.imageUrl || FALLBACK,
+        title: String(p.name || active.name || "Archive piece"),
       }));
+
       while (mapped.length < 2) {
-        mapped.push({ img: FALLBACK, title: "Archive piece" });
+        mapped.push({
+          img: active.imageUrl || FALLBACK,
+          title: active.name || "Archive piece",
+        });
       }
+
       setLooks(mapped);
-      setLoadingLooks(false);
+      setLoadingLook(false);
     })();
+
     return () => {
       cancelled = true;
     };
-  }, [data.query]);
+  }, [active?.id, active?.imageUrl, active?.name]);
+
+  if (!loadingTabs && facets.length === 0) {
+    return null;
+  }
+
+  const points = buildPoints(active?.description || "");
+  const shopHref = active?.href || "/categories";
+  const shopLabel = active ? `Shop ${active.name} Capsule` : "Shop Capsule";
+  const tag = active ? `Frequency: ${active.name}` : "Frequency";
+  const title = active?.name || "Capsule";
+  const desc =
+    active?.description ||
+    "Curations driven by inner frequency — select a category from the archive beyond the primary facets.";
 
   return (
     <section
@@ -160,51 +134,76 @@ export default function SvastraHowYouFeel() {
             Shop How You Feel
           </h2>
           <p className="text-[15px] sm:text-[17px] leading-[1.6] text-body-slate mt-3">
-            Curations driven by inner frequency, not calendar seasons or conventional market
-            categories. Select the state of being you wish to embody.
+            Further archive categories — after the primary four facets — curated as frequencies.
+            Select a state of being and enter the capsule.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-8" role="tablist">
-          {TAB_KEYS.map((key) => {
-            const mood = MOODS[key];
-            const isActive = active === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setActive(key)}
-                className={`text-left p-4 border transition-all ${
-                  isActive
-                    ? "bg-surface-dark text-surface border-surface-dark"
-                    : "bg-surface-ivory text-on-surface border-border-line hover:bg-surface-dark hover:text-surface hover:border-surface-dark"
-                }`}
-              >
-                <span className="text-[10px] tracking-widest block opacity-70 mb-1">
-                  {mood.num} // Frequency
-                </span>
-                <span className="text-[12px] font-bold tracking-[0.12em] uppercase">
-                  {mood.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        {loadingTabs ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[72px] border border-border-line bg-surface-ivory animate-pulse"
+              />
+            ))}
+          </div>
+        ) : (
+          <div
+            className={`grid gap-2 mb-8 ${
+              facets.length <= 2
+                ? "grid-cols-2"
+                : facets.length <= 3
+                  ? "grid-cols-2 sm:grid-cols-3"
+                  : facets.length <= 4
+                    ? "grid-cols-2 sm:grid-cols-4"
+                    : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"
+            }`}
+            role="tablist"
+          >
+            {facets.map((facet, index) => {
+              const isActive = active?.id === facet.id;
+              const num = String(index + 5).padStart(2, "0");
+              return (
+                <button
+                  key={facet.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveId(facet.id)}
+                  className={`text-left p-4 border transition-all ${
+                    isActive
+                      ? "bg-surface-dark text-surface border-surface-dark"
+                      : "bg-surface-ivory text-on-surface border-border-line hover:bg-surface-dark hover:text-surface hover:border-surface-dark"
+                  }`}
+                >
+                  <span className="text-[10px] tracking-widest block opacity-70 mb-1">
+                    {num} // Frequency
+                  </span>
+                  <span className="text-[12px] font-bold tracking-[0.12em] uppercase line-clamp-1">
+                    {facet.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-        <div className="border border-on-surface bg-surface-subtle p-6 sm:p-10 lg:p-14">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            <div className="lg:col-span-6 space-y-6">
+        {/* Previous balanced plate: copy left + two looks right */}
+        <div className="border border-on-surface bg-surface-subtle p-6 sm:p-8 lg:p-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+            <div className="lg:col-span-6 space-y-5">
               <div className="inline-block px-3 py-1 bg-primary text-surface text-[11px] font-semibold tracking-[0.14em] uppercase">
-                {data.tag}
+                {tag}
               </div>
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tight text-on-surface">
-                {data.title}
+              <h3 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight text-on-surface leading-tight">
+                {title}
               </h3>
-              <p className="text-base sm:text-[17px] leading-[1.6] text-body-slate">{data.desc}</p>
-              <div className="space-y-3 pt-2 text-[14px] text-on-surface font-medium">
-                {data.points.map((p) => (
+              <p className="text-[15px] sm:text-base leading-[1.6] text-body-slate line-clamp-4">
+                {desc}
+              </p>
+              <div className="space-y-2.5 pt-1 text-[14px] text-on-surface font-medium">
+                {points.map((p) => (
                   <div key={p} className="flex items-start gap-3">
                     <span className="text-primary mt-0.5 shrink-0" aria-hidden="true">
                       ✓
@@ -213,26 +212,27 @@ export default function SvastraHowYouFeel() {
                   </div>
                 ))}
               </div>
-              <Link
-                href={`/products?search=${encodeURIComponent(data.query)}`}
-                className="sv-btn-primary inline-flex mt-2"
-              >
-                {data.btn}
+              <Link href={shopHref} className="sv-btn-primary inline-flex mt-1">
+                {shopLabel}
               </Link>
             </div>
 
             <div className="lg:col-span-6 grid grid-cols-2 gap-3 sm:gap-4">
               {looks.map((look, i) => (
-                <figure key={`${look.title}-${i}`} className={`space-y-2 ${i === 1 ? "mt-6 sm:mt-10" : ""}`}>
+                <figure
+                  key={`${look.title}-${i}`}
+                  className={`space-y-2 ${i === 1 ? "mt-6 sm:mt-10" : ""}`}
+                >
                   <div
                     className={`aspect-[3/4] overflow-hidden border border-border-line bg-surface-ivory ${
-                      loadingLooks ? "animate-pulse" : ""
+                      loadingLook ? "animate-pulse" : ""
                     }`}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={look.img}
                       alt={look.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-top"
                       loading="lazy"
                     />
                   </div>

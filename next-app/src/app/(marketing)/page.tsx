@@ -8,30 +8,19 @@ import SvastraIndependentCut from "@/components/(frontend)/svastra/SvastraIndepe
 import SvastraManifesto from "@/components/(frontend)/svastra/SvastraManifesto";
 import SvastraVoices from "@/components/(frontend)/svastra/SvastraVoices";
 import SvastraConcierge from "@/components/(frontend)/svastra/SvastraConcierge";
-import {
-  fetchActiveSliderImage,
-  fetchProductsList,
-  productImageUrl,
-} from "@/utils/archetypeCatalog";
+import { fetchProductsList } from "@/utils/archetypeCatalog";
 
 export default function HomeUI() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [heroImage, setHeroImage] = useState<string | null>(null);
-  const [manifestoImage, setManifestoImage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [list, slider] = await Promise.all([
-          fetchProductsList({ per_page: 12, page: 1 }),
-          fetchActiveSliderImage(),
-        ]);
+        const list = await fetchProductsList({ per_page: 12, page: 1 });
         if (cancelled) return;
         setProducts(list);
-        setHeroImage(slider || productImageUrl(list[0]));
-        setManifestoImage(productImageUrl(list[1] || list[0]));
       } catch (e) {
         console.error("Home catalog failed", e);
         if (!cancelled) setProducts([]);
@@ -46,11 +35,11 @@ export default function HomeUI() {
 
   return (
     <div className="w-full bg-surface">
-      <SvastraHero heroImage={heroImage} />
+      <SvastraHero />
       <SvastraWhoYouAre />
       <SvastraHowYouFeel />
       <SvastraIndependentCut products={products} loading={loading} />
-      <SvastraManifesto imageUrl={manifestoImage} />
+      <SvastraManifesto />
       <SvastraVoices />
       <SvastraConcierge />
     </div>

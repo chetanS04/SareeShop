@@ -180,19 +180,30 @@ button {
 }
 
 .sv-theme .hero-media {
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 16 / 9;
 }
 
-@media (min-width: 640px) {
-  .sv-theme .hero-media {
-    aspect-ratio: 16 / 11;
-  }
+/* Tension matrix — Inter (same as home.html), condensed display weight */
+.sv-theme .sv-tension-word {
+  font-family: var(--font-inter), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.5rem, 7.8vw, 5rem);
+  line-height: 0.88;
+  letter-spacing: -0.06em;
+  display: inline-block;
+  transform: scaleX(0.88) scaleY(1.06);
+  transform-origin: left center;
 }
 
-@media (min-width: 1024px) {
-  .sv-theme .hero-media {
-    aspect-ratio: 16 / 10;
-  }
+.sv-theme .sv-tension-phrase {
+  font-family: var(--font-inter), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 400;
+  font-size: clamp(0.8rem, 1.6vw, 1.0625rem);
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.42);
+  line-height: 1.2;
+  padding-bottom: 0.2em;
+  text-transform: lowercase;
 }
 
 .sv-theme .facet-media,
@@ -274,8 +285,10 @@ button {
 .sv-theme .sv-buy-box .sv-btn-primary,
 .sv-theme .sv-buy-box .sv-btn-outline {
   min-height: 42px;
-  padding: 0.7rem 1rem;
+  padding: 0.625rem 0.75rem;
   font-size: 11px;
+  gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .sv-theme .sv-mood-chip {
