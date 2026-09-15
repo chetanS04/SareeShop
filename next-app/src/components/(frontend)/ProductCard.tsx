@@ -110,20 +110,20 @@ export default function ProductCard({
     return (
       <div
         onClick={handleClick}
-        className={`group/card bg-pure-white cursor-pointer overflow-hidden flex flex-col h-full select-none border border-[rgba(14,14,13,0.1)] hover:border-[rgba(14,14,13,0.22)] transition-colors duration-300 ${className}`}
+        className={`group/card bg-pure-white cursor-pointer overflow-hidden flex flex-col h-full select-none border border-[rgba(14,14,13,0.1)] hover:border-[rgba(14,14,13,0.25)] transition-colors duration-300 ${className}`}
       >
         <div className="relative w-full aspect-[3/4] bg-surface-ivory overflow-hidden flex-shrink-0">
           <img
             src={imgSrc}
             alt={product.name || "Product"}
-            className="w-full h-full object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:scale-105"
+            className="w-full h-full object-cover transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:scale-105"
             onError={(e: any) => {
               e.target.src = imgPlaceholder.src;
             }}
           />
 
           {hasDiscount && discountPct > 0 && (
-            <span className="absolute top-0 left-0 z-10 bg-primary text-surface text-[10px] font-semibold px-2.5 py-1.5 uppercase tracking-[0.08em]">
+            <span className="absolute top-0 left-0 z-10 bg-primary text-surface text-[9px] sm:text-[10px] font-semibold px-2 py-1 uppercase tracking-[0.06em]">
               {discountPct}% Off
             </span>
           )}
@@ -131,7 +131,7 @@ export default function ProductCard({
           <button
             type="button"
             onClick={handleWishlistClick}
-            className={`absolute top-2.5 right-2.5 z-20 w-8 h-8 sm:w-9 sm:h-9 bg-pure-white/90 hover:bg-pure-white border border-[rgba(14,14,13,0.1)] flex items-center justify-center transition-opacity duration-200 ${
+            className={`absolute top-2 right-2 z-20 w-7 h-7 sm:w-8 sm:h-8 bg-pure-white/90 hover:bg-pure-white border border-[rgba(14,14,13,0.1)] flex items-center justify-center transition-opacity duration-200 ${
               isProductLiked
                 ? "opacity-100"
                 : "opacity-100 sm:opacity-0 sm:group-hover/card:opacity-100 sm:focus-visible:opacity-100"
@@ -139,42 +139,42 @@ export default function ProductCard({
             aria-label={isProductLiked ? "Remove from Wishlist" : "Add to Wishlist"}
           >
             <Heart
-              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+              className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${
                 isProductLiked ? "fill-primary text-primary" : "text-on-surface"
               }`}
             />
           </button>
 
           {showBestsellerBadge && (
-            <span className="absolute bottom-0 left-0 z-10 bg-accent-ochre text-surface-dark text-[10px] font-bold px-2.5 py-1.5 uppercase tracking-[0.08em]">
+            <span className="absolute bottom-0 left-0 z-10 bg-accent-ochre text-surface-dark text-[9px] font-bold px-2 py-1 uppercase tracking-[0.06em]">
               Bestseller
             </span>
           )}
           {showNewBadge && !showBestsellerBadge && (
-            <span className="absolute bottom-0 left-0 z-10 bg-surface-dark text-surface text-[10px] font-bold px-2.5 py-1.5 uppercase tracking-[0.08em]">
+            <span className="absolute bottom-0 left-0 z-10 bg-surface-dark text-surface text-[9px] font-bold px-2 py-1 uppercase tracking-[0.06em]">
               New
             </span>
           )}
         </div>
 
-        <div className="p-3 sm:p-4 flex flex-col gap-1.5 flex-1">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-body-slate truncate">
+        <div className="p-2.5 sm:p-3 flex flex-col gap-1 flex-1">
+          <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.08em] text-body-slate truncate">
             {product.brand?.name || product.category?.name || "Collection"}
           </span>
-          <h3 className="text-[13px] sm:text-[14px] font-semibold text-on-surface line-clamp-2 leading-snug transition-colors duration-200 group-hover/card:text-primary">
+          <h3 className="text-[12px] sm:text-[13px] font-medium text-on-surface line-clamp-2 leading-snug transition-colors duration-200 group-hover/card:text-primary">
             {product.name}
           </h3>
           {rating > 0 && (
-            <div className="flex items-center gap-1 leading-none">
-              <span className="text-accent-ochre text-[11px]">★</span>
-              <span className="text-[11px] font-semibold text-on-surface">{rating.toFixed(1)}</span>
-              <span className="text-[10px] text-body-slate">({formattedReviewCount})</span>
+            <div className="flex items-center gap-1 leading-none mt-0.5">
+              <span className="text-accent-ochre text-[10px]">★</span>
+              <span className="text-[10px] font-semibold text-on-surface">{rating.toFixed(1)}</span>
+              <span className="text-[9px] text-body-slate">({formattedReviewCount})</span>
             </div>
           )}
-          <div className="flex items-baseline gap-2 flex-wrap mt-auto pt-1.5">
-            <span className="font-bold text-[14px] sm:text-[15px] text-on-surface">{formattedSp}</span>
+          <div className="flex items-baseline gap-1.5 flex-wrap mt-auto pt-1">
+            <span className="font-bold text-[13px] sm:text-[14px] text-on-surface">{formattedSp}</span>
             {hasDiscount && (
-              <span className="line-through text-[11px] text-body-slate">{formattedMrp}</span>
+              <span className="line-through text-[10px] sm:text-[11px] text-body-slate">{formattedMrp}</span>
             )}
           </div>
         </div>
