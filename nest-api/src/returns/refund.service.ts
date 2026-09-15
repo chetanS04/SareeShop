@@ -72,39 +72,58 @@ export class RefundService {
     // Execute Refund Payout logic
     if (isPrepaid && (orderObj?.razorpayPaymentId || orderObj?.paymentIntentId || orderObj?.transactionId) && !dto.transaction_id) {
       try {
-        const appId = this.config.get<string>('CASHFREE_APP_ID');
-        const secretKey = this.config.get<string>('CASHFREE_SECRET_KEY');
-        const apiVersion = this.config.get<string>('CASHFREE_API_VERSION', '2023-08-01');
-        const baseUrl = this.config.get<string>('CASHFREE_BASE_URL') ||
-          (appId?.startsWith('TEST') ? 'https://sandbox.cashfree.com/pg' : 'https://api.cashfree.com/pg');
+        const appId = this.config.get<string>('GOKWIK_APP_ID') || process.env.GOKWIK_APP_ID;
+        const appSecret = this.config.get<string>('GOKWIK_APP_SECRET') || process.env.GOKWIK_APP_SECRET;
+        const merchantId = this.config.get<string>('GOKWIK_MERCHANT_ID') || process.env.GOKWIK_MERCHANT_ID;
+        const baseUrl = this.config.get<string>('GOKWIK_BASE_URL') ||
+          (this.config.get<string>('GOKWIK_ENV') === 'production' ? 'https://api.gokwik.co' : 'https://sandbox.gokwik.co');
 
-        if (appId && secretKey && (orderObj.orderNumber || orderObj.id)) {
-          this.logger.log(`Initiating gateway refund for Order #${orderObj.orderNumber} for ₹${computedRefund}`);
+        if (appId && appSecret && (orderObj.orderNumber || orderObj.id)) {
+          this.logger.log(`Initiating GoKwik gateway refund for Order #${orderObj.orderNumber} for ₹${computedRefund}`);
           const refundRes = await axios.post(
-            `${baseUrl}/orders/${orderObj.orderNumber}/refunds`,
+            `${baseUrl}/v1/order/refund`,
             {
+              order_id: orderObj.orderNumber,
+              merchant_id: merchantId,
               refund_amount: computedRefund,
               refund_id: `REF_${ret.returnNumber}_${Date.now()}`,
               refund_note: `Refund for Return #${ret.returnNumber}`,
-              refund_speed: 'STANDARD',
             },
             {
               headers: {
-                'x-client-id': appId,
-                'x-client-secret': secretKey,
-                'x-api-version': apiVersion,
+                'appid': appId,
+                'appsecret': appSecret,
+                'merchant_id': merchantId,
                 'Content-Type': 'application/json',
               },
+              timeout: 5000,
             },
-          );
+          ).catch(async () => {
+            return axios.post(
+              `${baseUrl}/orders/${orderObj.orderNumber}/refunds`,
+              {
+                refund_amount: computedRefund,
+                refund_id: `REF_${ret.returnNumber}_${Date.now()}`,
+                refund_note: `Refund for Return #${ret.returnNumber}`,
+              },
+              {
+                headers: {
+                  'appid': appId,
+                  'appsecret': appSecret,
+                  'Content-Type': 'application/json',
+                },
+                timeout: 5000,
+              },
+            );
+          });
 
-          if (refundRes.data?.refund_id) {
-            transactionId = refundRes.data.refund_id;
+          if (refundRes?.data?.refund_id || refundRes?.data?.transaction_id) {
+            transactionId = refundRes.data.refund_id || refundRes.data.transaction_id;
           }
         }
       } catch (err: any) {
-        this.logger.warn(`Automated gateway refund note: ${err.response?.data?.message || err.message}. Recorded payout reference.`);
-        transactionId = `GW-REF-${Date.now()}`;
+        this.logger.warn(`Automated GoKwik refund note: ${err.response?.data?.message || err.message}. Recorded payout reference.`);
+        transactionId = `GK-REF-${Date.now()}`;
       }
     } else if (!isPrepaid) {
       const bank = (ret.bankDetails as any) || {};

@@ -131,7 +131,7 @@ export default function SvastraHowYouFeel() {
         id: Number(p.id) || undefined,
       }));
       while (mapped.length < 2) {
-        mapped.push({ img: FALLBACK, title: "Archive piece" });
+        mapped.push({ img: FALLBACK, title: "Archive piece", id: undefined });
       }
       setLooks(mapped);
       setLoadingLooks(false);

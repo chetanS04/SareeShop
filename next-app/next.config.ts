@@ -44,19 +44,19 @@ const securityHeaders = [
   // Restrict sensitive browser APIs & permissions
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), browsing-topics=(), payment=(self 'https://sdk.cashfree.com')",
+    value: "camera=(), microphone=(), geolocation=(), browsing-topics=(), payment=(self 'https://pdp.gokwik.co' 'https://checkout.gokwik.co' 'https://api.gokwik.co' 'https://sandbox.gokwik.co' 'https://sdk.gokwik.co' 'https://sdk.cashfree.com')",
   },
   // Hardened Content Security Policy
   {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self';",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: https://sdk.cashfree.com https://www.youtube.com https://accounts.google.com https://apis.google.com;",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: https://pdp.gokwik.co https://checkout.gokwik.co https://api.gokwik.co https://sandbox.gokwik.co https://sdk.gokwik.co https://sdk.cashfree.com https://www.youtube.com https://accounts.google.com https://apis.google.com;",
       "style-src 'self' 'unsafe-inline' https: http: https://fonts.googleapis.com https://accounts.google.com;",
       "font-src 'self' data: https: http: https://fonts.gstatic.com;",
-      "img-src 'self' data: blob: https: http:;",
-      "connect-src 'self' https: http: wss: ws: https://accounts.google.com https://api.zelton.co.in https://sdk.cashfree.com;",
-      "frame-src 'self' https: http: https://www.youtube.com https://sdk.cashfree.com https://accounts.google.com;",
+      "img-src 'self' data: blob: https: http: https://pdp.gokwik.co https://checkout.gokwik.co;",
+      "connect-src 'self' https: http: wss: ws: https://accounts.google.com https://api.zelton.co.in https://pdp.gokwik.co https://checkout.gokwik.co https://api.gokwik.co https://sandbox.gokwik.co https://sdk.gokwik.co https://sdk.cashfree.com;",
+      "frame-src 'self' https: http: https://www.youtube.com https://pdp.gokwik.co https://checkout.gokwik.co https://api.gokwik.co https://sandbox.gokwik.co https://sdk.gokwik.co https://sdk.cashfree.com https://accounts.google.com;",
       "object-src 'none';",
       "base-uri 'self';",
       "form-action 'self' https: http:;",

@@ -6,6 +6,11 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 export class PaymentController {
   constructor(private svc: PaymentService) {}
 
+  @Get('test-gokwik')
+  testGoKwikCredentials(): Promise<any> {
+    return this.svc.testCredentials();
+  }
+
   @Get('test-cashfree')
   testCredentials(): Promise<any> {
     return this.svc.testCredentials();
@@ -18,8 +23,20 @@ export class PaymentController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('payment/cancel')
+  cancel(@Request() req: any, @Body() b: any): Promise<any> {
+    return this.svc.cancelPayment(req.user.id, b.order_number || b.order_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post('payment/verify')
   verify(@Request() req: any, @Body() b: any): Promise<any> {
     return this.svc.verifyPayment(b);
   }
+
+  @Post('payment/webhook')
+  webhook(@Body() b: any): Promise<any> {
+    return this.svc.verifyPayment(b);
+  }
 }
+

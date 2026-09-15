@@ -525,7 +525,7 @@ export default function DashboardPage() {
                         <CreditCard className="w-5 h-5" />
                       </div>
                       <div>
-                        <h3 className="text-base font-bold text-gray-900">Cashfree Online Payments</h3>
+                        <h3 className="text-base font-bold text-gray-900">GoKwik Online Payments</h3>
                         <p className="text-xs text-gray-500">Digital transactions via PG</p>
                       </div>
                     </div>

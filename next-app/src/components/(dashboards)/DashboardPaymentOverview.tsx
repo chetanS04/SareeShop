@@ -28,7 +28,7 @@ export default function DashboardPaymentOverview({ payments }: DashboardPaymentO
             <CreditCard className="w-5 h-5 text-[#007FFF]" />
             Payment Overview
           </h3>
-          <p className="text-xs text-gray-500">Cashfree PG vs Cash on Delivery collection breakdown</p>
+          <p className="text-xs text-gray-500">GoKwik PG vs Cash on Delivery collection breakdown</p>
         </div>
         <Link
           href="/dashboard/orders"
@@ -39,13 +39,13 @@ export default function DashboardPaymentOverview({ payments }: DashboardPaymentO
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {/* Cashfree Online */}
+        {/* GoKwik Online */}
         <Link
           href="/dashboard/orders?paymentMethod=online"
           className="p-3 rounded-xl bg-blue-50/50 hover:bg-blue-100/70 border border-blue-100 transition-all cursor-pointer group"
         >
           <div className="flex justify-between items-center text-xs font-bold text-gray-700">
-            <span>Cashfree Online</span>
+            <span>GoKwik Online</span>
             <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded-md font-extrabold">PG</span>
           </div>
           <p className="text-base font-extrabold text-gray-900 mt-1">{formatCurrency(online.total)}</p>
