@@ -56,7 +56,7 @@ export class PaymentService {
     this.appId = this.config.get<string>('GOKWIK_APP_ID') || process.env.GOKWIK_APP_ID || 'de7cca39c784db2ca57fb821d120e1a2';
     this.appSecret = this.config.get<string>('GOKWIK_APP_SECRET') || process.env.GOKWIK_APP_SECRET || '9b757736f2452e34412614f6e646309a';
     this.gokwikId = this.config.get<string>('GOKWIK_ID') || process.env.GOKWIK_ID || '102119';
-    this.envMode = this.config.get<string>('GOKWIK_ENV') || process.env.GOKWIK_ENV || 'production';
+    this.envMode = this.config.get<string>('GOKWIK_ENV') || process.env.GOKWIK_ENV || 'sandbox';
     
     const envBaseUrl = this.config.get<string>('GOKWIK_BASE_URL') || process.env.GOKWIK_BASE_URL;
     if (envBaseUrl) {
