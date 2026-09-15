@@ -23,7 +23,7 @@ export default function ProductDetailsSkeleton() {
       </div>
 
       {/* ══════════════════════════════════════════════════════
-          MOBILE SKELETON (visible only below lg)
+          MOBILE SKELETON (<lg)
       ══════════════════════════════════════════════════════ */}
       <div className="lg:hidden bg-[#FFF8F2]">
         {/* Top strip */}
@@ -92,7 +92,7 @@ export default function ProductDetailsSkeleton() {
       </div>
 
       {/* ══════════════════════════════════════════════════════
-          DESKTOP SKELETON (visible only on lg+)
+          DESKTOP SKELETON (lg+)
       ══════════════════════════════════════════════════════ */}
       <div className="hidden lg:block bg-[#FFF8F2]">
         <div className="w-full max-w-[1720px] mx-auto px-6 xl:px-8 py-10">

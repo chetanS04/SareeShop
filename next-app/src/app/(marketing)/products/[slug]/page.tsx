@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import imgPlaceholder from "@/public/imagePlaceholder.png";
 import axios from "../../../../../utils/axios";
@@ -73,7 +74,7 @@ const ServiceBenefitsStrip = ({
         });
     }
 
-    // 2. Pay on Delivery (Strictly when COD is enabled for this variant)
+    // 2. Pay on Delivery
     if (isCodAllowed) {
         benefits.push({
             id: 'cod',
@@ -88,7 +89,7 @@ const ServiceBenefitsStrip = ({
         });
     }
 
-    // 3. Free Delivery (Strictly when shipping charges are 0 / free for this variant)
+    // 3. Free Delivery
     if (isFreeDelivery) {
         benefits.push({
             id: 'free_delivery',
@@ -104,7 +105,7 @@ const ServiceBenefitsStrip = ({
         });
     }
 
-    // 4. Brand Assured (Strictly when product has a real brand)
+    // 4. Brand Assured
     if (brand?.name) {
         benefits.push({
             id: 'brand',
@@ -156,7 +157,7 @@ const ServiceBenefitsStrip = ({
 
     const handleScroll = (direction: 'left' | 'right') => {
         if (!scrollRef.current) return;
-        const scrollOffset = direction === 'left' ? -180 : 180;
+        const scrollOffset = direction === 'left' ? -200 : 200;
         scrollRef.current.scrollBy({ left: scrollOffset, behavior: 'smooth' });
         setTimeout(updateScrollButtons, 350);
     };
@@ -474,10 +475,9 @@ const ProductPage = () => {
         const unsubscribe = subscribeToProduct(prodIdentifier, (event: ProductEventData) => {
             console.log(`⚡ [ProductDetailsPage] Real-time event received for product (${prodIdentifier}):`, event.action);
             if (event.action === "deleted" || (event.action === "status_changed" && event.status === false)) {
-                alert("This product is no longer active or has been removed.");
+                alert("This piece is no longer active or has been archived.");
                 router.push("/products");
             } else if (event.action === "updated" || event.action === "status_changed" || event.action === "stock_updated") {
-                // Silently refresh product in background
                 fetchProduct(false);
             }
         });
@@ -594,7 +594,7 @@ const ProductPage = () => {
         setIsInCart(false);
     }, [selectedOptions, selectedVariant?.id]);
 
-    // Auto-revert "Go to Cart" button back to "Add to Cart" after 3.5 seconds if user stays on the page
+    // Auto-revert "Go to Cart" button back to "Add to Cart" after 3.5 seconds
     useEffect(() => {
         if (!isInCart) return;
         const timer = setTimeout(() => {
@@ -656,12 +656,12 @@ const ProductPage = () => {
         }
 
         if (!selectedVariant) {
-            alert('Please select all required options');
+            alert('Please select all required drape options');
             return;
         }
 
         if (selectedVariant.stock < quantity) {
-            alert(`Only ${selectedVariant.stock} items available`);
+            alert(`Only ${selectedVariant.stock} items available in this edition`);
             return;
         }
 
@@ -675,7 +675,7 @@ const ProductPage = () => {
         );
 
         if (success) {
-            setToastMessage('Item added to cart successfully!');
+            setToastMessage('Piece reserved in your atelier bag!');
             setShowToast(true);
             setIsInCart(true);
         }
@@ -713,7 +713,7 @@ const ProductPage = () => {
         if (success) {
             const message = isLiked(product.id)
                 ? 'Removed from wishlist!'
-                : 'Added to wishlist!';
+                : 'Added to your wishlist!';
             setToastMessage(message);
             setShowToast(true);
         }
@@ -723,12 +723,12 @@ const ProductPage = () => {
         if (typeof window !== "undefined") {
             if (navigator.share) {
                 navigator.share({
-                    title: product?.name || "Product",
+                    title: product?.name || "SVastra Collection",
                     url: window.location.href,
                 }).catch(() => { });
             } else {
                 navigator.clipboard.writeText(window.location.href);
-                setToastMessage("Product link copied to clipboard!");
+                setToastMessage("Piece link copied to clipboard!");
                 setShowToast(true);
                 setTimeout(() => setShowToast(false), 3000);
             }
@@ -746,18 +746,17 @@ const ProductPage = () => {
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
         setZoomPosition({ x, y });
-        // Fixed panel: appear to the right of the image box, aligned to its top
         setZoomPanelPos({
             top: rect.top,
-            left: rect.right + 16,
+            left: rect.right + 20,
         });
     };
 
     const formatSpecificationKey = (key: string): string => {
         if (!key) return '';
         return key
-            .replace(/([a-z])([A-Z])/g, '$1 $2') // Add space between camelCase
-            .replace(/[_-]/g, ' ') // Replace underscores and hyphens with spaces
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/[_-]/g, ' ')
             .replace(/\s+/g, ' ')
             .split(' ')
             .filter(Boolean)
@@ -818,7 +817,6 @@ const ProductPage = () => {
         }
     });
     const productGstRate = getProductGstRate(product);
-    const productHsn = (product as any)?.hsn || null;
 
     const variantPricing = selectedVariant
         ? getPricing(selectedVariant.mrp, (selectedVariant as any).baseSp ?? selectedVariant.sp, productGstRate)
@@ -826,16 +824,15 @@ const ProductPage = () => {
 
     const discountPct = variantPricing ? variantPricing.discountPct : 0;
 
-    // Handler for hierarchical option selection (First Attribute vs Subsequent Attributes)
+    // Handler for hierarchical option selection
     const handleOptionClick = (attrIndex: number, clickedAttrId: number, val: string) => {
         if (!product) return;
         const itemAttrs = product.item_attributes || [];
 
-        // If clicking the First Attribute (e.g. Color)
+        // If clicking the First Attribute (e.g. Color / Fabric)
         if (attrIndex === 0) {
             const nextOptions: Record<number, string> = { [clickedAttrId]: val };
 
-            // Find all variants of this product that have the chosen first attribute value
             const variantsWithVal = (product.variants || []).filter((v) => {
                 return (v.attribute_values || []).some((av: any) => {
                     const aId = Number(av?.attribute_id ?? av?.attributeId ?? av?.attribute?.id);
@@ -843,7 +840,6 @@ const ProductPage = () => {
                 });
             });
 
-            // 1. Try to find an in-stock variant that also matches the currently selected subsequent attributes
             let targetVariant = variantsWithVal.find((v) => {
                 if ((v.stock ?? 0) <= 0) return false;
                 return itemAttrs.slice(1).every((ia: any) => {
@@ -857,7 +853,6 @@ const ProductPage = () => {
                 });
             });
 
-            // 2. If current size doesn't exist for this new color, auto-select the first in-stock size of this color
             if (!targetVariant) {
                 targetVariant = variantsWithVal.find((v) => (v.stock ?? 0) > 0) || variantsWithVal[0];
             }
@@ -876,7 +871,7 @@ const ProductPage = () => {
             return;
         }
 
-        // If clicking a Subsequent Attribute (e.g. Size at index > 0)
+        // If clicking a Subsequent Attribute (e.g. Blouse Size, Length)
         const nextOptions: Record<number, string> = { ...selectedOptions, [clickedAttrId]: val };
 
         const matched = (product.variants || []).find((v) => {
@@ -898,7 +893,6 @@ const ProductPage = () => {
         setSelectedOptions(nextOptions);
     };
 
-    // helper: find attribute value metadata (image, show_image) from variants or product attribute values
     const findAttrValMeta = (attrId: number, val: string) => {
         for (const v of product.variants || []) {
             for (const av of (v.attribute_values || (v as any).attributeValues || [])) {
@@ -919,15 +913,14 @@ const ProductPage = () => {
         return null;
     };
 
-    // helper: shared variant selector block
+    // Shared architectural variant selector block
     const renderVariantSelectors = () => (
         (product.item_attributes || []).length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-4 pt-1">
                 {(product.item_attributes || []).map((ia: any, attrIndex: number) => {
                     const attrId = Number(ia.attribute_id ?? ia.attributeId ?? ia.attribute?.id);
                     const isFirstAttr = attrIndex === 0;
 
-                    // Check if this attribute should render image swatch cards
                     const isImageSwatch = Boolean(
                         ia.has_images ||
                         ia.hasImages ||
@@ -948,8 +941,6 @@ const ProductPage = () => {
                                     let isAvailable = false;
 
                                     if (isFirstAttr) {
-                                        // First attribute (e.g. Color):
-                                        // Available if ANY variant with this color has stock > 0
                                         isAvailable = (product.variants || []).some((variant) => {
                                             if (!variant.attribute_values) return false;
                                             const hasColorVal = (variant.attribute_values || []).some((av: any) => {
@@ -959,8 +950,6 @@ const ProductPage = () => {
                                             return hasColorVal && (variant.stock ?? 0) > 0;
                                         });
                                     } else {
-                                        // Subsequent attributes (e.g. Size):
-                                        // Available if variant exists with ALL preceding selected attributes (e.g. Color) AND this size, with stock > 0
                                         isAvailable = (product.variants || []).some((variant) => {
                                             if (!variant.attribute_values) return false;
                                             const matchesPreceding = (product.item_attributes || [])
@@ -987,12 +976,10 @@ const ProductPage = () => {
                                     const isSelected = selectedOptions[attrId] === val;
                                     const isDisabled = !isAvailable;
 
-                                    // Attribute value metadata (image, show_image)
                                     const avMeta = findAttrValMeta(attrId, val);
                                     const isValShowImage = Boolean(avMeta?.show_image || (avMeta as any)?.showImage);
                                     const rawImg = isValShowImage ? (avMeta?.image || null) : null;
 
-                                    // Find representative variant for this option to calculate price & fallback image
                                     let matchingVariant: any = null;
                                     if (isFirstAttr) {
                                         matchingVariant = (product.variants || []).find((v) => {
@@ -1038,7 +1025,6 @@ const ProductPage = () => {
                                         });
                                     }
 
-                                    // Only show swatch image if show_image is enabled for this specific attribute value
                                     const swatchImg = isValShowImage
                                         ? (resolveUrl(rawImg) || ((ia.has_images || (ia as any).hasImages) && matchingVariant?.image_url ? resolveUrl(matchingVariant.image_url) : null))
                                         : null;
@@ -1057,7 +1043,7 @@ const ProductPage = () => {
                                                     if (isDisabled) return;
                                                     handleOptionClick(attrIndex, attrId, val);
                                                 }}
-                                                title={isDisabled ? `${val} (Out of stock / Unavailable)` : `${val}${optionPricing ? ` - ₹${Math.round(optionPricing.sp).toLocaleString('en-IN')}` : ''}`}
+                                                title={isDisabled ? `${val} (Archived / Unavailable)` : `${val}${optionPricing ? ` - ₹${Math.round(optionPricing.sp).toLocaleString('en-IN')}` : ''}`}
                                                 style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
                                                 className={`group relative flex flex-col items-center justify-between border transition-colors duration-150 select-none overflow-hidden bg-white w-[74px] sm:w-[82px] p-1 ${
                                                     isSelected
@@ -1073,7 +1059,7 @@ const ProductPage = () => {
                                                         <img
                                                             src={swatchImg}
                                                             alt={val}
-                                                            className={`w-full h-full object-contain transition-transform duration-150 ${
+                                                            className={`w-full h-full object-cover transition-transform duration-200 ${
                                                                 isDisabled ? 'opacity-40 grayscale' : 'group-hover:scale-105'
                                                             }`}
                                                             loading="lazy"
@@ -1105,7 +1091,6 @@ const ProductPage = () => {
                                                     )}
                                                 </div>
 
-                                                {/* Diagonal cross strike-through line for out-of-stock / unavailable options */}
                                                 {isDisabled && (
                                                     <svg
                                                         className="absolute inset-0 w-full h-full pointer-events-none text-[#8B1313]/60"
@@ -1136,7 +1121,7 @@ const ProductPage = () => {
                                                 if (isDisabled) return;
                                                 handleOptionClick(attrIndex, attrId, val);
                                             }}
-                                            title={isDisabled ? `${val} (Out of stock / Unavailable)` : val}
+                                            title={isDisabled ? `${val} (Archived / Unavailable)` : val}
                                             style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
                                             className={`relative overflow-hidden px-4 py-2 border text-[13px] font-medium tracking-[0.02em] transition-colors duration-150 select-none ${isSelected
                                                 ? 'border-2 border-[#8B1313] bg-[#F1E5D2] text-[#8B1313] font-semibold cursor-pointer'
@@ -1145,9 +1130,8 @@ const ProductPage = () => {
                                                 : 'border-[#0E0E0D]/15 bg-white text-[#0E0E0D] hover:border-[#8B1313] hover:text-[#8B1313] cursor-pointer'
                                                 }`}
                                         >
-                                            <span className={isDisabled ? 'opacity-50 pointer-events-none' : ''}>{val}</span>
+                                            <span className={isDisabled ? 'opacity-40 pointer-events-none' : ''}>{val}</span>
 
-                                            {/* Diagonal cross strike-through line for out-of-stock / unavailable options */}
                                             {isDisabled && (
                                                 <svg
                                                     className="absolute inset-0 w-full h-full pointer-events-none text-[#8B1313]/60"
@@ -1176,9 +1160,10 @@ const ProductPage = () => {
         )
     );
 
-    // helper: shared add-to-cart + buy-now buttons
+    // Shared SVastra action buttons (Add to Bag / Buy Now)
     const renderActionButtons = (fullWidth = false) => (
         selectedVariant && (
+            <div className={`flex flex-col gap-2.5 ${fullWidth ? 'w-full' : ''}`}>
             <div className={`flex flex-col gap-2.5 ${fullWidth ? 'w-full' : ''}`}>
                 <button
                     onClick={isInCart ? handleViewCart : handleAddToCart}
@@ -1193,6 +1178,7 @@ const ProductPage = () => {
                         <><ShoppingCart className="w-4 h-4" />Add to Bag</>
                     ) : 'Out of Stock'}
                 </button>
+
                 <button
                     onClick={() => {
                         if (!user) { openAuthModal('login'); return; }
@@ -1202,7 +1188,12 @@ const ProductPage = () => {
                     disabled={selectedVariant.stock === 0}
                     className="sv-btn-outline w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {!user ? 'Login to Buy' : selectedVariant.stock === 0 ? 'Out of Stock' : <><ShoppingBag className="w-4 h-4" />Buy Now</>}
+                    {!user ? 'Login to Order' : selectedVariant.stock === 0 ? 'Archived' : (
+                        <>
+                            <ShoppingBag className="w-4 h-4" />
+                            <span>Instant Atelier Checkout</span>
+                        </>
+                    )}
                 </button>
             </div>
         )
@@ -1251,7 +1242,7 @@ const ProductPage = () => {
                     </h2>
                     <ChevronDown className={`w-5 h-5 text-[#0E0E0D] transition-transform duration-300 ${isSpecsOpen ? 'rotate-180' : ''}`} />
                 </button>
-                <div className={`transition-all duration-300 ease-in-out ${isSpecsOpen ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                <div className={`transition-all duration-300 ease-in-out ${isSpecsOpen ? 'max-h-[3000px] opacity-100 py-3' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                     <table className="w-full text-xs sm:text-sm text-left border-collapse">
                         <tbody>
                             {details.map((d: any, idx: number) => (
@@ -1271,7 +1262,7 @@ const ProductPage = () => {
         )
     );
 
-    // helper: quantity row
+    // Quantity selector
     const renderQuantity = () => (
         selectedVariant && selectedVariant.stock > 0 && (
             <div className="flex items-center gap-3">
@@ -1291,7 +1282,7 @@ const ProductPage = () => {
         )
     );
 
-    // helper: stock badge
+    // Stock indicator badge
     const renderStock = () => (
         selectedVariant && (
             <p className={`label-caps text-[11px] flex items-center gap-1.5 ${selectedVariant.stock > 0 ? 'text-[#4A4742]' : 'text-[#8B1313]'}`}>
@@ -1312,7 +1303,7 @@ const ProductPage = () => {
                 </div>
             )}
 
-            {/* Zoom panel – rendered at root level so NO stacking context can bleed over it */}
+            {/* Desktop Zoom panel */}
             {isHovering && (
                 <div
                     className="hidden xl:block fixed w-[500px] h-[560px] border border-[#0E0E0D]/20 overflow-hidden bg-white pointer-events-none"
@@ -1322,7 +1313,14 @@ const ProductPage = () => {
                         className="relative w-[400%] h-[400%]"
                         style={{ transform: `translate(-${Math.max(0, Math.min(76, zoomPosition.x - 14))}%, -${Math.max(0, Math.min(76, zoomPosition.y - 14))}%)` }}
                     >
-                        <Image src={mainImage || imgPlaceholder.src} alt={`${product?.name ?? ''} – Zoomed`} fill className="object-contain" quality={100} unoptimized />
+                        <Image
+                            src={mainImage || imgPlaceholder.src}
+                            alt={`${product?.name ?? ''} – High Resolution Detail`}
+                            fill
+                            className="object-cover"
+                            quality={100}
+                            unoptimized
+                        />
                     </div>
                 </div>
             )}
@@ -1366,10 +1364,28 @@ const ProductPage = () => {
                             </div>
                         </div>
 
-                        {/* Star Rating on Top Right (Only if product has ratings) */}
-                        {(((liveRatingSummary || product.rating_summary)?.total_reviews || 0) > 0 && ((liveRatingSummary || product.rating_summary)?.average_rating || 0) > 0) ? (
+            {/* ══════════════════════════════════════════════════════
+                MOBILE LAYOUT (SVastra Editorial - Visible on <lg)
+            ══════════════════════════════════════════════════════ */}
+            <div className="lg:hidden">
+                {/* 1. Brand & Title Header */}
+                <div className="px-4 sm:px-6 pt-5 pb-4 bg-surface border-b border-border-line">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                        {product.brand ? (
+                            <Link
+                                href={`/brands/${getBrandSlug(product.brand)}`}
+                                className="label-caps text-primary hover:text-on-surface transition-colors"
+                            >
+                                {product.brand.name} · Atelier Edit
+                            </Link>
+                        ) : (
+                            <span className="label-caps text-primary">SVastra Curated</span>
+                        )}
+
+                        {/* Live Rating Header */}
+                        {(((liveRatingSummary || product.rating_summary)?.total_reviews || 0) > 0 && ((liveRatingSummary || product.rating_summary)?.average_rating || 0) > 0) && (
                             <div
-                                className="flex items-center gap-1 cursor-pointer flex-shrink-0"
+                                className="flex items-center gap-1.5 cursor-pointer bg-surface-ivory px-2 py-1 border border-border-line"
                                 onClick={() => router.push(`/products/${product?.slug || getProductSlug(product) || id}/reviews`)}
                             >
                                 <div className="flex text-[#D19E3D] text-xs tracking-tight">
@@ -1380,7 +1396,7 @@ const ProductPage = () => {
                                     {(liveRatingSummary || product.rating_summary)?.total_reviews}
                                 </span>
                             </div>
-                        ) : null}
+                        )}
                     </div>
 
                     {/* Product Title */}
@@ -1393,10 +1409,10 @@ const ProductPage = () => {
                         <p className="label-caps text-[10px] text-[#4A4742] mt-1.5">
                             {(product as any).sales_count}+ bought in past month
                         </p>
-                    ) : null}
+                    )}
                 </div>
 
-                {/* 3. Product Image Gallery Carousel */}
+                {/* 2. Image Carousel */}
                 <div
                     className="relative w-full bg-[#F1E5D2] select-none border-b border-[#0E0E0D]/10"
                     onTouchStart={(e) => {
@@ -1664,7 +1680,7 @@ const ProductPage = () => {
                         </div>
                     )}
 
-                    {/* Product Description */}
+                    {/* Description */}
                     {product.description && (
                         <div className="border-t border-[#0E0E0D]/10 pt-5">
                             <h3 className="label-caps text-[11px] text-[#8B1313] mb-2.5">The Story</h3>
@@ -1698,6 +1714,7 @@ const ProductPage = () => {
                     <div id="reviews-section" className="border-t border-[#0E0E0D]/10 pt-6">
                         <ProductReviews
                             productId={product.id}
+                            productSlug={product?.slug || getProductSlug(product)}
                             onRatingUpdate={() => {
                                 fetchLiveRatingSummary(true);
                                 window.dispatchEvent(new CustomEvent('reviewUpdated', { detail: { productId: product.id } }));
@@ -1708,7 +1725,7 @@ const ProductPage = () => {
             </div>
 
             {/* ══════════════════════════════════════════════════════
-                DESKTOP LAYOUT  (visible only on lg+)
+                DESKTOP LAYOUT (SVastra Editorial - Visible on lg+)
             ══════════════════════════════════════════════════════ */}
             <div className="hidden lg:block bg-[#FFF8F2]">
                 <div className="w-full max-w-[1720px] mx-auto site-pad py-10">
@@ -1729,7 +1746,7 @@ const ProductPage = () => {
                                     ))}
                                 </div>
 
-                                {/* Main image */}
+                                {/* Main Stage Image */}
                                 <div className="relative flex-1">
                                     <div
                                         className="relative w-full aspect-[4/5] overflow-hidden cursor-crosshair bg-[#F1E5D2]"
@@ -1747,6 +1764,10 @@ const ProductPage = () => {
                                             <div className="absolute bg-[#0E0E0D]/10 border border-[#0E0E0D]/30 pointer-events-none w-28 h-28"
                                                 style={{ left: `${Math.max(0, Math.min(74, zoomPosition.x - 14))}%`, top: `${Math.max(0, Math.min(74, zoomPosition.y - 14))}%` }} />
                                         )}
+
+                                        <span className="absolute bottom-3 right-3 z-10 bg-surface-dark/70 text-surface text-[10px] font-semibold tracking-wider uppercase px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            Click to Expand View
+                                        </span>
                                     </div>
 
                                     {/* Wishlist on image */}
@@ -1993,7 +2014,7 @@ const ProductPage = () => {
                                 ))}
                             </div>
 
-                            {/* Sentinel element for automatic infinite scroll on scroll down */}
+                            {/* Sentinel for infinite scroll */}
                             <div ref={observerTargetRef} className="py-6 text-center min-h-[50px] flex items-center justify-center">
                                 {loadingSimilar && (
                                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#F1E5D2] border border-[#0E0E0D]/10 label-caps text-[10px] text-[#4A4742]">
@@ -2072,7 +2093,6 @@ const ProductPage = () => {
                             />
                         </div>
 
-                        {/* Next Button */}
                         {galleryImages.length > 1 && (
                             <button
                                 onClick={() => setLightboxIndex((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0))}
@@ -2109,6 +2129,7 @@ const ProductPage = () => {
                                             }`}
                                     >
                                         <Image src={img} alt={`thumb-${idx}`} fill unoptimized className="object-cover" />
+                                        <Image src={img} alt={`thumb-${idx}`} fill unoptimized className="object-cover" />
                                     </button>
                                 ))}
                             </div>
@@ -2126,7 +2147,7 @@ const ProductPage = () => {
                     }`}
                 title="Back to Top"
             >
-                <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200 group-hover:-translate-y-1" />
+                <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
         </div>
     );
