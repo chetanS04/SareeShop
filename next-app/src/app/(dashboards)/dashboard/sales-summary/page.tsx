@@ -410,7 +410,7 @@ export default function SalesSummaryPage() {
                       <CreditCard className="w-5 h-5 text-blue-600" />
                       Payment Overview & Collection Channels
                     </h3>
-                    <p className="text-xs text-gray-500">Cashfree PG vs Cash on Delivery and verified payments breakdown</p>
+                    <p className="text-xs text-gray-500">GoKwik PG vs Cash on Delivery and verified payments breakdown</p>
                   </div>
                   <Link
                     href="/dashboard/orders"
@@ -422,13 +422,13 @@ export default function SalesSummaryPage() {
 
                 {/* 4 Cards Grid - Matches user screenshot exactly */}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {/* Cashfree Online */}
+                  {/* GoKwik Online */}
                   <Link
                     href="/dashboard/orders?paymentMethod=online"
                     className="p-3 rounded-xl bg-blue-50/50 hover:bg-blue-100/70 border border-blue-100 transition-all cursor-pointer group flex flex-col justify-between"
                   >
                     <div className="flex justify-between items-center text-xs font-bold text-gray-700">
-                      <span>Cashfree Online</span>
+                      <span>GoKwik Online</span>
                       <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded-md font-extrabold">PG</span>
                     </div>
                     <div>

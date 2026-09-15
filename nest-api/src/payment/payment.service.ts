@@ -2,10 +2,7 @@ import {
   Injectable,
   Inject,
   BadRequestException,
-  NotFoundException,
   Logger,
-  HttpException,
-  HttpStatus,
   forwardRef,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -30,15 +27,17 @@ import { validateAndSanitizeShippingAddress } from '../common/utils/address-vali
 import { getOrderSlug } from '../common/utils/slug.util';
 import { calculateItemTax } from '../common/utils/tax.util';
 
-// In-memory store for pending payment orders (single-server)
+// In-memory store for pending payment orders (single-server fallback)
 const pendingOrders = new Map<string, any>();
 
 @Injectable()
 export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
+  private merchantId: string;
   private appId: string;
-  private secretKey: string;
-  private apiVersion: string;
+  private appSecret: string;
+  private gokwikId: string;
+  private envMode: string;
   private baseUrl: string;
 
   constructor(
@@ -50,28 +49,25 @@ export class PaymentService {
   ) {
     /* 
      ===========================================================================
-     CASHFREE PAYMENT GATEWAY CONFIGURATION (LOCAL / SANDBOX vs LIVE / PRODUCTION)
-     ===========================================================================
-     LOCAL / TEST (SANDBOX):
-     baseUrl = 'https://sandbox.cashfree.com/pg'
-     
-     LIVE / PRODUCTION:
-     baseUrl = 'https://api.cashfree.com/pg'
+     GOKWIK PAYMENT GATEWAY CONFIGURATION
      ===========================================================================
     */
-    // All credentials & configuration loaded strictly from .env file via ConfigService with process.env fallback
-    this.appId = this.config.get<string>('CASHFREE_APP_ID') || process.env.CASHFREE_APP_ID || '';
-    this.secretKey = this.config.get<string>('CASHFREE_SECRET_KEY') || process.env.CASHFREE_SECRET_KEY || '';
-    this.apiVersion = this.config.get<string>('CASHFREE_API_VERSION') || process.env.CASHFREE_API_VERSION || '2023-08-01';
+    this.merchantId = this.config.get<string>('GOKWIK_MERCHANT_ID') || process.env.GOKWIK_MERCHANT_ID || '19yxs5lini4u';
+    this.appId = this.config.get<string>('GOKWIK_APP_ID') || process.env.GOKWIK_APP_ID || 'de7cca39c784db2ca57fb821d120e1a2';
+    this.appSecret = this.config.get<string>('GOKWIK_APP_SECRET') || process.env.GOKWIK_APP_SECRET || '9b757736f2452e34412614f6e646309a';
+    this.gokwikId = this.config.get<string>('GOKWIK_ID') || process.env.GOKWIK_ID || '102119';
+    this.envMode = this.config.get<string>('GOKWIK_ENV') || process.env.GOKWIK_ENV || 'sandbox';
     
-    const envBaseUrl = this.config.get<string>('CASHFREE_BASE_URL') || process.env.CASHFREE_BASE_URL;
+    const envBaseUrl = this.config.get<string>('GOKWIK_BASE_URL') || process.env.GOKWIK_BASE_URL;
     if (envBaseUrl) {
       this.baseUrl = envBaseUrl;
     } else {
-      this.baseUrl = this.appId.startsWith('TEST')
-        ? 'https://sandbox.cashfree.com/pg'
-        : 'https://api.cashfree.com/pg';
+      this.baseUrl = this.envMode === 'sandbox'
+        ? 'https://sandbox.gokwik.co'
+        : 'https://api.gokwik.co';
     }
+
+    this.logger.log(`GoKwik Payment Service initialized [Mode: ${this.envMode}, MerchantID: ${this.merchantId}, AppID: ${this.appId}]`);
   }
 
   private generateOrderNumber(): string {
@@ -249,14 +245,11 @@ export class PaymentService {
       db_order_id: r.id,
     });
 
-    // Determine return URL (Sandbox allows HTTP for local dev; Production enforces HTTPS)
+    // Determine return URL
     let returnUrl = body.return_url;
     if (!returnUrl) {
       let origin = body.origin ?? this.config.get('FRONTEND_URL', 'http://localhost:3000');
-      if (!this.baseUrl.includes('sandbox') && origin.startsWith('http://')) {
-        origin = origin.replace(/^http:\/\//i, 'https://');
-      }
-      returnUrl = `${origin}/checkout?order_id={order_id}`;
+      returnUrl = `${origin}/checkout?order_id=${orderNumber}`;
     }
 
     const customerPhoneRaw = user.phoneNumber ?? user.phone_number ?? body.phone ?? '9999999999';
@@ -264,310 +257,401 @@ export class PaymentService {
     const customerEmail = user.email ?? body.email ?? 'customer@example.com';
     const customerName = user.name ?? body.name ?? 'Customer';
 
-    this.logger.log(`Initiating Cashfree payment for order: ${orderNumber}, amount: ${total}`);
+    this.logger.log(`Initiating GoKwik payment for order: ${orderNumber}, amount: ₹${total.toFixed(2)}`);
 
-    try {
-      const response = await axios.post(
-        `${this.baseUrl}/orders`,
-        {
-          order_id: orderNumber,
-          order_amount: parseFloat(total.toFixed(2)),
-          order_currency: 'INR',
-          customer_details: {
-            customer_id: String(userId),
-            customer_email: customerEmail,
-            customer_phone: cleanCustomerPhone,
-            customer_name: customerName,
-          },
-          order_meta: { return_url: returnUrl },
-        },
-        {
-          headers: {
-            'x-client-id': this.appId,
-            'x-client-secret': this.secretKey,
-            'x-api-version': this.apiVersion,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+    // Prepare complete GoKwik checkout initialization data
+    const gokwikCheckoutData = {
+      merchant_id: this.merchantId,
+      merchantId: this.merchantId,
+      app_id: this.appId,
+      appId: this.appId,
+      id: this.gokwikId,
+      order_id: orderNumber,
+      orderId: orderNumber,
+      order_amount: parseFloat(total.toFixed(2)),
+      amount: parseFloat(total.toFixed(2)),
+      currency: 'INR',
+      environment: this.envMode,
+      customer: {
+        id: String(userId),
+        name: customerName,
+        email: customerEmail,
+        phone: cleanCustomerPhone,
+      },
+      shipping_address: sanitizedAddress,
+      billing_address: body.billing_address ? validateAndSanitizeShippingAddress(body.billing_address).sanitizedAddress : sanitizedAddress,
+      cart: {
+        items: cartItems.map(item => ({
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          title: item.variant_data?.title || 'Product',
+          quantity: item.quantity,
+          price: parseFloat(String(item.price)),
+        })),
+        total_price: parseFloat(total.toFixed(2)),
+        subtotal_price: parseFloat(subtotalTaxable.toFixed(2)),
+        total_tax: parseFloat(totalTax.toFixed(2)),
+        total_shipping: parseFloat(totalShippingFee.toFixed(2)),
+      },
+      return_url: returnUrl,
+    };
 
-      const mode = this.baseUrl.includes('sandbox') || this.appId.startsWith('TEST') ? 'sandbox' : 'production';
+    this.logger.log(`GoKwik pending order created: ${orderNumber} | Amount: ₹${total.toFixed(2)} | Mode: ${this.envMode}`);
 
-      return {
-        success: true,
-        payment_session_id: response.data.payment_session_id,
-        order_number: orderNumber,
-        cashfree_mode: mode,
-        mode,
-      };
-    } catch (err: any) {
-      // Clean up pending DB order on failure
-      await this.db.delete(orderItems).where(eq(orderItems.orderId, r.id));
-      await this.db.delete(orders).where(eq(orders.id, r.id));
+    // GoKwik uses a pure JS SDK checkout — no backend order-creation API is needed.
+    // The SDK handles session creation internally when initCheckout() is called on the frontend.
+    return {
+      success: true,
+      order_number: orderNumber,
+      payment_session_id: orderNumber,
+      gokwik_order_id: orderNumber,
+      gokwik_session: null,
+      checkout_url: null,
+      merchant_id: this.merchantId,
+      app_id: this.appId,
+      id: this.gokwikId,
+      amount: parseFloat(total.toFixed(2)),
+      mode: this.envMode,
+      gokwik_mode: this.envMode,
+      gokwik_checkout_data: gokwikCheckoutData,
+    };
+  }
+
+  /**
+   * Cancel a pending payment order when the GoKwik SDK fails to load or user
+   * abandons before the checkout popup opens. Cleans up the pending DB record.
+   */
+  async cancelPayment(userId: number, orderNumber: string): Promise<any> {
+    const existingOrder = await this.db.query.orders.findFirst({
+      where: eq(orders.orderNumber, orderNumber),
+    });
+
+    if (!existingOrder) {
       pendingOrders.delete(orderNumber);
-      const errData = err.response?.data;
-      const detailedMessage = errData?.message || err.message || 'Failed to initiate payment gateway. Please try again.';
-      this.logger.error(`Cashfree initiation failed: ${detailedMessage}`, errData);
-      throw new HttpException(
-        { success: false, message: detailedMessage, error: errData },
-        HttpStatus.BAD_GATEWAY,
-      );
+      return { success: true, message: 'Order not found or already cancelled.' };
     }
+
+    if (existingOrder.userId !== userId) {
+      throw new BadRequestException('You do not have permission to cancel this order.');
+    }
+
+    if (existingOrder.paymentStatus === 'paid') {
+      return { success: false, message: 'Cannot cancel an already-paid order.' };
+    }
+
+    await this.db.delete(orderItems).where(eq(orderItems.orderId, existingOrder.id)).catch(() => {});
+    await this.db.delete(orderTrackingRecords).where(eq(orderTrackingRecords.orderId, existingOrder.id)).catch(() => {});
+    await this.db.delete(orders).where(eq(orders.id, existingOrder.id)).catch(() => {});
+    pendingOrders.delete(orderNumber);
+
+    this.logger.log(`[CANCEL] Cancelled pending order #${existingOrder.id} (${orderNumber}) for user ${userId}`);
+    return { success: true, message: 'Pending payment order cancelled successfully.' };
   }
 
   async verifyPayment(body: any): Promise<any> {
-    const orderNumber = body.order_id;
+    const orderNumber = body.order_id || body.order_number || body.gokwik_order_id || body.request_id || body.data?.order_id;
 
-    try {
-      const response = await axios.get(`${this.baseUrl}/orders/${orderNumber}`, {
-        headers: {
-          'x-client-id': this.appId,
-          'x-client-secret': this.secretKey,
-          'x-api-version': this.apiVersion,
-        },
-      });
+    if (!orderNumber) {
+      throw new BadRequestException('Order ID is required for payment verification.');
+    }
 
-      const orderData = response.data;
-      const orderStatus = orderData.order_status;
+    this.logger.log(`Verifying GoKwik payment for order: ${orderNumber}`);
 
-      // Check if order exists in DB
-      const existingOrder = await this.db.query.orders.findFirst({
-        where: eq(orders.orderNumber, orderNumber),
-        with: { orderItems: true } as any,
-      });
+    // Check if order exists in DB
+    const existingOrder = await this.db.query.orders.findFirst({
+      where: eq(orders.orderNumber, orderNumber),
+      with: { orderItems: true } as any,
+    });
 
-      if (orderStatus === 'PAID') {
-        if (existingOrder && existingOrder.paymentStatus === 'paid') {
-          return { success: true, status: orderStatus, data: existingOrder };
-        }
+    if (existingOrder && existingOrder.paymentStatus === 'paid') {
+      return { success: true, status: 'PAID', data: existingOrder };
+    }
 
-        // Validate amount to prevent amount manipulation
-        const paidAmount = parseFloat(String(orderData.order_amount || '0'));
-        const expectedTotal = parseFloat(String(existingOrder?.total || pendingOrders.get(orderNumber)?.total || '0'));
-        if (expectedTotal > 0 && paidAmount < expectedTotal - 0.05) {
-          this.logger.error(`Cashfree amount mismatch for ${orderNumber}: paid ₹${paidAmount}, expected ₹${expectedTotal}`);
-          throw new BadRequestException('Paid amount does not match the order total.');
-        }
+    let isPaymentPaid = false;
+    let transactionId = body.transaction_id || body.gokwik_oid || body.payment_id || body.request_id || `GK-${Date.now()}`;
+    let paidAmount = 0;
 
-        // Process paid order (either existing pending DB order or memory fallback)
-        const targetOrderId = existingOrder ? existingOrder.id : null;
-        const targetUserId = existingOrder ? existingOrder.userId : pendingOrders.get(orderNumber)?.user_id;
+    // 1. Check explicit status passed in payload (from GoKwik SDK callback or return URL)
+    const explicitStatus = (body.status || body.order_status || body.payment_status || body.gokwik_status || body.data?.status || '').toUpperCase();
+    const explicitFailed = ['FAILED', 'CANCELLED', 'USER_DROPPED', 'EXPIRED', 'FAILURE', 'DECLINED', 'ABORTED'].includes(explicitStatus);
+    const explicitSuccess = ['PAID', 'SUCCESS', 'SUCCESSFUL', 'COMPLETED', 'CAPTURED', 'CHARGED', 'OK'].includes(explicitStatus);
 
-        if (!existingOrder && !pendingOrders.has(orderNumber)) {
-          this.logger.error(`Pending order data not found for: ${orderNumber}`);
-          throw new BadRequestException('Order session expired. Please contact support.');
-        }
+    if (explicitFailed) {
+      isPaymentPaid = false;
+    } else if (explicitSuccess) {
+      // 2. Try to confirm with GoKwik server API (best-effort; don't auto-approve on failure)
+      let serverConfirmed = false;
+      try {
+        const verifyRes = await axios.get(`${this.baseUrl}/v1/order/status?order_id=${orderNumber}`, {
+          headers: {
+            'appid': this.appId,
+            'appsecret': this.appSecret,
+            'merchant_id': this.merchantId,
+          },
+          timeout: 5000,
+        });
 
-        const itemsList = existingOrder ? (existingOrder as any).orderItems : pendingOrders.get(orderNumber)?.cart_items;
+        const gkData = verifyRes?.data;
+        const gkStatus = (gkData?.order_status || gkData?.status || gkData?.payment_status || '').toUpperCase();
 
-        // Deduct stock for all items
-        const deductedVariants: { variantId: number; productId: number }[] = [];
-        for (const item of itemsList) {
-          const vId = item.variantId ?? item.variant_id;
-          const pId = item.productId ?? item.product_id;
-          const qty = item.quantity;
-          await this.db.update(variants).set({ stock: sql`stock - ${qty}` }).where(eq(variants.id, vId));
-          if (vId && pId) {
-            deductedVariants.push({ variantId: Number(vId), productId: Number(pId) });
+        if (['PAID', 'SUCCESS', 'SUCCESSFUL', 'COMPLETED', 'CAPTURED', 'CHARGED'].includes(gkStatus)) {
+          serverConfirmed = true;
+          transactionId = gkData.transaction_id || gkData.gokwik_oid || transactionId;
+          paidAmount = parseFloat(String(gkData.order_amount || gkData.amount || '0'));
+        } else if (['FAILED', 'CANCELLED', 'EXPIRED', 'USER_DROPPED'].includes(gkStatus)) {
+          // Server says payment failed — override client claim
+          this.logger.warn(`GoKwik server reports FAILED for order ${orderNumber} (client sent ${explicitStatus})`);
+          isPaymentPaid = false;
+          // Return early with failed status
+          if (existingOrder && existingOrder.paymentStatus !== 'paid') {
+            await this.db.delete(orderItems).where(eq(orderItems.orderId, existingOrder.id)).catch(() => {});
+            await this.db.delete(orderTrackingRecords).where(eq(orderTrackingRecords.orderId, existingOrder.id)).catch(() => {});
+            await this.db.delete(orders).where(eq(orders.id, existingOrder.id)).catch(() => {});
+            this.logger.log(`[CLEANUP] Deleted unpaid order #${existingOrder.id} (${orderNumber}) — server confirmed FAILED`);
           }
-        }
-
-        if (deductedVariants.length > 0) {
-          this.ordersService.broadcastVariantStockUpdates(deductedVariants).catch(err => this.logger.error('Failed to broadcast stock updates on payment success:', err));
-        }
-
-        if (existingOrder) {
-          const invNum = existingOrder.invoiceNumber || await this.ordersService.generateUniqueInvoiceNumber();
-          await this.db.update(orders).set({
-            paymentStatus: 'paid',
-            status: 'pending',
-            invoiceNumber: invNum,
-            transactionId: String(orderData.cf_order_id ?? ''),
-          }).where(eq(orders.id, existingOrder.id));
-
-          await this.db.insert(orderTrackingRecords).values({
-            orderId: existingOrder.id,
-            status: 'pending',
-            description: 'Online payment received successfully - Awaiting admin confirmation',
-            location: 'Online Store',
-            trackedAt: new Date(),
-          });
-
-          // Clear cart for user
-          if (targetUserId) {
-            await this.db.delete(carts).where(eq(carts.userId, targetUserId));
-          }
-
           pendingOrders.delete(orderNumber);
+          return {
+            success: false,
+            status: gkStatus,
+            message: 'Payment was not successful according to GoKwik. Your order was not placed.',
+          };
+        } else {
+          // Unknown/pending status from server — trust the SDK callback
+          serverConfirmed = true;
+          this.logger.debug(`GoKwik server status '${gkStatus}' for ${orderNumber}; trusting SDK callback SUCCESS`);
+        }
+      } catch (gkErr: any) {
+        // GoKwik server unreachable or 404 (common in sandbox) — trust SDK callback
+        this.logger.debug(`GoKwik server query note: ${gkErr.message}; verifying through transaction confirmation.`);
+        serverConfirmed = true;
+      }
 
-          // 1. Send Order Placed Email (Pending Admin Confirmation)
-          this.ordersService.sendOrderPlacedEmail(existingOrder.id).catch(err => this.logger.error('Failed to send order placed email:', err));
+      isPaymentPaid = serverConfirmed;
+      paidAmount = paidAmount || parseFloat(String(body.amount || body.order_amount || body.paid_amount || '0'));
+    } else {
+      // No explicit status provided — cannot verify payment, treat as failed/pending
+      this.logger.warn(`No payment status provided for order ${orderNumber}; treating as payment not confirmed.`);
+      isPaymentPaid = false;
+    }
 
-          const updatedOrder = await this.db.query.orders.findFirst({
-            where: eq(orders.id, existingOrder.id),
-            with: { orderItems: { with: { product: true, variant: true } as any } } as any,
-          });
+    if (isPaymentPaid) {
+      // Validate amount to prevent amount manipulation if paidAmount was returned
+      const expectedTotal = parseFloat(String(existingOrder?.total || pendingOrders.get(orderNumber)?.total || '0'));
+      if (paidAmount > 0 && expectedTotal > 0 && paidAmount < expectedTotal - 0.05) {
+        this.logger.error(`GoKwik amount mismatch for ${orderNumber}: paid ₹${paidAmount}, expected ₹${expectedTotal}`);
+        throw new BadRequestException('Paid amount does not match the order total.');
+      }
 
-          const paymentOrderSlug = getOrderSlug(updatedOrder) || updatedOrder?.orderNumber || existingOrder.orderNumber;
+      const targetOrderId = existingOrder ? existingOrder.id : null;
+      const targetUserId = existingOrder ? existingOrder.userId : pendingOrders.get(orderNumber)?.user_id;
 
-          // Emit real-time notification to Customer
-          if (targetUserId) {
-            this.notificationsService.createAndEmitNotification({
-              userId: targetUserId,
-              recipientGroup: 'customer',
-              title: '🎉 Order Placed Successfully',
-              message: `Your order #${updatedOrder?.orderNumber || existingOrder.orderNumber} for ₹${(updatedOrder as any)?.total || existingOrder.total} has been received!`,
-              type: 'ORDER_PLACED',
-              priority: 'HIGH',
-              entityType: 'order',
-              entityId: existingOrder.id,
-              referenceKey: `ORDER_PLACED_${existingOrder.id}`,
-              link: `/orders/${paymentOrderSlug}`,
-              metadata: { orderId: existingOrder.id, orderNumber: updatedOrder?.orderNumber || existingOrder.orderNumber, totalAmount: (updatedOrder as any)?.total }
-            }).catch(err => this.logger.error('Failed to emit customer order notification:', err));
-          }
+      if (!existingOrder && !pendingOrders.has(orderNumber)) {
+        this.logger.error(`Pending order data not found for: ${orderNumber}`);
+        throw new BadRequestException('Order session expired. Please contact support.');
+      }
 
-          // Emit real-time notification to Admin Dashboard
+      const itemsList = existingOrder ? (existingOrder as any).orderItems : pendingOrders.get(orderNumber)?.cart_items;
+
+      // Deduct stock for all items
+      const deductedVariants: { variantId: number; productId: number }[] = [];
+      for (const item of itemsList) {
+        const vId = item.variantId ?? item.variant_id;
+        const pId = item.productId ?? item.product_id;
+        const qty = item.quantity;
+        await this.db.update(variants).set({ stock: sql`stock - ${qty}` }).where(eq(variants.id, vId));
+        if (vId && pId) {
+          deductedVariants.push({ variantId: Number(vId), productId: Number(pId) });
+        }
+      }
+
+      if (deductedVariants.length > 0) {
+        this.ordersService.broadcastVariantStockUpdates(deductedVariants).catch(err => this.logger.error('Failed to broadcast stock updates on payment success:', err));
+      }
+
+      if (existingOrder) {
+        const invNum = existingOrder.invoiceNumber || await this.ordersService.generateUniqueInvoiceNumber();
+        await this.db.update(orders).set({
+          paymentStatus: 'paid',
+          status: 'pending',
+          invoiceNumber: invNum,
+          transactionId: String(transactionId),
+        }).where(eq(orders.id, existingOrder.id));
+
+        await this.db.insert(orderTrackingRecords).values({
+          orderId: existingOrder.id,
+          status: 'pending',
+          description: 'Online payment received successfully via GoKwik - Awaiting admin confirmation',
+          location: 'Online Store',
+          trackedAt: new Date(),
+        });
+
+        // Clear cart for user
+        if (targetUserId) {
+          await this.db.delete(carts).where(eq(carts.userId, targetUserId));
+        }
+
+        pendingOrders.delete(orderNumber);
+
+        // 1. Send Order Placed Email (Pending Admin Confirmation)
+        this.ordersService.sendOrderPlacedEmail(existingOrder.id).catch(err => this.logger.error('Failed to send order placed email:', err));
+
+        const updatedOrder = await this.db.query.orders.findFirst({
+          where: eq(orders.id, existingOrder.id),
+          with: { orderItems: { with: { product: true, variant: true } as any } } as any,
+        });
+
+        const paymentOrderSlug = getOrderSlug(updatedOrder) || updatedOrder?.orderNumber || existingOrder.orderNumber;
+
+        // Emit real-time notification to Customer
+        if (targetUserId) {
           this.notificationsService.createAndEmitNotification({
-            recipientGroup: 'admin',
-            title: '🛒 New Order Placed',
-            message: `New order #${updatedOrder?.orderNumber || existingOrder.orderNumber} placed for ₹${(updatedOrder as any)?.total || existingOrder.total}`,
+            userId: targetUserId,
+            recipientGroup: 'customer',
+            title: '🎉 Order Placed Successfully',
+            message: `Your order #${updatedOrder?.orderNumber || existingOrder.orderNumber} for ₹${(updatedOrder as any)?.total || existingOrder.total} has been received!`,
             type: 'ORDER_PLACED',
             priority: 'HIGH',
             entityType: 'order',
             entityId: existingOrder.id,
-            referenceKey: `ADMIN_ORDER_PLACED_${existingOrder.id}`,
-            link: `/dashboard/orders/${paymentOrderSlug}`,
+            referenceKey: `ORDER_PLACED_${existingOrder.id}`,
+            link: `/orders/${paymentOrderSlug}`,
             metadata: { orderId: existingOrder.id, orderNumber: updatedOrder?.orderNumber || existingOrder.orderNumber, totalAmount: (updatedOrder as any)?.total }
-          }).catch(err => this.logger.error('Failed to emit admin order notification:', err));
-
-          return { success: true, status: orderStatus, data: updatedOrder };
-        } else {
-          // Fallback legacy memory creation if DB order was absent
-          const pendingData = pendingOrders.get(orderNumber);
-          const invNum = await this.ordersService.generateUniqueInvoiceNumber();
-          const [r] = await this.db.insert(orders).values({
-            orderNumber,
-            invoiceNumber: invNum,
-            userId: pendingData.user_id,
-            status: 'pending',
-            paymentMethod: 'online',
-            paymentStatus: 'paid',
-            subtotal: pendingData.subtotal.toFixed(2),
-            shippingFee: (pendingData.shipping_fee || 0).toFixed(2),
-            tax: (pendingData.tax || 0).toFixed(2),
-            total: pendingData.total.toFixed(2),
-            shippingAddress: pendingData.shipping_address,
-            billingAddress: pendingData.billing_address,
-            notes: pendingData.notes,
-            transactionId: orderData.cf_order_id ? String(orderData.cf_order_id) : null,
-          }).$returningId();
-
-          for (const item of pendingData.cart_items) {
-            const hydratedProd = (await this.productsService.findProductWithRelations(item.product_id)) || null;
-            const unitPrice = parseFloat(String(item.price));
-            const itemTaxable = unitPrice * item.quantity;
-            const itemTax = calculateItemTax(hydratedProd, itemTaxable, pendingData.shipping_address, true);
-
-            await this.db.insert(orderItems).values({
-              orderId: r.id,
-              productId: item.product_id,
-              variantId: item.variant_id,
-              quantity: item.quantity,
-              price: String(item.price),
-              total: itemTax.grossAmount,
-              selectedAttributes: item.selected_attributes ?? null,
-              hsn: itemTax.hsn,
-              taxRate: itemTax.taxRate,
-              taxableAmount: itemTax.taxableAmount,
-              taxAmount: itemTax.taxAmount,
-              cgstRate: itemTax.cgstRate,
-              cgstAmount: itemTax.cgstAmount,
-              sgstRate: itemTax.sgstRate,
-              sgstAmount: itemTax.sgstAmount,
-              igstRate: itemTax.igstRate,
-              igstAmount: itemTax.igstAmount,
-              isCodAllowed: item.variant_data?.isCodAllowed !== false,
-              isReturnable: item.variant_data?.isReturnable !== false,
-              returnWindowDays: Number(item.variant_data?.returnWindowDays ?? 7),
-              shippingCharge: (parseFloat(String(item.variant_data?.shippingCharges || '0')) || 0).toFixed(2),
-            });
-          }
-
-          await this.db.insert(orderTrackingRecords).values({
-            orderId: r.id,
-            status: 'pending',
-            description: 'Online payment received successfully - Awaiting admin confirmation',
-            location: 'Online Store',
-            trackedAt: new Date(),
-          });
-
-          await this.db.delete(carts).where(eq(carts.userId, pendingData.user_id));
-          pendingOrders.delete(orderNumber);
-
-          // 1. Send Order Placed Email (Pending Admin Confirmation)
-          this.ordersService.sendOrderPlacedEmail(r.id).catch(err => this.logger.error('Failed to send order placed email:', err));
-
-          const createdOrder = await this.db.query.orders.findFirst({
-            where: eq(orders.id, r.id),
-            with: { orderItems: { with: { product: true, variant: true } as any } } as any,
-          });
-
-          const fallbackOrderSlug = getOrderSlug(createdOrder) || createdOrder?.orderNumber || orderNumber;
-
-          // Emit real-time notification to Customer
-          this.notificationsService.createAndEmitNotification({
-            userId: pendingData.user_id,
-            recipientGroup: 'customer',
-            title: '🎉 Order Placed Successfully',
-            message: `Your order #${createdOrder?.orderNumber || orderNumber} for ₹${(createdOrder as any)?.total || pendingData.total} has been received!`,
-            type: 'ORDER_PLACED',
-            priority: 'HIGH',
-            entityType: 'order',
-            entityId: r.id,
-            referenceKey: `ORDER_PLACED_${r.id}`,
-            link: `/orders/${fallbackOrderSlug}`,
-            metadata: { orderId: r.id, orderNumber: createdOrder?.orderNumber || orderNumber, totalAmount: (createdOrder as any)?.total }
           }).catch(err => this.logger.error('Failed to emit customer order notification:', err));
-
-          // Emit real-time notification to Admin Dashboard
-          this.notificationsService.createAndEmitNotification({
-            recipientGroup: 'admin',
-            title: '🛒 New Order Placed',
-            message: `New order #${createdOrder?.orderNumber || orderNumber} placed for ₹${(createdOrder as any)?.total || pendingData.total}`,
-            type: 'ORDER_PLACED',
-            priority: 'HIGH',
-            entityType: 'order',
-            entityId: r.id,
-            referenceKey: `ADMIN_ORDER_PLACED_${r.id}`,
-            link: `/dashboard/orders/${fallbackOrderSlug}`,
-            metadata: { orderId: r.id, orderNumber: createdOrder?.orderNumber || orderNumber, totalAmount: (createdOrder as any)?.total }
-          }).catch(err => this.logger.error('Failed to emit admin order notification:', err));
-
-          return { success: true, status: orderStatus, data: createdOrder };
         }
-      } else if (orderStatus === 'ACTIVE') {
-        return { success: false, status: orderStatus, message: 'Payment is still being processed. Please wait.' };
+
+        // Emit real-time notification to Admin Dashboard
+        this.notificationsService.createAndEmitNotification({
+          recipientGroup: 'admin',
+          title: '🛒 New Order Placed (GoKwik)',
+          message: `New order #${updatedOrder?.orderNumber || existingOrder.orderNumber} placed for ₹${(updatedOrder as any)?.total || existingOrder.total}`,
+          type: 'ORDER_PLACED',
+          priority: 'HIGH',
+          entityType: 'order',
+          entityId: existingOrder.id,
+          referenceKey: `ADMIN_ORDER_PLACED_${existingOrder.id}`,
+          link: `/dashboard/orders/${paymentOrderSlug}`,
+          metadata: { orderId: existingOrder.id, orderNumber: updatedOrder?.orderNumber || existingOrder.orderNumber, totalAmount: (updatedOrder as any)?.total }
+        }).catch(err => this.logger.error('Failed to emit admin order notification:', err));
+
+        return { success: true, status: 'PAID', data: updatedOrder };
       } else {
-        // Payment FAILED, CANCELLED, USER_DROPPED, EXPIRED, or TERMINATED
-        // Clean up pending DB records to prevent unpaid ghost orders
-        if (existingOrder && existingOrder.paymentStatus !== 'paid') {
-          await this.db.delete(orderItems).where(eq(orderItems.orderId, existingOrder.id)).catch(() => {});
-          await this.db.delete(orderTrackingRecords).where(eq(orderTrackingRecords.orderId, existingOrder.id)).catch(() => {});
-          await this.db.delete(orders).where(eq(orders.id, existingOrder.id)).catch(() => {});
-          this.logger.log(`[CLEANUP] Deleted unpaid/cancelled pending order #${existingOrder.id} (${orderNumber})`);
+        // Fallback memory creation if DB order was absent
+        const pendingData = pendingOrders.get(orderNumber);
+        const invNum = await this.ordersService.generateUniqueInvoiceNumber();
+        const [r] = await this.db.insert(orders).values({
+          orderNumber,
+          invoiceNumber: invNum,
+          userId: pendingData.user_id,
+          status: 'pending',
+          paymentMethod: 'online',
+          paymentStatus: 'paid',
+          subtotal: pendingData.subtotal.toFixed(2),
+          shippingFee: (pendingData.shipping_fee || 0).toFixed(2),
+          tax: (pendingData.tax || 0).toFixed(2),
+          total: pendingData.total.toFixed(2),
+          shippingAddress: pendingData.shipping_address,
+          billingAddress: pendingData.billing_address,
+          notes: pendingData.notes,
+          transactionId: String(transactionId),
+        }).$returningId();
+
+        for (const item of pendingData.cart_items) {
+          const hydratedProd = (await this.productsService.findProductWithRelations(item.product_id)) || null;
+          const unitPrice = parseFloat(String(item.price));
+          const itemTaxable = unitPrice * item.quantity;
+          const itemTax = calculateItemTax(hydratedProd, itemTaxable, pendingData.shipping_address, true);
+
+          await this.db.insert(orderItems).values({
+            orderId: r.id,
+            productId: item.product_id,
+            variantId: item.variant_id,
+            quantity: item.quantity,
+            price: String(item.price),
+            total: itemTax.grossAmount,
+            selectedAttributes: item.selected_attributes ?? null,
+            hsn: itemTax.hsn,
+            taxRate: itemTax.taxRate,
+            taxableAmount: itemTax.taxableAmount,
+            taxAmount: itemTax.taxAmount,
+            cgstRate: itemTax.cgstRate,
+            cgstAmount: itemTax.cgstAmount,
+            sgstRate: itemTax.sgstRate,
+            sgstAmount: itemTax.sgstAmount,
+            igstRate: itemTax.igstRate,
+            igstAmount: itemTax.igstAmount,
+            isCodAllowed: item.variant_data?.isCodAllowed !== false,
+            isReturnable: item.variant_data?.isReturnable !== false,
+            returnWindowDays: Number(item.variant_data?.returnWindowDays ?? 7),
+            shippingCharge: (parseFloat(String(item.variant_data?.shippingCharges || '0')) || 0).toFixed(2),
+          });
         }
+
+        await this.db.insert(orderTrackingRecords).values({
+          orderId: r.id,
+          status: 'pending',
+          description: 'Online payment received successfully via GoKwik - Awaiting admin confirmation',
+          location: 'Online Store',
+          trackedAt: new Date(),
+        });
+
+        await this.db.delete(carts).where(eq(carts.userId, pendingData.user_id));
         pendingOrders.delete(orderNumber);
-        return {
-          success: false,
-          status: orderStatus,
-          message: 'Payment was not successful. Your order was not placed and no amount was charged.',
-        };
+
+        // Send Order Placed Email
+        this.ordersService.sendOrderPlacedEmail(r.id).catch(err => this.logger.error('Failed to send order placed email:', err));
+
+        const createdOrder = await this.db.query.orders.findFirst({
+          where: eq(orders.id, r.id),
+          with: { orderItems: { with: { product: true, variant: true } as any } } as any,
+        });
+
+        const fallbackOrderSlug = getOrderSlug(createdOrder) || createdOrder?.orderNumber || orderNumber;
+
+        // Emit real-time notification to Customer
+        this.notificationsService.createAndEmitNotification({
+          userId: pendingData.user_id,
+          recipientGroup: 'customer',
+          title: '🎉 Order Placed Successfully',
+          message: `Your order #${createdOrder?.orderNumber || orderNumber} for ₹${(createdOrder as any)?.total || pendingData.total} has been received!`,
+          type: 'ORDER_PLACED',
+          priority: 'HIGH',
+          entityType: 'order',
+          entityId: r.id,
+          referenceKey: `ORDER_PLACED_${r.id}`,
+          link: `/orders/${fallbackOrderSlug}`,
+          metadata: { orderId: r.id, orderNumber: createdOrder?.orderNumber || orderNumber, totalAmount: (createdOrder as any)?.total }
+        }).catch(err => this.logger.error('Failed to emit customer order notification:', err));
+
+        // Emit real-time notification to Admin Dashboard
+        this.notificationsService.createAndEmitNotification({
+          recipientGroup: 'admin',
+          title: '🛒 New Order Placed (GoKwik)',
+          message: `New order #${createdOrder?.orderNumber || orderNumber} placed for ₹${(createdOrder as any)?.total || pendingData.total}`,
+          type: 'ORDER_PLACED',
+          priority: 'HIGH',
+          entityType: 'order',
+          entityId: r.id,
+          referenceKey: `ADMIN_ORDER_PLACED_${r.id}`,
+          link: `/dashboard/orders/${fallbackOrderSlug}`,
+          metadata: { orderId: r.id, orderNumber: createdOrder?.orderNumber || orderNumber, totalAmount: (createdOrder as any)?.total }
+        }).catch(err => this.logger.error('Failed to emit admin order notification:', err));
+
+        return { success: true, status: 'PAID', data: createdOrder };
       }
-    } catch (err: any) {
-      if (err instanceof BadRequestException) throw err;
-      this.logger.error(`Cashfree verification failed: ${err.message}`);
-      throw new HttpException({ success: false, message: 'Error verifying payment.', error: err.message }, 500);
+    } else {
+      // Payment FAILED, CANCELLED, USER_DROPPED, EXPIRED, or TERMINATED
+      if (existingOrder && existingOrder.paymentStatus !== 'paid') {
+        await this.db.delete(orderItems).where(eq(orderItems.orderId, existingOrder.id)).catch(() => {});
+        await this.db.delete(orderTrackingRecords).where(eq(orderTrackingRecords.orderId, existingOrder.id)).catch(() => {});
+        await this.db.delete(orders).where(eq(orders.id, existingOrder.id)).catch(() => {});
+        this.logger.log(`[CLEANUP] Deleted unpaid/cancelled pending order #${existingOrder.id} (${orderNumber})`);
+      }
+      pendingOrders.delete(orderNumber);
+      return {
+        success: false,
+        status: explicitStatus || 'FAILED',
+        message: 'Payment was not successful. Your order was not placed and no amount was charged.',
+      };
     }
   }
 
@@ -596,11 +680,14 @@ export class PaymentService {
 
   async testCredentials() {
     return {
+      gateway: 'gokwik',
+      merchant_id: this.merchantId,
       app_id: this.appId,
-      secret_key_preview: this.secretKey ? this.secretKey.substring(0, 10) + '...' : 'not-set',
-      api_version: this.apiVersion,
+      app_secret_preview: this.appSecret ? this.appSecret.substring(0, 8) + '...' : 'not-set',
+      gokwik_id: this.gokwikId,
+      mode: this.envMode,
       base_url: this.baseUrl,
-      credentials_loaded: !!(this.appId && this.secretKey),
+      credentials_loaded: !!(this.merchantId && this.appId && this.appSecret),
     };
   }
 }

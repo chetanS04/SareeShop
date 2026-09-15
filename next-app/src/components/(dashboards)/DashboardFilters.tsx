@@ -149,7 +149,7 @@ export default function DashboardFilters({
               className="appearance-none bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 pr-8 text-xs font-medium text-gray-800 focus:outline-none focus:border-[#007FFF]"
             >
               <option value="all">All Methods</option>
-              <option value="online">Cashfree (Online)</option>
+              <option value="online">GoKwik (Online)</option>
               <option value="cod">Cash on Delivery (COD)</option>
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />

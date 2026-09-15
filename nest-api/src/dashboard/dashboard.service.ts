@@ -277,7 +277,7 @@ export class DashboardService {
       amount: Math.round(cancelledAmount * 100) / 100,
     };
 
-    // 2. PAYMENTS ANALYTICS (Cashfree Online vs COD)
+    // 2. PAYMENTS ANALYTICS (GoKwik Online vs COD)
     const onlineOrders = filteredOrders.filter(o => (o.paymentMethod || '').toLowerCase() === 'online');
     const codOrders = filteredOrders.filter(o => (o.paymentMethod || '').toLowerCase() === 'cash_on_delivery' || (o.paymentMethod || '').toLowerCase() === 'cod');
 
@@ -442,7 +442,7 @@ export class DashboardService {
         id: 'act-failed-payments',
         type: 'critical',
         title: 'Failed Online Transactions',
-        message: `${failedOnline.length} Cashfree online order payment attempt(s) failed.`,
+        message: `${failedOnline.length} GoKwik online order payment attempt(s) failed.`,
         count: failedOnline.length,
         link: '/dashboard/orders?paymentStatus=failed',
       });

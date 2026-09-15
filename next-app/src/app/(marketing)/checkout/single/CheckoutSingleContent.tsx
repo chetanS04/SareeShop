@@ -292,9 +292,14 @@ const CheckoutSingle = () => {
             return;
         }
 
-        const orderId = searchParams.get("order_id");
+        const orderId = searchParams.get("order_id") || searchParams.get("orderId");
         if (orderId) {
-            verifyPayment(orderId);
+            const rawStatus = searchParams.get("status") || searchParams.get("order_status") || searchParams.get("gokwik_status") || "";
+            const txId = searchParams.get("transaction_id") || searchParams.get("txId") || searchParams.get("gokwik_oid") || searchParams.get("payment_id");
+            // Only verify if there's an explicit status from GoKwik redirect
+            if (rawStatus) {
+                verifyPayment(orderId, rawStatus, txId);
+            }
             return;
         }
 
@@ -383,17 +388,19 @@ const CheckoutSingle = () => {
         }
     }, [currentState, statesList]);
 
-    const verifyPayment = async (orderId: string) => {
+    const verifyPayment = async (orderId: string, status = "PAID", transactionId?: string | null) => {
         setShowPaymentModal(true);
         setPaymentStatus('verifying');
-        setPaymentMessage("Verifying your payment...");
+        setPaymentMessage("Verifying your GoKwik payment...");
 
         try {
             const response = await axios.post(`/api/payment/verify`, {
-                order_id: orderId
+                order_id: orderId,
+                status: status || "PAID",
+                transaction_id: transactionId || undefined,
             });
 
-            if (response.data.success && response.data.status === 'PAID') {
+            if (response.data.success && (response.data.status === 'PAID' || response.data.status === 'SUCCESS')) {
                 setPaymentStatus('success');
                 setPaymentMessage("Payment successful! Redirecting to orders...");
 
@@ -407,7 +414,7 @@ const CheckoutSingle = () => {
                 }, 2000);
             } else {
                 setPaymentStatus('failed');
-                setPaymentMessage(response.data?.message || "Payment was not completed. Your order was not placed and no amount was charged.");
+                setPaymentMessage(response.data?.message || "Payment was not completed. Your order was not placed.");
                 setTimeout(() => {
                     setShowPaymentModal(false);
                     router.replace('/cart');
@@ -416,7 +423,7 @@ const CheckoutSingle = () => {
         } catch (error: any) {
             console.error("Payment verification failed:", error);
             setPaymentStatus('failed');
-            setPaymentMessage(error.response?.data?.message || "Payment verification failed. Your order was not placed.");
+            setPaymentMessage(error.response?.data?.message || "Payment verification failed.");
             setTimeout(() => {
                 setShowPaymentModal(false);
                 router.replace('/cart');
@@ -539,17 +546,82 @@ const CheckoutSingle = () => {
                     const response = await axios.post(`/api/payment/initiate`, orderData);
 
                     if (response.data.success) {
-                        const { payment_session_id, cashfree_mode, mode } = response.data;
-                        const activeMode = cashfree_mode || mode || process.env.NEXT_PUBLIC_CASHFREE_MODE || "sandbox";
+                        const { order_number, gokwik_checkout_data, checkout_url, mode } = response.data;
+                        const activeMode = mode || process.env.NEXT_PUBLIC_GOKWIK_ENV || "production";
 
-                        const cashfree = typeof (window as any).Cashfree === 'function'
-                            ? (window as any).Cashfree({ mode: activeMode })
-                            : new (window as any).Cashfree({ mode: activeMode });
+                        const onPaymentSuccess = async (data?: any) => {
+                            const tx = data?.transaction_id || data?.gokwik_oid || data?.payment_id || data?.order_id || `GK-${Date.now()}`;
+                            const payStatus = data?.status || data?.order_status || data?.payment_status || "PAID";
+                            await verifyPayment(order_number, payStatus, tx);
+                        };
 
-                        cashfree.checkout({
-                            paymentSessionId: payment_session_id,
-                            redirectTarget: "_self"
-                        });
+                        const onPaymentError = (err?: any) => {
+                            console.warn("GoKwik checkout error:", err);
+                            setLoading(false);
+                            setErrorMessage(err?.message || "Payment was not completed. Please try again.");
+                        };
+
+                        if (checkout_url) {
+                            // GoKwik returned a redirect URL — navigate there
+                            window.location.href = checkout_url;
+                            return;
+                        }
+
+                        // Wait for GoKwik SDK to be available (up to 10 seconds)
+                        const waitForGokwikSdk = (): Promise<any> => {
+                            return new Promise((resolve, reject) => {
+                                const deadline = Date.now() + 10000;
+                                const check = () => {
+                                    const sdk = (window as any).gokwikSdk || (window as any).gokwik || (window as any).Gokwik;
+                                    if (sdk && typeof sdk.initCheckout === 'function') {
+                                        resolve(sdk);
+                                    } else if (Date.now() > deadline) {
+                                        reject(new Error('GoKwik SDK did not load in time. Please refresh the page and try again.'));
+                                    } else {
+                                        setTimeout(check, 200);
+                                    }
+                                };
+                                check();
+                            });
+                        };
+
+                        let gkSdk: any;
+                        try {
+                            gkSdk = await waitForGokwikSdk();
+                        } catch (sdkLoadErr: any) {
+                            console.error('GoKwik SDK load error:', sdkLoadErr);
+                            // Cancel the pending order since we can't open payment
+                            axios.post('/api/payment/cancel', { order_number }).catch(() => {});
+                            setLoading(false);
+                            setErrorMessage(sdkLoadErr?.message || 'GoKwik payment gateway could not load. Please refresh and try again.');
+                            return;
+                        }
+
+                        // SDK is ready — initiate GoKwik checkout
+                        try {
+                            gkSdk.initCheckout({
+                                merchantId: process.env.NEXT_PUBLIC_GOKWIK_MERCHANT_ID || gokwik_checkout_data?.merchant_id || "19yxs5lini4u",
+                                environment: activeMode,
+                                orderId: order_number,
+                                order_id: order_number,
+                                amount: gokwik_checkout_data?.amount || response.data.amount,
+                                currency: "INR",
+                                customer: gokwik_checkout_data?.customer || {},
+                                cart: gokwik_checkout_data?.cart || {},
+                                shipping_address: gokwik_checkout_data?.shipping_address,
+                                return_url: `${window.location.origin}/checkout/single?product_id=${product?.id}&order_id=${order_number}`,
+                                successCallback: onPaymentSuccess,
+                                failureCallback: onPaymentError,
+                                cancelCallback: () => { setLoading(false); },
+                                onSuccess: onPaymentSuccess,
+                                onError: onPaymentError,
+                                onClose: () => { setLoading(false); },
+                            });
+                        } catch (sdkErr: any) {
+                            console.error("GoKwik SDK initCheckout error:", sdkErr);
+                            setLoading(false);
+                            setErrorMessage(sdkErr?.message || "GoKwik payment could not be started. Please try again.");
+                        }
                     } else {
                         setErrorMessage(response.data.message || "Failed to initiate payment");
                         setLoading(false);
@@ -1116,7 +1188,7 @@ const CheckoutSingle = () => {
                                 <div className="flex items-center justify-between text-xs text-slate-500 px-2 pt-1">
                                     <span className="flex items-center gap-1.5">
                                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                                        <span>Cashfree 256-Bit SSL Encrypted</span>
+                                        <span>GoKwik 256-Bit SSL Encrypted</span>
                                     </span>
                                     <span className="font-medium text-slate-400">100% Purchase Protection</span>
                                 </div>
@@ -1190,7 +1262,7 @@ const CheckoutSingle = () => {
                                         <p className="text-xs text-slate-500 mt-1">
                                             {paymentMethod === 'cod'
                                                 ? 'Pay ₹' + finalTotal + ' in cash/UPI upon delivery.'
-                                                : 'Secure instant checkout via Cashfree Gateway.'}
+                                                : 'Secure instant checkout via GoKwik Gateway.'}
                                         </p>
                                     </div>
                                 </div>
@@ -1392,10 +1464,17 @@ const CheckoutSingle = () => {
                 </div>
             </div>
 
-            {/* Cashfree Payment SDK */}
+            {/* GoKwik Payment SDK */}
             <Script
-                src="https://sdk.cashfree.com/js/v3/cashfree.js"
-                strategy="lazyOnload"
+                id="gokwik-sdk"
+                src="https://pdp.gokwik.co/build/gokwik.js"
+                strategy="afterInteractive"
+                onLoad={() => {
+                    console.log('GoKwik SDK loaded successfully');
+                }}
+                onError={() => {
+                    console.warn('GoKwik SDK script failed to load from pdp.gokwik.co');
+                }}
             />
 
             {/* Payment Verification Status Modal */}
