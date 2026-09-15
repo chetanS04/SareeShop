@@ -105,11 +105,33 @@ export default function Navbar() {
       .catch(() => setCategories([]));
   }, []);
 
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    setIsSearching(false);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+  };
+
   useEffect(() => {
     setMobileOpen(false);
-    setSearchOpen(false);
+    closeSearch();
     setAccountOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (searchOpen) closeSearch();
+        if (mobileOpen) setMobileOpen(false);
+        if (accountOpen) setAccountOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchOpen, mobileOpen, accountOpen]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen || searchOpen ? 'hidden' : '';
@@ -211,9 +233,40 @@ export default function Navbar() {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    setSearchOpen(false);
-    setSearchQuery('');
-    setSearchResults([]);
+    closeSearch();
+  };
+
+  const getProductImage = (product: any) => {
+    let rawImg = product.image_url || product.imageUrl;
+    if (!rawImg && product.variants && product.variants.length > 0) {
+      const firstWithImg = product.variants.find((v: any) => v?.image_url || v?.imageUrl);
+      rawImg =
+        firstWithImg?.image_url ||
+        firstWithImg?.imageUrl ||
+        product.variants[0]?.image_url ||
+        product.variants[0]?.imageUrl;
+    }
+    if (!rawImg) {
+      rawImg = product.best_variant?.image_url || product.best_variant?.imageUrl;
+    }
+    if (!rawImg) return null;
+    return rawImg.startsWith('http') || rawImg.startsWith('data:')
+      ? rawImg
+      : `${basePath}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
+  };
+
+  const getProductPrice = (product: any) => {
+    if (product.variants && product.variants.length > 0) {
+      const active = product.variants.filter((v: any) => v.status !== false);
+      if (active.length > 0) {
+        const sp = active[0].displayPrice ?? active[0].sp;
+        if (sp) return `₹${Math.round(Number(sp)).toLocaleString('en-IN')}`;
+      }
+    }
+    if (product.min_price) {
+      return `₹${Math.round(Number(product.min_price)).toLocaleString('en-IN')}`;
+    }
+    return null;
   };
 
   const handleLogout = async () => {
@@ -521,57 +574,137 @@ export default function Navbar() {
 
       {/* Search overlay */}
       {searchOpen && (
-        <div className="fixed inset-0 z-[70] bg-surface-dark/50 flex items-start justify-center pt-24 px-4">
-          <div className="w-full max-w-2xl bg-surface border border-border-line p-5 sm:p-6">
+        <div
+          className="fixed inset-0 z-[70] bg-surface-dark/50 flex items-start justify-center pt-16 sm:pt-24 px-4 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              closeSearch();
+            }
+          }}
+        >
+          <div className="w-full max-w-2xl bg-surface border border-border-line p-5 sm:p-6 shadow-2xl my-auto sm:my-0">
             <div className="flex items-center justify-between mb-4">
               <span className="label-caps text-primary">Search Collections</span>
-              <button type="button" aria-label="Close search" className="touch-target" onClick={() => setSearchOpen(false)}>
+              <button
+                type="button"
+                aria-label="Close search"
+                className="touch-target text-on-surface hover:text-primary transition-colors cursor-pointer"
+                onClick={closeSearch}
+              >
                 <RiCloseLine className="text-[22px]" />
               </button>
             </div>
             <form onSubmit={handleSearchSubmit} className="flex gap-2">
-              <input
-                autoFocus
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="Search products, textiles, edits…"
-                className="flex-1 bg-surface border border-on-surface px-4 py-3 text-sm text-on-surface placeholder:text-body-slate/60 focus:outline-none uppercase tracking-wide"
-              />
-              <button type="submit" className="sv-btn-primary px-5">
+              <div className="relative flex-1 flex items-center">
+                <input
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  placeholder="Search products, textiles, edits…"
+                  className="w-full bg-surface border border-on-surface px-4 py-3 text-sm text-on-surface placeholder:text-body-slate/60 focus:outline-none focus:border-primary uppercase tracking-wide pr-10"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSearchResults([]);
+                    }}
+                    className="absolute right-3 text-body-slate hover:text-on-surface transition-colors cursor-pointer"
+                    aria-label="Clear search input"
+                  >
+                    <RiCloseLine className="text-[18px]" />
+                  </button>
+                )}
+              </div>
+              <button type="submit" className="sv-btn-primary px-5 cursor-pointer">
                 Search
               </button>
             </form>
-            <div className="mt-4 max-h-72 overflow-y-auto">
-              {isSearching && <p className="text-sm text-body-slate py-3">Searching…</p>}
-              {!isSearching && searchResults.map((product) => {
-                const slug = getProductSlug(product);
-                return (
-                  <button
-                    key={product.id}
-                    type="button"
-                    className="w-full text-left py-3 border-b border-border-line hover:bg-surface-subtle px-1"
-                    onClick={() => {
-                      if (!slug) return;
-                      router.push(`/products/${slug}`);
-                      setSearchOpen(false);
-                    }}
-                  >
-                    <span className="text-sm font-semibold uppercase tracking-tight block">{product.name}</span>
-                    {product.brand?.name && (
-                      <span className="text-[11px] text-body-slate uppercase tracking-wider">{product.brand.name}</span>
-                    )}
-                  </button>
-                );
-              })}
+            <div className="mt-4 max-h-80 overflow-y-auto divide-y divide-border-line">
+              {isSearching && (
+                <p className="text-sm text-body-slate py-4 text-center">Searching…</p>
+              )}
+              {!isSearching &&
+                searchResults.map((product) => {
+                  const slug = getProductSlug(product);
+                  const imgSrc = getProductImage(product);
+                  const price = getProductPrice(product);
+                  return (
+                    <button
+                      key={product.id}
+                      type="button"
+                      className="w-full text-left p-2.5 sm:p-3 hover:bg-surface-subtle flex items-center gap-3.5 sm:gap-4 transition-colors group cursor-pointer"
+                      onClick={() => {
+                        if (!slug) return;
+                        router.push(`/products/${slug}`);
+                        closeSearch();
+                      }}
+                    >
+                      <div className="w-14 h-16 sm:w-16 sm:h-20 bg-surface-subtle border border-border-line shrink-0 overflow-hidden relative flex items-center justify-center">
+                        {imgSrc ? (
+                          <img
+                            src={imgSrc}
+                            alt={product.name || 'Product image'}
+                            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-surface-subtle text-body-slate/40 text-[10px] uppercase font-medium">
+                            No Image
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-xs sm:text-sm font-semibold uppercase tracking-tight text-on-surface group-hover:text-primary transition-colors line-clamp-2">
+                            {product.name}
+                          </span>
+                          {price && (
+                            <span className="text-xs sm:text-sm font-semibold text-primary shrink-0">
+                              {price}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          {product.brand?.name && (
+                            <span className="text-[10px] sm:text-[11px] text-body-slate uppercase tracking-wider font-medium truncate">
+                              {product.brand.name}
+                            </span>
+                          )}
+                          {product.category?.name && (
+                            <>
+                              <span className="text-[10px] text-body-slate/40">•</span>
+                              <span className="text-[10px] sm:text-[11px] text-body-slate uppercase tracking-wider truncate">
+                                {product.category.name}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               {!isSearching && searchQuery && searchResults.length === 0 && (
-                <p className="text-sm text-body-slate py-3">No archive matches found.</p>
+                <p className="text-sm text-body-slate py-4 text-center">No archive matches found.</p>
               )}
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link href="/categories" className="text-[11px] font-semibold uppercase tracking-wider text-primary" onClick={() => setSearchOpen(false)}>
+            <div className="mt-4 pt-3 border-t border-border-line flex flex-wrap gap-4">
+              <Link
+                href="/categories"
+                className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline"
+                onClick={closeSearch}
+              >
                 Browse Categories →
               </Link>
-              <Link href="/products" className="text-[11px] font-semibold uppercase tracking-wider text-primary" onClick={() => setSearchOpen(false)}>
+              <Link
+                href="/products"
+                className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:underline"
+                onClick={closeSearch}
+              >
                 All Products →
               </Link>
             </div>

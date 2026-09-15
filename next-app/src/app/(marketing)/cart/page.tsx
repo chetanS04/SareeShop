@@ -236,7 +236,7 @@ const CartPage = () => {
               {items.map((item) => {
                 const stockInfo = getItemStockStatus(item);
                 const rawImg =
-                  item.variant?.image_url || item.product?.image_url || item.product?.image || "";
+                  item.variant?.image_url || item.product?.image_url || (item.product as any)?.image || "";
                 const imgSrc = !rawImg
                   ? imgPlaceholder.src
                   : String(rawImg).startsWith("http") || String(rawImg).startsWith("data:")
@@ -257,7 +257,7 @@ const CartPage = () => {
                     (item.variant as any)?.shippingCharges ??
                     0,
                 );
-                const blurb = String(item.product?.description || "")
+                const blurb = String((item.product as any)?.description || "")
                   .replace(/<[^>]+>/g, "")
                   .trim();
 
