@@ -6,14 +6,19 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 export class PaymentController {
   constructor(private svc: PaymentService) {}
 
-  @Get('test-gokwik')
-  testGoKwikCredentials(): Promise<any> {
+  @Get('test-razorpay')
+  testRazorpayCredentials(): Promise<any> {
     return this.svc.testCredentials();
   }
 
-  @Get('test-cashfree')
-  testCredentials(): Promise<any> {
-    return this.svc.testCredentials();
+  @Get('payment/methods')
+  getPaymentMethods(): Promise<any> {
+    return this.svc.getAvailableMethods();
+  }
+
+  @Get('payment/recent-attempts')
+  getRecentAttempts(): Promise<any> {
+    return this.svc.getRecentPaymentAttempts();
   }
 
   @UseGuards(JwtAuthGuard)
@@ -26,6 +31,12 @@ export class PaymentController {
   @Post('payment/cancel')
   cancel(@Request() req: any, @Body() b: any): Promise<any> {
     return this.svc.cancelPayment(req.user.id, b.order_number || b.order_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('payment/log-failure')
+  logFailure(@Request() req: any, @Body() b: any): Promise<any> {
+    return this.svc.logClientFailure(req.user.id, b);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -211,7 +211,7 @@ export default function PrivacyPolicyPage() {
                             <div className="bg-surface border border-border-line p-5 sm:p-7 divide-y divide-border-line text-[15px] leading-[1.55] text-body-slate">
                                 <div className="flex items-start gap-3 pb-3.5">
                                     <span className="text-primary mt-0.5" aria-hidden="true">—</span>
-                                    <span><strong className="text-on-surface font-semibold">Payment partners:</strong> Card, UPI and netbanking payments are processed by PCI-DSS compliant payment aggregators (including GoKwik and its partner gateways). We do not see or store your full card number, CVV or UPI PIN.</span>
+                                    <span><strong className="text-on-surface font-semibold">Payment partners:</strong> Card, UPI and netbanking payments are processed by PCI-DSS compliant payment aggregators (including Razorpay and its partner gateways). We do not see or store your full card number, CVV or UPI PIN.</span>
                                 </div>
                                 <div className="flex items-start gap-3 py-3.5">
                                     <span className="text-primary mt-0.5" aria-hidden="true">—</span>

@@ -142,7 +142,7 @@ export default function TermsConditionsPage() {
                                         <span>Currency &amp; Secure Payments</span>
                                     </div>
                                     <p>
-                                        All prices are listed in Indian Rupees (INR) and are inclusive of applicable GST unless stated otherwise. We accept UPI, Credit/Debit cards, Net Banking and Cash on Delivery (COD) where available. Online payments are processed by third-party PCI-DSS compliant payment aggregators (including GoKwik and its partner gateways); SVastra does not store your card or UPI credentials.
+                                        All prices are listed in Indian Rupees (INR) and are inclusive of applicable GST unless stated otherwise. We accept UPI, Credit/Debit cards, Net Banking and Cash on Delivery (COD) where available. Online payments are processed by third-party PCI-DSS compliant payment aggregators (including Razorpay and its partner gateways); SVastra does not store your card or UPI credentials.
                                     </p>
                                 </div>
                             </div>

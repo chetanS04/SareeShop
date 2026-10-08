@@ -7,7 +7,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { eq, and, lte, inArray } from 'drizzle-orm';
-import axios from 'axios';
+import Razorpay from 'razorpay';
+import * as crypto from 'crypto';
 import { DRIZZLE } from '../database/database.provider';
 import type { DrizzleDB } from '../database/database.provider';
 import {
@@ -33,12 +34,10 @@ const pendingOrders = new Map<string, any>();
 @Injectable()
 export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
-  private merchantId: string;
-  private appId: string;
-  private appSecret: string;
-  private gokwikId: string;
-  private envMode: string;
-  private baseUrl: string;
+  private razorpay: Razorpay;
+  private keyId: string;
+  private keySecret: string;
+  private currency: string;
 
   constructor(
     @Inject(DRIZZLE) private db: DrizzleDB,
@@ -49,25 +48,19 @@ export class PaymentService {
   ) {
     /* 
      ===========================================================================
-     GOKWIK PAYMENT GATEWAY CONFIGURATION
+     RAZORPAY PAYMENT GATEWAY CONFIGURATION
      ===========================================================================
     */
-    this.merchantId = this.config.get<string>('GOKWIK_MERCHANT_ID') || process.env.GOKWIK_MERCHANT_ID || '19yxs5lini4u';
-    this.appId = this.config.get<string>('GOKWIK_APP_ID') || process.env.GOKWIK_APP_ID || 'de7cca39c784db2ca57fb821d120e1a2';
-    this.appSecret = this.config.get<string>('GOKWIK_APP_SECRET') || process.env.GOKWIK_APP_SECRET || '9b757736f2452e34412614f6e646309a';
-    this.gokwikId = this.config.get<string>('GOKWIK_ID') || process.env.GOKWIK_ID || '102119';
-    this.envMode = this.config.get<string>('GOKWIK_ENV') || process.env.GOKWIK_ENV || 'sandbox';
-    
-    const envBaseUrl = this.config.get<string>('GOKWIK_BASE_URL') || process.env.GOKWIK_BASE_URL;
-    if (envBaseUrl) {
-      this.baseUrl = envBaseUrl;
-    } else {
-      this.baseUrl = this.envMode === 'sandbox'
-        ? 'https://sandbox.gokwik.co'
-        : 'https://api.gokwik.co';
-    }
+    this.keyId = this.config.get<string>('RAZORPAY_KEY_ID') || process.env.RAZORPAY_KEY_ID || 'rzp_test_TlHJlHDAmuxWUJ';
+    this.keySecret = this.config.get<string>('RAZORPAY_KEY_SECRET') || process.env.RAZORPAY_KEY_SECRET || 'z5aRolpVktOLQoezVoR7Iw9t';
+    this.currency = this.config.get<string>('RAZORPAY_CURRENCY') || process.env.RAZORPAY_CURRENCY || 'INR';
 
-    this.logger.log(`GoKwik Payment Service initialized [Mode: ${this.envMode}, MerchantID: ${this.merchantId}, AppID: ${this.appId}]`);
+    this.razorpay = new Razorpay({
+      key_id: this.keyId,
+      key_secret: this.keySecret,
+    });
+
+    this.logger.log(`Razorpay Payment Service initialized [KeyID: ${this.keyId}, Currency: ${this.currency}]`);
   }
 
   private generateOrderNumber(): string {
@@ -245,81 +238,58 @@ export class PaymentService {
       db_order_id: r.id,
     });
 
-    // Determine return URL
-    let returnUrl = body.return_url;
-    if (!returnUrl) {
-      let origin = body.origin ?? this.config.get('FRONTEND_URL', 'http://localhost:3000');
-      returnUrl = `${origin}/checkout?order_id=${orderNumber}`;
-    }
-
     const customerPhoneRaw = user.phoneNumber ?? user.phone_number ?? body.phone ?? '9999999999';
     const cleanCustomerPhone = customerPhoneRaw.replace(/[^0-9]/g, '').slice(-10) || '9999999999';
     const customerEmail = user.email ?? body.email ?? 'customer@example.com';
     const customerName = user.name ?? body.name ?? 'Customer';
 
-    this.logger.log(`Initiating GoKwik payment for order: ${orderNumber}, amount: ₹${total.toFixed(2)}`);
+    const amountInPaise = Math.round(total * 100);
+    this.logger.log(`[RAZORPAY_DEBUG][1. INITIATE_START] Order: ${orderNumber} | User ID: ${userId} | Amount: ₹${total.toFixed(2)} (${amountInPaise} paise)`);
 
-    // Prepare complete GoKwik checkout initialization data
-    const gokwikCheckoutData = {
-      merchant_id: this.merchantId,
-      merchantId: this.merchantId,
-      app_id: this.appId,
-      appId: this.appId,
-      id: this.gokwikId,
-      order_id: orderNumber,
-      orderId: orderNumber,
-      order_amount: parseFloat(total.toFixed(2)),
-      amount: parseFloat(total.toFixed(2)),
-      currency: 'INR',
-      environment: this.envMode,
+    let rzpOrder: any;
+    try {
+      rzpOrder = await this.razorpay.orders.create({
+        amount: amountInPaise,
+        currency: this.currency,
+        receipt: orderNumber,
+        notes: {
+          order_number: orderNumber,
+          user_id: String(userId),
+          customer_name: customerName,
+          customer_email: customerEmail,
+        },
+      });
+    } catch (rzpErr: any) {
+      this.logger.error(`[RAZORPAY_DEBUG][INITIATE_FAILED] Order ${orderNumber}: ${rzpErr.message}`, rzpErr);
+      await this.db.delete(orderItems).where(eq(orderItems.orderId, r.id)).catch(() => {});
+      await this.db.delete(orders).where(eq(orders.id, r.id)).catch(() => {});
+      pendingOrders.delete(orderNumber);
+      throw new BadRequestException(rzpErr.error?.description || rzpErr.message || 'Failed to initialize Razorpay payment');
+    }
+
+    this.logger.log(`[RAZORPAY_DEBUG][2. RAZORPAY_ORDER_CREATED] Order ID: ${rzpOrder.id} for Order #${orderNumber} | Amount: ${rzpOrder.amount} paise | Currency: ${rzpOrder.currency}`);
+
+    return {
+      success: true,
+      order_number: orderNumber,
+      razorpay_order_id: rzpOrder.id,
+      amount: rzpOrder.amount, // in paise
+      amount_in_rupees: parseFloat(total.toFixed(2)),
+      currency: rzpOrder.currency,
+      key_id: this.keyId,
       customer: {
         id: String(userId),
         name: customerName,
         email: customerEmail,
-        phone: cleanCustomerPhone,
+        contact: cleanCustomerPhone,
       },
       shipping_address: sanitizedAddress,
-      billing_address: body.billing_address ? validateAndSanitizeShippingAddress(body.billing_address).sanitizedAddress : sanitizedAddress,
-      cart: {
-        items: cartItems.map(item => ({
-          product_id: item.product_id,
-          variant_id: item.variant_id,
-          title: item.variant_data?.title || 'Product',
-          quantity: item.quantity,
-          price: parseFloat(String(item.price)),
-        })),
-        total_price: parseFloat(total.toFixed(2)),
-        subtotal_price: parseFloat(subtotalTaxable.toFixed(2)),
-        total_tax: parseFloat(totalTax.toFixed(2)),
-        total_shipping: parseFloat(totalShippingFee.toFixed(2)),
-      },
-      return_url: returnUrl,
-    };
-
-    this.logger.log(`GoKwik pending order created: ${orderNumber} | Amount: ₹${total.toFixed(2)} | Mode: ${this.envMode}`);
-
-    // GoKwik uses a pure JS SDK checkout — no backend order-creation API is needed.
-    // The SDK handles session creation internally when initCheckout() is called on the frontend.
-    return {
-      success: true,
-      order_number: orderNumber,
-      payment_session_id: orderNumber,
-      gokwik_order_id: orderNumber,
-      gokwik_session: null,
-      checkout_url: null,
-      merchant_id: this.merchantId,
-      app_id: this.appId,
-      id: this.gokwikId,
-      amount: parseFloat(total.toFixed(2)),
-      mode: this.envMode,
-      gokwik_mode: this.envMode,
-      gokwik_checkout_data: gokwikCheckoutData,
     };
   }
 
   /**
-   * Cancel a pending payment order when the GoKwik SDK fails to load or user
-   * abandons before the checkout popup opens. Cleans up the pending DB record.
+   * Cancel a pending payment order when the checkout modal is dismissed or user
+   * abandons before payment completes. Cleans up the pending DB record.
    */
   async cancelPayment(userId: number, orderNumber: string): Promise<any> {
     const existingOrder = await this.db.query.orders.findFirst({
@@ -349,100 +319,107 @@ export class PaymentService {
   }
 
   async verifyPayment(body: any): Promise<any> {
-    const orderNumber = body.order_id || body.order_number || body.gokwik_order_id || body.request_id || body.data?.order_id;
+    const orderNumber =
+      body.order_id ||
+      body.order_number ||
+      body.notes?.order_number ||
+      body.payload?.payment?.entity?.notes?.order_number ||
+      body.data?.order_id;
 
-    if (!orderNumber) {
+    const razorpayOrderId =
+      body.razorpay_order_id ||
+      body.payload?.payment?.entity?.order_id;
+
+    const razorpayPaymentId =
+      body.razorpay_payment_id ||
+      body.payment_id ||
+      body.payload?.payment?.entity?.id;
+
+    const razorpaySignature =
+      body.razorpay_signature ||
+      body.signature;
+
+    if (!orderNumber && !razorpayOrderId) {
       throw new BadRequestException('Order ID is required for payment verification.');
     }
 
-    this.logger.log(`Verifying GoKwik payment for order: ${orderNumber}`);
+    this.logger.log(`[RAZORPAY_DEBUG][3. VERIFY_PAYMENT_START] Order: ${orderNumber || razorpayOrderId} | Payment ID: ${razorpayPaymentId} | Razorpay Order ID: ${razorpayOrderId} | Signature: ${razorpaySignature ? 'PRESENT' : 'MISSING'}`);
 
     // Check if order exists in DB
     const existingOrder = await this.db.query.orders.findFirst({
-      where: eq(orders.orderNumber, orderNumber),
+      where: orderNumber ? eq(orders.orderNumber, orderNumber) : undefined,
       with: { orderItems: true } as any,
     });
 
     if (existingOrder && existingOrder.paymentStatus === 'paid') {
+      this.logger.log(`[RAZORPAY_DEBUG][ALREADY_PAID] Order ${orderNumber} is already marked PAID`);
       return { success: true, status: 'PAID', data: existingOrder };
     }
 
-    let isPaymentPaid = false;
-    let transactionId = body.transaction_id || body.gokwik_oid || body.payment_id || body.request_id || `GK-${Date.now()}`;
-    let paidAmount = 0;
+    let isPaymentValid = false;
 
-    // 1. Check explicit status passed in payload (from GoKwik SDK callback or return URL)
-    const explicitStatus = (body.status || body.order_status || body.payment_status || body.gokwik_status || body.data?.status || '').toUpperCase();
-    const explicitFailed = ['FAILED', 'CANCELLED', 'USER_DROPPED', 'EXPIRED', 'FAILURE', 'DECLINED', 'ABORTED'].includes(explicitStatus);
-    const explicitSuccess = ['PAID', 'SUCCESS', 'SUCCESSFUL', 'COMPLETED', 'CAPTURED', 'CHARGED', 'OK'].includes(explicitStatus);
+    // 1. HMAC SHA-256 signature verification
+    if (razorpayOrderId && razorpayPaymentId && razorpaySignature) {
+      const generatedSignature = crypto
+        .createHmac('sha256', this.keySecret)
+        .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+        .digest('hex');
 
-    if (explicitFailed) {
-      isPaymentPaid = false;
-    } else if (explicitSuccess) {
-      // 2. Try to confirm with GoKwik server API (best-effort; don't auto-approve on failure)
-      let serverConfirmed = false;
-      try {
-        const verifyRes = await axios.get(`${this.baseUrl}/v1/order/status?order_id=${orderNumber}`, {
-          headers: {
-            'appid': this.appId,
-            'appsecret': this.appSecret,
-            'merchant_id': this.merchantId,
-          },
-          timeout: 5000,
-        });
-
-        const gkData = verifyRes?.data;
-        const gkStatus = (gkData?.order_status || gkData?.status || gkData?.payment_status || '').toUpperCase();
-
-        if (['PAID', 'SUCCESS', 'SUCCESSFUL', 'COMPLETED', 'CAPTURED', 'CHARGED'].includes(gkStatus)) {
-          serverConfirmed = true;
-          transactionId = gkData.transaction_id || gkData.gokwik_oid || transactionId;
-          paidAmount = parseFloat(String(gkData.order_amount || gkData.amount || '0'));
-        } else if (['FAILED', 'CANCELLED', 'EXPIRED', 'USER_DROPPED'].includes(gkStatus)) {
-          // Server says payment failed — override client claim
-          this.logger.warn(`GoKwik server reports FAILED for order ${orderNumber} (client sent ${explicitStatus})`);
-          isPaymentPaid = false;
-          // Return early with failed status
-          if (existingOrder && existingOrder.paymentStatus !== 'paid') {
-            await this.db.delete(orderItems).where(eq(orderItems.orderId, existingOrder.id)).catch(() => {});
-            await this.db.delete(orderTrackingRecords).where(eq(orderTrackingRecords.orderId, existingOrder.id)).catch(() => {});
-            await this.db.delete(orders).where(eq(orders.id, existingOrder.id)).catch(() => {});
-            this.logger.log(`[CLEANUP] Deleted unpaid order #${existingOrder.id} (${orderNumber}) — server confirmed FAILED`);
-          }
-          pendingOrders.delete(orderNumber);
-          return {
-            success: false,
-            status: gkStatus,
-            message: 'Payment was not successful according to GoKwik. Your order was not placed.',
-          };
-        } else {
-          // Unknown/pending status from server — trust the SDK callback
-          serverConfirmed = true;
-          this.logger.debug(`GoKwik server status '${gkStatus}' for ${orderNumber}; trusting SDK callback SUCCESS`);
-        }
-      } catch (gkErr: any) {
-        // GoKwik server unreachable or 404 (common in sandbox) — trust SDK callback
-        this.logger.debug(`GoKwik server query note: ${gkErr.message}; verifying through transaction confirmation.`);
-        serverConfirmed = true;
+      if (generatedSignature === razorpaySignature) {
+        this.logger.log(`[RAZORPAY_DEBUG][4. SIGNATURE_VERIFIED] Match: true | Order: ${orderNumber}`);
+        isPaymentValid = true;
+      } else {
+        this.logger.error(`[RAZORPAY_DEBUG][4. SIGNATURE_MISMATCH] Expected: ${generatedSignature} | Received: ${razorpaySignature}`);
+        isPaymentValid = false;
       }
-
-      isPaymentPaid = serverConfirmed;
-      paidAmount = paidAmount || parseFloat(String(body.amount || body.order_amount || body.paid_amount || '0'));
-    } else {
-      // No explicit status provided — cannot verify payment, treat as failed/pending
-      this.logger.warn(`No payment status provided for order ${orderNumber}; treating as payment not confirmed.`);
-      isPaymentPaid = false;
     }
 
-    if (isPaymentPaid) {
-      // Validate amount to prevent amount manipulation if paidAmount was returned
+    // 2. Fetch payment details from Razorpay to verify status & amount
+    let paymentDetails: any = null;
+    if (razorpayPaymentId) {
+      try {
+        paymentDetails = await (this.razorpay.payments as any).fetch(razorpayPaymentId);
+        const pStatus = (paymentDetails?.status || '').toLowerCase();
+        this.logger.log(`[RAZORPAY_DEBUG][5. FETCHED_STATUS] Payment ID: ${razorpayPaymentId} | Status: ${pStatus} | Method: ${paymentDetails?.method} | Bank: ${paymentDetails?.bank || 'N/A'}`);
+
+        if (pStatus === 'captured') {
+          isPaymentValid = true;
+        } else if (pStatus === 'authorized') {
+          try {
+            const captured = await (this.razorpay.payments as any).capture(
+              razorpayPaymentId,
+              paymentDetails.amount,
+              paymentDetails.currency || 'INR',
+            );
+            if (captured && captured.status === 'captured') {
+              isPaymentValid = true;
+              paymentDetails = captured;
+            }
+          } catch (capErr: any) {
+            this.logger.warn(`Razorpay payment capture note: ${capErr.message}`);
+            isPaymentValid = true;
+          }
+        } else if (['failed', 'refunded'].includes(pStatus)) {
+          isPaymentValid = false;
+        }
+      } catch (fetchErr: any) {
+        this.logger.warn(`Could not fetch Razorpay payment ${razorpayPaymentId}: ${fetchErr.message}`);
+      }
+    }
+
+    const transactionId = razorpayPaymentId || `RZP-${Date.now()}`;
+
+    if (isPaymentValid) {
+      // Validate amount to prevent client tampering
       const expectedTotal = parseFloat(String(existingOrder?.total || pendingOrders.get(orderNumber)?.total || '0'));
-      if (paidAmount > 0 && expectedTotal > 0 && paidAmount < expectedTotal - 0.05) {
-        this.logger.error(`GoKwik amount mismatch for ${orderNumber}: paid ₹${paidAmount}, expected ₹${expectedTotal}`);
-        throw new BadRequestException('Paid amount does not match the order total.');
+      if (paymentDetails?.amount && expectedTotal > 0) {
+        const expectedPaise = Math.round(expectedTotal * 100);
+        if (paymentDetails.amount < expectedPaise) {
+          this.logger.error(`Razorpay amount mismatch for ${orderNumber}: paid ${paymentDetails.amount} paise, expected ${expectedPaise} paise`);
+          throw new BadRequestException('Paid amount does not match the order total.');
+        }
       }
 
-      const targetOrderId = existingOrder ? existingOrder.id : null;
       const targetUserId = existingOrder ? existingOrder.userId : pendingOrders.get(orderNumber)?.user_id;
 
       if (!existingOrder && !pendingOrders.has(orderNumber)) {
@@ -480,7 +457,7 @@ export class PaymentService {
         await this.db.insert(orderTrackingRecords).values({
           orderId: existingOrder.id,
           status: 'pending',
-          description: 'Online payment received successfully via GoKwik - Awaiting admin confirmation',
+          description: 'Online payment received successfully via Razorpay - Awaiting admin confirmation',
           location: 'Online Store',
           trackedAt: new Date(),
         });
@@ -492,7 +469,7 @@ export class PaymentService {
 
         pendingOrders.delete(orderNumber);
 
-        // 1. Send Order Placed Email (Pending Admin Confirmation)
+        // Send Order Placed Email
         this.ordersService.sendOrderPlacedEmail(existingOrder.id).catch(err => this.logger.error('Failed to send order placed email:', err));
 
         const updatedOrder = await this.db.query.orders.findFirst({
@@ -522,7 +499,7 @@ export class PaymentService {
         // Emit real-time notification to Admin Dashboard
         this.notificationsService.createAndEmitNotification({
           recipientGroup: 'admin',
-          title: '🛒 New Order Placed (GoKwik)',
+          title: '🛒 New Order Placed (Razorpay)',
           message: `New order #${updatedOrder?.orderNumber || existingOrder.orderNumber} placed for ₹${(updatedOrder as any)?.total || existingOrder.total}`,
           type: 'ORDER_PLACED',
           priority: 'HIGH',
@@ -589,7 +566,7 @@ export class PaymentService {
         await this.db.insert(orderTrackingRecords).values({
           orderId: r.id,
           status: 'pending',
-          description: 'Online payment received successfully via GoKwik - Awaiting admin confirmation',
+          description: 'Online payment received successfully via Razorpay - Awaiting admin confirmation',
           location: 'Online Store',
           trackedAt: new Date(),
         });
@@ -597,7 +574,6 @@ export class PaymentService {
         await this.db.delete(carts).where(eq(carts.userId, pendingData.user_id));
         pendingOrders.delete(orderNumber);
 
-        // Send Order Placed Email
         this.ordersService.sendOrderPlacedEmail(r.id).catch(err => this.logger.error('Failed to send order placed email:', err));
 
         const createdOrder = await this.db.query.orders.findFirst({
@@ -607,7 +583,7 @@ export class PaymentService {
 
         const fallbackOrderSlug = getOrderSlug(createdOrder) || createdOrder?.orderNumber || orderNumber;
 
-        // Emit real-time notification to Customer
+        // Emit notifications
         this.notificationsService.createAndEmitNotification({
           userId: pendingData.user_id,
           recipientGroup: 'customer',
@@ -622,10 +598,9 @@ export class PaymentService {
           metadata: { orderId: r.id, orderNumber: createdOrder?.orderNumber || orderNumber, totalAmount: (createdOrder as any)?.total }
         }).catch(err => this.logger.error('Failed to emit customer order notification:', err));
 
-        // Emit real-time notification to Admin Dashboard
         this.notificationsService.createAndEmitNotification({
           recipientGroup: 'admin',
-          title: '🛒 New Order Placed (GoKwik)',
+          title: '🛒 New Order Placed (Razorpay)',
           message: `New order #${createdOrder?.orderNumber || orderNumber} placed for ₹${(createdOrder as any)?.total || pendingData.total}`,
           type: 'ORDER_PLACED',
           priority: 'HIGH',
@@ -639,7 +614,7 @@ export class PaymentService {
         return { success: true, status: 'PAID', data: createdOrder };
       }
     } else {
-      // Payment FAILED, CANCELLED, USER_DROPPED, EXPIRED, or TERMINATED
+      // Payment FAILED / CANCELLED
       if (existingOrder && existingOrder.paymentStatus !== 'paid') {
         await this.db.delete(orderItems).where(eq(orderItems.orderId, existingOrder.id)).catch(() => {});
         await this.db.delete(orderTrackingRecords).where(eq(orderTrackingRecords.orderId, existingOrder.id)).catch(() => {});
@@ -649,7 +624,7 @@ export class PaymentService {
       pendingOrders.delete(orderNumber);
       return {
         success: false,
-        status: explicitStatus || 'FAILED',
+        status: 'FAILED',
         message: 'Payment was not successful. Your order was not placed and no amount was charged.',
       };
     }
@@ -680,14 +655,137 @@ export class PaymentService {
 
   async testCredentials() {
     return {
-      gateway: 'gokwik',
-      merchant_id: this.merchantId,
-      app_id: this.appId,
-      app_secret_preview: this.appSecret ? this.appSecret.substring(0, 8) + '...' : 'not-set',
-      gokwik_id: this.gokwikId,
-      mode: this.envMode,
-      base_url: this.baseUrl,
-      credentials_loaded: !!(this.merchantId && this.appId && this.appSecret),
+      gateway: 'razorpay',
+      key_id: this.keyId,
+      key_secret_preview: this.keySecret ? this.keySecret.substring(0, 8) + '...' : 'not-set',
+      currency: this.currency,
+      credentials_loaded: !!(this.keyId && this.keySecret),
     };
+  }
+
+  async refundPayment(paymentId: string, amount: number, notes?: any) {
+    return (this.razorpay.payments as any).refund(paymentId, {
+      amount: Math.round(amount * 100),
+      notes,
+    });
+  }
+
+  /**
+   * Diagnostic: Called by the frontend when Razorpay fires `payment.failed`.
+   * Logs the client error and cross-checks it with Razorpay's server record.
+   */
+  async logClientFailure(userId: number, body: any): Promise<any> {
+    const clientError = body?.error || {};
+    const paymentId = clientError?.metadata?.payment_id || body?.payment_id;
+
+    this.logger.error(
+      `[RAZORPAY_DEBUG][CLIENT_PAYMENT_FAILED] User: ${userId} | Order: ${body?.order_number} | RzpOrder: ${body?.razorpay_order_id} | ` +
+      `Code: ${clientError.code} | Source: ${clientError.source} | Step: ${clientError.step} | Reason: ${clientError.reason} | ` +
+      `Description: ${clientError.description}`,
+    );
+
+    let serverRecord: any = null;
+    if (paymentId) {
+      try {
+        const p: any = await (this.razorpay.payments as any).fetch(paymentId);
+        serverRecord = {
+          id: p.id,
+          status: p.status,
+          method: p.method,
+          international: p.international,
+          error_code: p.error_code,
+          error_description: p.error_description,
+          error_source: p.error_source,
+          error_step: p.error_step,
+          error_reason: p.error_reason,
+        };
+        this.logger.error(`[RAZORPAY_DEBUG][SERVER_PAYMENT_RECORD] ${JSON.stringify(serverRecord)}`);
+      } catch (e: any) {
+        this.logger.warn(`[RAZORPAY_DEBUG][SERVER_PAYMENT_RECORD_UNAVAILABLE] ${paymentId}: ${e?.message}`);
+      }
+    }
+    return { success: true, server_record: serverRecord };
+  }
+
+  /**
+   * Diagnostic: Query Razorpay API directly for enabled payment methods on this key.
+   * Useful to verify why UPI, Cards, Netbanking, or Wallets show or do not show.
+   */
+  async getAvailableMethods(): Promise<any> {
+    try {
+      const https = require('https');
+      const response = await new Promise<any>((resolve, reject) => {
+        https.get(`https://api.razorpay.com/v1/methods?key_id=${this.keyId}`, (res: any) => {
+          let data = '';
+          res.on('data', (chunk: any) => (data += chunk));
+          res.on('end', () => {
+            try {
+              resolve(JSON.parse(data));
+            } catch (e) {
+              reject(e);
+            }
+          });
+        }).on('error', reject);
+      });
+
+      const upiEnabled = response.upi === true;
+      const cardEnabled = response.card === true;
+      const netbankingBanks = typeof response.netbanking === 'object' ? Object.keys(response.netbanking).length : 0;
+      const wallets = response.wallet ? Object.keys(response.wallet).filter(k => response.wallet[k] === true) : [];
+
+      this.logger.log(`[RAZORPAY_DEBUG][METHODS] UPI: ${upiEnabled} | Cards: ${cardEnabled} | Netbanking Banks: ${netbankingBanks} | Wallets: ${wallets.join(', ')}`);
+
+      return {
+        success: true,
+        key_id: this.keyId,
+        upi_enabled: upiEnabled,
+        card_enabled: cardEnabled,
+        netbanking_banks_count: netbankingBanks,
+        wallets_enabled: wallets,
+        upi_diagnostic: upiEnabled
+          ? 'UPI is ENABLED for this Razorpay account.'
+          : 'UPI is DISABLED for merchant key ' + this.keyId + '. To enable UPI, open Razorpay Dashboard (https://dashboard.razorpay.com) -> Settings -> Payment Methods -> UPI and activate it.',
+      };
+    } catch (err: any) {
+      this.logger.error(`[RAZORPAY_DEBUG][METHODS_ERROR] ${err.message}`, err);
+      return { success: false, error: err.message };
+    }
+  }
+
+  /**
+   * Diagnostic: Fetch the last 10 payment attempts directly from Razorpay
+   * with their exact status, error code, and error reason.
+   */
+  async getRecentPaymentAttempts(): Promise<any> {
+    try {
+      const list = await this.razorpay.payments.all({ count: 10 });
+      const formatted = list.items.map((p: any) => ({
+        id: p.id,
+        order_id: p.order_id,
+        status: p.status,
+        method: p.method,
+        bank: p.bank,
+        wallet: p.wallet,
+        vpa: p.vpa,
+        amount: (p.amount / 100).toFixed(2),
+        currency: p.currency,
+        error_code: p.error_code,
+        error_description: p.error_description,
+        error_source: p.error_source,
+        error_step: p.error_step,
+        error_reason: p.error_reason,
+        created_at: new Date(p.created_at * 1000).toLocaleString(),
+      }));
+
+      this.logger.log(`[RAZORPAY_DEBUG][RECENT_ATTEMPTS] Fetched ${formatted.length} recent payment records`);
+      return {
+        success: true,
+        count: formatted.length,
+        attempts: formatted,
+      };
+    } catch (err: any) {
+      this.logger.error(`[RAZORPAY_DEBUG][RECENT_ATTEMPTS_ERROR] ${err.message}`, err);
+      return { success: false, error: err.message };
+    }
   }
 }

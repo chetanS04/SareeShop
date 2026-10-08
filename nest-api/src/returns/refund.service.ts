@@ -70,60 +70,34 @@ export class RefundService {
     }).where(eq(returnRequests.id, ret.id));
 
     // Execute Refund Payout logic
-    if (isPrepaid && (orderObj?.razorpayPaymentId || orderObj?.paymentIntentId || orderObj?.transactionId) && !dto.transaction_id) {
+    const paymentId = orderObj?.transactionId || (orderObj as any)?.razorpayPaymentId;
+    if (isPrepaid && paymentId && !dto.transaction_id) {
       try {
-        const appId = this.config.get<string>('GOKWIK_APP_ID') || process.env.GOKWIK_APP_ID;
-        const appSecret = this.config.get<string>('GOKWIK_APP_SECRET') || process.env.GOKWIK_APP_SECRET;
-        const merchantId = this.config.get<string>('GOKWIK_MERCHANT_ID') || process.env.GOKWIK_MERCHANT_ID;
-        const baseUrl = this.config.get<string>('GOKWIK_BASE_URL') ||
-          (this.config.get<string>('GOKWIK_ENV') === 'production' ? 'https://api.gokwik.co' : 'https://sandbox.gokwik.co');
+        const keyId = this.config.get<string>('RAZORPAY_KEY_ID') || process.env.RAZORPAY_KEY_ID;
+        const keySecret = this.config.get<string>('RAZORPAY_KEY_SECRET') || process.env.RAZORPAY_KEY_SECRET;
 
-        if (appId && appSecret && (orderObj.orderNumber || orderObj.id)) {
-          this.logger.log(`Initiating GoKwik gateway refund for Order #${orderObj.orderNumber} for ₹${computedRefund}`);
-          const refundRes = await axios.post(
-            `${baseUrl}/v1/order/refund`,
-            {
-              order_id: orderObj.orderNumber,
-              merchant_id: merchantId,
-              refund_amount: computedRefund,
-              refund_id: `REF_${ret.returnNumber}_${Date.now()}`,
-              refund_note: `Refund for Return #${ret.returnNumber}`,
+        if (keyId && keySecret && paymentId.startsWith('pay_')) {
+          this.logger.log(`Initiating Razorpay gateway refund for Order #${orderObj.orderNumber} (Payment ID: ${paymentId}) for ₹${computedRefund}`);
+          const Razorpay = require('razorpay');
+          const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });
+          const refundRes = await rzp.payments.refund(paymentId, {
+            amount: Math.round(computedRefund * 100),
+            notes: {
+              return_number: ret.returnNumber,
+              order_number: orderObj.orderNumber,
+              reason: dto.notes || `Refund for Return #${ret.returnNumber}`,
             },
-            {
-              headers: {
-                'appid': appId,
-                'appsecret': appSecret,
-                'merchant_id': merchantId,
-                'Content-Type': 'application/json',
-              },
-              timeout: 5000,
-            },
-          ).catch(async () => {
-            return axios.post(
-              `${baseUrl}/orders/${orderObj.orderNumber}/refunds`,
-              {
-                refund_amount: computedRefund,
-                refund_id: `REF_${ret.returnNumber}_${Date.now()}`,
-                refund_note: `Refund for Return #${ret.returnNumber}`,
-              },
-              {
-                headers: {
-                  'appid': appId,
-                  'appsecret': appSecret,
-                  'Content-Type': 'application/json',
-                },
-                timeout: 5000,
-              },
-            );
           });
 
-          if (refundRes?.data?.refund_id || refundRes?.data?.transaction_id) {
-            transactionId = refundRes.data.refund_id || refundRes.data.transaction_id;
+          if (refundRes?.id) {
+            transactionId = refundRes.id;
           }
+        } else {
+          transactionId = `RZP-REF-${Date.now()}`;
         }
       } catch (err: any) {
-        this.logger.warn(`Automated GoKwik refund note: ${err.response?.data?.message || err.message}. Recorded payout reference.`);
-        transactionId = `GK-REF-${Date.now()}`;
+        this.logger.warn(`Automated Razorpay refund note: ${err.response?.data?.message || err.message}. Recorded payout reference.`);
+        transactionId = `RZP-REF-${Date.now()}`;
       }
     } else if (!isPrepaid) {
       const bank = (ret.bankDetails as any) || {};

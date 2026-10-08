@@ -168,8 +168,7 @@ function CheckoutPageContent() {
     const [currentStep, setCurrentStep] = useState<number>(1);
     const [loading, setLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('cod');
-    const [gokwikSdkLoaded, setGokwikSdkLoaded] = useState(false);
-    const gokwikSdkLoadedRef = useRef(false);
+    const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
     // Real-time synchronization for Cart Checkout items
     useEffect(() => {
@@ -303,32 +302,42 @@ function CheckoutPageContent() {
         }
     }, [user, authLoading, items, cartLoading, router, searchParams]);
 
-    // Check for payment return from GoKwik redirect
+    // Check for payment return from gateway redirect (if applicable)
     useEffect(() => {
         const orderId = searchParams.get("order_id") || searchParams.get("orderId");
         if (orderId) {
-            const rawStatus = searchParams.get("status") || searchParams.get("order_status") || searchParams.get("gokwik_status") || "";
-            const txId = searchParams.get("transaction_id") || searchParams.get("txId") || searchParams.get("gokwik_oid") || searchParams.get("payment_id");
-            // Only verify if there's an explicit status from GoKwik redirect
-            if (rawStatus) {
-                verifyPayment(orderId, rawStatus, txId);
+            const rawStatus = searchParams.get("status") || searchParams.get("order_status") || "";
+            const txId = searchParams.get("transaction_id") || searchParams.get("txId") || searchParams.get("payment_id") || searchParams.get("razorpay_payment_id");
+            if (rawStatus || txId) {
+                verifyPayment({
+                    order_id: orderId,
+                    status: rawStatus || "PAID",
+                    transaction_id: txId || undefined,
+                    razorpay_payment_id: txId || undefined,
+                });
             }
         }
     }, [searchParams]);
 
-    const verifyPayment = async (orderId: string, status = "PAID", transactionId?: string | null) => {
+    const verifyPayment = async (verificationPayload: {
+        order_id: string;
+        razorpay_order_id?: string;
+        razorpay_payment_id?: string;
+        razorpay_signature?: string;
+        status?: string;
+        transaction_id?: string;
+    }) => {
         setShowPaymentModal(true);
         setPaymentStatus('verifying');
-        setPaymentMessage("Verifying your GoKwik payment...");
+        setPaymentMessage("Verifying your payment securely with Razorpay...");
+        console.log('[RAZORPAY_DEBUG][5. VERIFY_PAYMENT_PAYLOAD]', verificationPayload);
 
         try {
-            const response = await axios.post(`/api/payment/verify`, {
-                order_id: orderId,
-                status: status || "PAID",
-                transaction_id: transactionId || undefined,
-            });
+            const response = await axios.post(`/api/payment/verify`, verificationPayload);
+            console.log('[RAZORPAY_DEBUG][6. VERIFY_PAYMENT_RESPONSE]', response.data);
 
             if (response.data.success && (response.data.status === 'PAID' || response.data.status === 'SUCCESS')) {
+                console.log('[RAZORPAY_DEBUG][7. PAYMENT_SUCCESS_CONFIRMED] Order completed');
                 setPaymentStatus('success');
                 setPaymentMessage("Payment successful! Redirecting to orders...");
 
@@ -464,91 +473,124 @@ function CheckoutPageContent() {
 
             if (paymentMethod === 'online') {
                 try {
+                    console.log('[RAZORPAY_DEBUG][1. INITIATING_REQUEST]', {
+                        cartItemsCount: items.length,
+                        total,
+                        address: data,
+                    });
+
                     const response = await axios.post(`/api/payment/initiate`, orderData);
+                    console.log('[RAZORPAY_DEBUG][2. INITIATE_RESPONSE]', response.data);
 
                     if (response.data.success) {
-                        const { order_number, gokwik_checkout_data, checkout_url, mode } = response.data;
-                        const activeMode = mode || process.env.NEXT_PUBLIC_GOKWIK_ENV || "production";
+                        const { order_number, razorpay_order_id, amount, currency, key_id, customer } = response.data;
 
-                        const onPaymentSuccess = async (data?: any) => {
-                            const tx = data?.transaction_id || data?.gokwik_oid || data?.payment_id || data?.order_id || `GK-${Date.now()}`;
-                            const payStatus = data?.status || data?.order_status || data?.payment_status || "PAID";
-                            await verifyPayment(order_number, payStatus, tx);
-                        };
-
-                        const onPaymentError = (err?: any) => {
-                            console.warn("GoKwik checkout error:", err);
-                            setLoading(false);
-                            setErrorMessage(err?.message || "Payment was not completed. Please try again.");
-                        };
-
-                        if (checkout_url) {
-                            // GoKwik returned a redirect URL — navigate there
-                            window.location.href = checkout_url;
-                            return;
-                        }
-
-                        // Wait for GoKwik SDK to be available (up to 10 seconds)
-                        const waitForGokwikSdk = (): Promise<any> => {
+                        const waitForRazorpay = (): Promise<any> => {
                             return new Promise((resolve, reject) => {
                                 const deadline = Date.now() + 10000;
                                 const check = () => {
-                                    const sdk = (window as any).gokwikSdk || (window as any).gokwik || (window as any).Gokwik;
-                                    if (sdk && typeof sdk.initCheckout === 'function') {
-                                        resolve(sdk);
+                                    if (typeof (window as any).Razorpay !== 'undefined') {
+                                        resolve((window as any).Razorpay);
                                     } else if (Date.now() > deadline) {
-                                        reject(new Error('GoKwik SDK did not load in time. Please refresh the page and try again.'));
+                                        reject(new Error('Razorpay SDK did not load in time. Please refresh the page and try again.'));
                                     } else {
-                                        setTimeout(check, 200);
+                                        setTimeout(check, 150);
                                     }
                                 };
                                 check();
                             });
                         };
 
-                        let gkSdk: any;
+                        let RazorpayClass: any;
                         try {
-                            gkSdk = await waitForGokwikSdk();
-                        } catch (sdkLoadErr: any) {
-                            console.error('GoKwik SDK load error:', sdkLoadErr);
-                            // Cancel the pending order since we can't open payment
-                            axios.post('/api/payment/cancel', { order_number }).catch(() => {});
+                            console.log('[RAZORPAY_DEBUG][3. LOADING_SDK] Waiting for window.Razorpay...');
+                            RazorpayClass = await waitForRazorpay();
+                            console.log('[RAZORPAY_DEBUG][3. SDK_LOADED] window.Razorpay ready');
+                        } catch (loadErr: any) {
+                            console.error('[RAZORPAY_DEBUG][SDK_LOAD_ERROR]', loadErr);
                             setLoading(false);
-                            setErrorMessage(sdkLoadErr?.message || 'GoKwik payment gateway could not load. Please refresh and try again.');
+                            setErrorMessage(loadErr?.message || 'Payment gateway failed to load. Please refresh and try again.');
                             return;
                         }
 
-                        // SDK is ready — initiate GoKwik checkout
+                        const options = {
+                            key: key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TlHJlHDAmuxWUJ",
+                            amount: amount,
+                            currency: currency || "INR",
+                            name: "SVastra",
+                            description: `Order #${order_number}`,
+                            image: "/icon.png",
+                            order_id: razorpay_order_id,
+                            prefill: {
+                                name: customer?.name || data.fullName || user?.name || "",
+                                email: customer?.email || user?.email || "",
+                                contact: customer?.contact || data.phoneNumber || user?.phone_number || "",
+                            },
+                            notes: {
+                                order_number: order_number,
+                            },
+                            theme: {
+                                color: "#8B1313",
+                            },
+                            modal: {
+                                confirm_close: true,
+                                ondismiss: () => {
+                                    console.log('[RAZORPAY_DEBUG][EVENT: modal.ondismiss] Modal closed/dismissed by user');
+                                    setLoading(false);
+                                },
+                            },
+                            retry: {
+                                enabled: true,
+                            },
+                            handler: async (rzpResponse: any) => {
+                                console.log('[RAZORPAY_DEBUG][EVENT: handler SUCCESS] Tokens received:', rzpResponse);
+                                await verifyPayment({
+                                    order_id: order_number,
+                                    razorpay_order_id: rzpResponse.razorpay_order_id,
+                                    razorpay_payment_id: rzpResponse.razorpay_payment_id,
+                                    razorpay_signature: rzpResponse.razorpay_signature,
+                                });
+                            },
+                        };
+
+                        console.log('[RAZORPAY_DEBUG][4. OPENING_MODAL] Options:', {
+                            key: options.key,
+                            order_id: options.order_id,
+                            amount: options.amount,
+                            currency: options.currency,
+                        });
+
                         try {
-                            gkSdk.initCheckout({
-                                merchantId: process.env.NEXT_PUBLIC_GOKWIK_MERCHANT_ID || gokwik_checkout_data?.merchant_id || "19yxs5lini4u",
-                                environment: activeMode,
-                                orderId: order_number,
-                                order_id: order_number,
-                                amount: gokwik_checkout_data?.amount || response.data.amount,
-                                currency: "INR",
-                                customer: gokwik_checkout_data?.customer || {},
-                                cart: gokwik_checkout_data?.cart || {},
-                                shipping_address: gokwik_checkout_data?.shipping_address,
-                                return_url: `${window.location.origin}/checkout?order_id=${order_number}`,
-                                successCallback: onPaymentSuccess,
-                                failureCallback: onPaymentError,
-                                cancelCallback: () => { setLoading(false); },
-                                onSuccess: onPaymentSuccess,
-                                onError: onPaymentError,
-                                onClose: () => { setLoading(false); },
+                            const rzpInstance = new RazorpayClass(options);
+                            rzpInstance.on('payment.failed', (failResp: any) => {
+                                console.error('[RAZORPAY_DEBUG][EVENT: payment.failed] Full Error:', failResp?.error);
+                                axios.post('/api/payment/log-failure', {
+                                    order_number,
+                                    razorpay_order_id,
+                                    error: failResp?.error,
+                                }).catch(() => {});
+                                setLoading(false);
+                                const reason = failResp?.error?.reason;
+                                const errDesc = reason === 'international_transaction_not_allowed'
+                                    ? "This card was treated as an international card, which your Razorpay account does not accept. Use an Indian test card (Visa 4718 6091 0820 4366 or Mastercard 5267 3181 8797 5449), UPI, or Netbanking."
+                                    : (failResp?.error?.description || "Payment could not be completed.");
+                                const errReason = reason ? ` (Reason: ${reason})` : "";
+                                const errStep = failResp?.error?.step ? ` [Step: ${failResp?.error?.step}]` : "";
+                                setErrorMessage(`${errDesc}${errReason}${errStep}`);
                             });
-                        } catch (sdkErr: any) {
-                            console.error("GoKwik SDK initCheckout error:", sdkErr);
+                            rzpInstance.open();
+                        } catch (sdkInitErr: any) {
+                            console.error('[RAZORPAY_DEBUG][SDK_INIT_ERROR]', sdkInitErr);
                             setLoading(false);
-                            setErrorMessage(sdkErr?.message || "GoKwik payment could not be started. Please try again.");
+                            setErrorMessage(sdkInitErr?.message || "Failed to open payment gateway.");
                         }
                     } else {
+                        console.error('[RAZORPAY_DEBUG][INITIATE_ERROR_RESP]', response.data);
                         setErrorMessage(response.data.message || "Failed to initiate payment. Please try again.");
                         setLoading(false);
                     }
                 } catch (error: any) {
-                    console.error("Payment initiation failed:", error);
+                    console.error('[RAZORPAY_DEBUG][INITIATE_EXCEPTION]', error);
                     setErrorMessage(error.response?.data?.message || "Failed to initiate payment. Please try again.");
                     setLoading(false);
                 }
@@ -998,6 +1040,8 @@ function CheckoutPageContent() {
                                         ) : undefined
                                     }
                                     finalTotal={finalTotal}
+                                    onPayNowOnline={handlePlaceOrder}
+                                    loading={loading}
                                 />
                             </div>
                         )}
@@ -1063,7 +1107,7 @@ function CheckoutPageContent() {
                                         <p className="text-[12px] text-body-slate mt-1">
                                             {paymentMethod === "cod"
                                                 ? `Pay ${formatINR(finalTotal)} in cash/UPI upon delivery.`
-                                                : "Secure instant checkout via GoKwik Gateway."}
+                                                : "Secure instant checkout via Razorpay Gateway."}
                                         </p>
                                     </div>
                                 </div>
@@ -1258,7 +1302,7 @@ function CheckoutPageContent() {
                         )}
 
                         <div className="space-y-2.5">
-                            {currentStep < 3 ? (
+                            {currentStep === 1 ? (
                                 <button
                                     type="button"
                                     onClick={handleNextStep}
@@ -1268,7 +1312,40 @@ function CheckoutPageContent() {
                                     <span>
                                         {hasInsufficientStockItems
                                             ? "Unavailable Items in Bag"
-                                            : `Proceed to ${currentStep === 1 ? "Payment" : "Review"}`}
+                                            : "Proceed to Payment"}
+                                    </span>
+                                    {!hasInsufficientStockItems && <ChevronRight className="w-4 h-4" />}
+                                </button>
+                            ) : currentStep === 2 && paymentMethod === "online" ? (
+                                <button
+                                    type="button"
+                                    onClick={handlePlaceOrder}
+                                    disabled={loading || hasInsufficientStockItems}
+                                    className="sv-btn-primary w-full !min-h-[44px] !py-3 !px-4 !text-[11px] !gap-2 disabled:opacity-50"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <span>Opening Razorpay...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Lock className="w-4 h-4" />
+                                            <span>Pay Online with Razorpay ({formatINR(finalTotal)})</span>
+                                        </>
+                                    )}
+                                </button>
+                            ) : currentStep === 2 && paymentMethod === "cod" ? (
+                                <button
+                                    type="button"
+                                    onClick={handleNextStep}
+                                    disabled={hasInsufficientStockItems}
+                                    className="sv-btn-primary w-full !min-h-[44px] !py-3 !px-4 !text-[11px] !gap-2 disabled:opacity-50"
+                                >
+                                    <span>
+                                        {hasInsufficientStockItems
+                                            ? "Unavailable Items in Bag"
+                                            : "Proceed to Review"}
                                     </span>
                                     {!hasInsufficientStockItems && <ChevronRight className="w-4 h-4" />}
                                 </button>
@@ -1290,7 +1367,9 @@ function CheckoutPageContent() {
                                             <span>
                                                 {hasInsufficientStockItems
                                                     ? "Unavailable Items in Bag"
-                                                    : `Place Order (${formatINR(finalTotal)})`}
+                                                    : paymentMethod === "online"
+                                                        ? `Pay Online (${formatINR(finalTotal)})`
+                                                        : `Place COD Order (${formatINR(finalTotal)})`}
                                             </span>
                                         </>
                                     )}
@@ -1332,16 +1411,15 @@ function CheckoutPageContent() {
             </div>
 
             <Script
-                id="gokwik-sdk"
-                src="https://pdp.gokwik.co/build/gokwik.js"
+                id="razorpay-checkout"
+                src="https://checkout.razorpay.com/v1/checkout.js"
                 strategy="afterInteractive"
                 onLoad={() => {
-                    gokwikSdkLoadedRef.current = true;
-                    setGokwikSdkLoaded(true);
-                    console.log("GoKwik SDK loaded successfully");
+                    setRazorpayLoaded(true);
+                    console.log("Razorpay SDK loaded successfully");
                 }}
                 onError={() => {
-                    console.warn("GoKwik SDK script failed to load from pdp.gokwik.co, trying fallback...");
+                    console.warn("Failed to load Razorpay SDK");
                 }}
             />
 
