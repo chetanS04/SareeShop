@@ -8,6 +8,7 @@ export class DelhiveryController {
   constructor(private svc: DelhiveryService) {}
 
   // PUBLIC
+  @Get('delhivery/test-connection') testConnection(): Promise<any> { return this.svc.testConnection(); }
   @Post('delhivery/webhook') handleWebhook(@Body() b: any): Promise<any> { return this.svc.handleWebhook(b); }
 
   // PUBLIC — guest track page

@@ -55,14 +55,14 @@ export const generateInvoicePDF = async (
   const invoiceNum = txnId ? `INV-${txnId}` : `INV-${rawIdStr.padStart(6, "0")}`;
 
   // Sold By settings
-  const soldByName = settings?.sold_by_name?.trim() || "Rahul Singh";
+  const soldByName = settings?.sold_by_name?.trim() || "SVastra";
   const soldByAddress =
     settings?.sold_by_address?.trim() ||
-    "Home no. 129 naib colony near army gate village kanwla, AMBALA, HARYANA, 134003, IN";
-  const soldByPan = settings?.pan_no?.trim() || settings?.pan?.trim() || "EDKPS7525H";
-  const gstinValue = settings?.gstin?.trim() || "06EDKPS7525H1Z3";
-  const supportPhone = settings?.support_phone?.trim() || "9996646857";
-  const supportEmail = settings?.support_email?.trim() || "zelton456@gmail.com";
+    "9C 206, Bloomdale Mahindra Complex, Nagpur, Maharashtra, 441108, IN";
+  const soldByPan = settings?.pan_no?.trim() || settings?.pan?.trim() || "BFJPA5082B";
+  const gstinValue = settings?.gstin?.trim() || "27-UR";
+  const supportPhone = settings?.support_phone?.trim() || "7507599315";
+  const supportEmail = settings?.support_email?.trim() || "svastrastore@gmail.com";
 
   const formatDateStr = (dateStr?: string | null) => {
     if (!dateStr) return new Date().toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "2-digit", year: "numeric" }).replace(/\//g, "-");

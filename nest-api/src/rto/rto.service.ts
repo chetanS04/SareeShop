@@ -342,8 +342,8 @@ export class RtoService {
       rtoCaseId: caseId,
       waybill: rtoCase.waybill,
       status: 'rto_received',
-      description: 'RTO package safely received at Zelton Central Warehouse (Ambala). QC Inspection pending.',
-      location: 'Zelton Ambala Central Warehouse',
+      description: 'RTO package safely received at SVastra Central Warehouse (Nagpur). QC Inspection pending.',
+      location: 'SVastra Nagpur Central Warehouse',
       eventTime: new Date(),
     });
 

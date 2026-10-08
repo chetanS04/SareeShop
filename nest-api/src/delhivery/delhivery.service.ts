@@ -60,13 +60,13 @@ export class DelhiveryService {
     const rawKey = this.config.get<string>('DELHIVERY_API_KEY', '').trim();
     this.apiKey = rawKey.replace(/^Token\s+/i, '');
     this.baseUrl = this.config.get<string>('DELHIVERY_BASE_URL', 'https://track.delhivery.com/api').trim();
-    this.clientName = this.config.get<string>('DELHIVERY_CLIENT_NAME', 'Zelton').trim() || 'Zelton';
-    this.pickupLocation = this.config.get<string>('DELHIVERY_PICKUP_LOCATION', 'Zelton').trim() || 'Zelton';
-    this.returnAddress = this.config.get<string>('DELHIVERY_RETURN_ADDRESS', '#129 naib colony Village kanwla Ambala city').trim() || '#129 naib colony Village kanwla Ambala city';
-    this.returnCity = this.config.get<string>('DELHIVERY_RETURN_CITY', 'Ambala').trim() || 'Ambala';
-    this.returnState = this.config.get<string>('DELHIVERY_RETURN_STATE', 'Haryana').trim() || 'Haryana';
-    this.returnPin = this.config.get<string>('DELHIVERY_RETURN_PIN', '134003').trim() || '134003';
-    this.returnPhone = this.config.get<string>('DELHIVERY_RETURN_PHONE', '9729310456').trim() || '9729310456';
+    this.clientName = this.config.get<string>('DELHIVERY_CLIENT_NAME', 'SVastra').trim() || 'SVastra';
+    this.pickupLocation = this.config.get<string>('DELHIVERY_PICKUP_LOCATION', 'SVASTRA B2C').trim() || 'SVASTRA B2C';
+    this.returnAddress = this.config.get<string>('DELHIVERY_RETURN_ADDRESS', '9C 206, Bloomdale Mahindra Complex, Nagpur, maharashtra').trim() || '9C 206, Bloomdale Mahindra Complex, Nagpur, maharashtra';
+    this.returnCity = this.config.get<string>('DELHIVERY_RETURN_CITY', 'Nagpur').trim() || 'Nagpur';
+    this.returnState = this.config.get<string>('DELHIVERY_RETURN_STATE', 'Maharashtra').trim() || 'Maharashtra';
+    this.returnPin = this.config.get<string>('DELHIVERY_RETURN_PIN', '441108').trim() || '441108';
+    this.returnPhone = this.config.get<string>('DELHIVERY_RETURN_PHONE', '7507599315').trim() || '7507599315';
   }
 
   private isTestModeActive(): boolean {
@@ -99,7 +99,7 @@ export class DelhiveryService {
       orderId,
       status: 'shipped',
       description: 'Shipment created with Delhivery (Local Test Mode)',
-      location: this.pickupLocation || 'Ambala Hub',
+      location: this.pickupLocation || 'Nagpur Hub',
       trackedAt: new Date(),
     });
 
@@ -570,7 +570,7 @@ export class DelhiveryService {
               scan_date: new Date(Date.now() - 3600 * 1000 * 12).toISOString(),
               scan_type: 'UD',
               scan_detail: 'Shipment Manifested & Picked Up',
-              location: this.pickupLocation || 'Ambala',
+              location: this.pickupLocation || 'Nagpur',
               instructions: '',
             },
             {
@@ -665,7 +665,7 @@ export class DelhiveryService {
             status_code: 'IN_TRANSIT',
             status_date: (order.delhiveryStatusUpdatedAt || new Date()).toISOString(),
             expected_delivery: '',
-            current_location: this.pickupLocation || 'Ambala Hub',
+            current_location: this.pickupLocation || 'Nagpur Hub',
             scans: ((order as any).trackingRecords || []).map((r: any) => ({
               scan_date: (r.trackedAt || r.createdAt || new Date()).toISOString(),
               scan_type: r.status,
@@ -698,7 +698,7 @@ export class DelhiveryService {
           status_code: 'IN_TRANSIT',
           status_date: (order.delhiveryStatusUpdatedAt || new Date()).toISOString(),
           expected_delivery: '',
-          current_location: this.pickupLocation || 'Ambala Hub',
+          current_location: this.pickupLocation || 'Nagpur Hub',
           scans: ((order as any).trackingRecords || []).map((r: any) => ({
             scan_date: (r.trackedAt || r.createdAt || new Date()).toISOString(),
             scan_type: r.status,
@@ -729,7 +729,7 @@ export class DelhiveryService {
                 pre_paid: 'Y',
                 cod: 'Y',
                 state_code: 'HR',
-                district: 'Ambala',
+                district: 'Nagpur',
               },
             },
           ],
@@ -774,7 +774,7 @@ export class DelhiveryService {
             scan_date: (order.shippedAt || new Date()).toISOString(),
             scan_type: 'UD',
             scan_detail: 'Shipment Manifested & Picked Up',
-            location: this.pickupLocation || 'Ambala',
+            location: this.pickupLocation || 'Nagpur',
             instructions: '',
           },
           {
@@ -811,7 +811,7 @@ export class DelhiveryService {
             status_code: order.delhiveryStatus || 'Manifested',
             status_date: (order.delhiveryStatusUpdatedAt || new Date()).toISOString(),
             expected_delivery: '',
-            current_location: this.pickupLocation || 'Ambala Hub',
+            current_location: this.pickupLocation || 'Nagpur Hub',
             scans: [],
           },
         };
@@ -870,7 +870,7 @@ export class DelhiveryService {
           status: order.delhiveryStatus || 'Manifested',
           status_code: 'MANIFESTED',
           status_date: (order.delhiveryStatusUpdatedAt || new Date()).toISOString(),
-          current_location: this.pickupLocation || 'Ambala',
+          current_location: this.pickupLocation || 'Nagpur',
           scans: [],
         },
       };
@@ -886,6 +886,38 @@ export class DelhiveryService {
       return { success: true, warehouses: response.data };
     } catch (err: any) {
       throw new InternalServerErrorException(`Failed to fetch warehouses: ${err.message}`);
+    }
+  }
+
+  // ─── Diagnostic: Test Connection & Serviceability ─────────────────────────
+  async testConnection() {
+    try {
+      const pinRes = await axios.get(
+        `https://track.delhivery.com/c/api/pin-codes/json/?filter_codes=${this.returnPin || '441108'}`,
+        { headers: this.headers() },
+      );
+      return {
+        success: true,
+        api_key_loaded: !!this.apiKey,
+        api_key_preview: this.apiKey ? `${this.apiKey.substring(0, 8)}...` : 'not-set',
+        pickup_location: this.pickupLocation,
+        client_name: this.clientName,
+        return_address: this.returnAddress,
+        return_city: this.returnCity,
+        return_state: this.returnState,
+        return_pin: this.returnPin,
+        return_phone: this.returnPhone,
+        test_mode: this.isTestModeActive(),
+        base_url: this.baseUrl,
+        serviceability: pinRes.data?.delivery_codes?.[0]?.postal_code || 'Serviceable',
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err.response?.data || err.message,
+        pickup_location: this.pickupLocation,
+        client_name: this.clientName,
+      };
     }
   }
 
@@ -915,16 +947,16 @@ export class DelhiveryService {
             {
               name: pickupAddr.name || 'Customer',
               add: pickupAddr.address || 'Customer Address',
-              pin: String(pickupAddr.pincode || '134003'),
-              city: pickupAddr.city || 'Ambala',
-              state: pickupAddr.state || 'Haryana',
+              pin: String(pickupAddr.pincode || '441108'),
+              city: pickupAddr.city || 'Nagpur',
+              state: pickupAddr.state || 'Maharashtra',
               country: 'India',
               phone: String(pickupAddr.phone || '9999999999'),
               order: returnNumber,
               payment_mode: 'Pickup',
               return_pin: this.returnPin,
               return_city: this.returnCity,
-              return_name: 'Zelton Central Warehouse',
+              return_name: 'SVastra Central Warehouse',
               return_add: this.returnAddress,
               return_state: this.returnState,
               return_phone: this.returnPhone,
@@ -1522,7 +1554,7 @@ export class DelhiveryService {
     const streetAddress = extracted.streetAddress || '';
     const city = extracted.city || 'City';
     const state = extracted.state || 'State';
-    const pincode = extracted.pincode || '134003';
+    const pincode = extracted.pincode || '441108';
     const waybill = order.delhiveryWaybill || `DLHV-${order.id}`;
     const orderNum = order.orderNumber || `ORD-${order.id}`;
     const invoiceNum = order.invoiceNumber || `ZT/2627/${String(order.id).padStart(5, '0')}`;

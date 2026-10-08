@@ -6,17 +6,17 @@ async function seed() {
     port: 3306,
     user: 'root',
     password: 'root1234',
-    database: 'zelton',
+    database: 'saree_app',
   });
 
   const entries: [string, string][] = [
-    ['sold_by_name', 'Rahul Singh'],
-    ['sold_by_address', 'Home no. 129 naib colony near army gate village kanwla, AMBALA, HARYANA, 134003, IN'],
-    ['pan_no', 'EDKPS7525H'],
-    ['gstin', '06EDKPS7525H1Z3'],
-    ['home_state', 'Haryana'],
-    ['support_phone', '9996646857'],
-    ['support_email', 'zelton456@gmail.com'],
+    ['sold_by_name', 'SVastra'],
+    ['sold_by_address', '9C 206, Bloomdale Mahindra Complex, Nagpur, Maharashtra, 441108, IN'],
+    ['pan_no', 'BFJPA5082B'],
+    ['gstin', '27-UR'],
+    ['home_state', 'Maharashtra'],
+    ['support_phone', '7507599315'],
+    ['support_email', 'svastrastore@gmail.com'],
   ];
 
   for (const [k, v] of entries) {

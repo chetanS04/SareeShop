@@ -675,8 +675,8 @@ export class ReturnsService {
       returnRequestId: returnId,
       waybill: ret.reverseWaybill || ret.returnNumber,
       status: 'received_at_warehouse',
-      description: 'Return package safely received at Zelton Ambala Central Warehouse. Quality Inspection pending.',
-      location: 'Zelton Ambala Central Warehouse',
+      description: 'Return package safely received at SVastra Nagpur Central Warehouse. Quality Inspection pending.',
+      location: 'SVastra Nagpur Central Warehouse',
       createdAt: new Date(),
     });
 

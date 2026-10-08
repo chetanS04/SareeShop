@@ -23,12 +23,12 @@ export class InvoicePdfService {
         doc.on('error', (err) => reject(err));
 
         // ── Settings ──────────────────────────────────────────────────────
-        const soldByName = settingsData?.sold_by_name?.trim() || 'Rahul Singh';
-        const soldByAddress = settingsData?.sold_by_address?.trim() || 'Home no. 129 naib colony near army gate village kanwla, AMBALA, HARYANA, 134003, IN';
-        const soldByPan = settingsData?.pan_no?.trim() || settingsData?.pan?.trim() || 'EDKPS7525H';
-        const soldByGstin = settingsData?.gstin?.trim() || '06EDKPS7525H1Z3';
-        const supportPhone = settingsData?.support_phone?.trim() || '9996646857';
-        const supportEmail = settingsData?.support_email?.trim() || 'zelton456@gmail.com';
+        const soldByName = settingsData?.sold_by_name?.trim() || 'SVastra';
+        const soldByAddress = settingsData?.sold_by_address?.trim() || '9C 206, Bloomdale Mahindra Complex, Nagpur, Maharashtra, 441108, IN';
+        const soldByPan = settingsData?.pan_no?.trim() || settingsData?.pan?.trim() || 'BFJPA5082B';
+        const soldByGstin = settingsData?.gstin?.trim() || '27-UR';
+        const supportPhone = settingsData?.support_phone?.trim() || '7507599315';
+        const supportEmail = settingsData?.support_email?.trim() || 'svastrastore@gmail.com';
 
         // ── Order fields ───────────────────────────────────────────────────
         const getFinancialYear = (d: any): string => {
