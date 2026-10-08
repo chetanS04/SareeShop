@@ -51,8 +51,8 @@ export class PaymentService {
      RAZORPAY PAYMENT GATEWAY CONFIGURATION
      ===========================================================================
     */
-    this.keyId = this.config.get<string>('RAZORPAY_KEY_ID') || process.env.RAZORPAY_KEY_ID || 'rzp_test_TlHJlHDAmuxWUJ';
-    this.keySecret = this.config.get<string>('RAZORPAY_KEY_SECRET') || process.env.RAZORPAY_KEY_SECRET || 'z5aRolpVktOLQoezVoR7Iw9t';
+    this.keyId = this.config.get<string>('RAZORPAY_KEY_ID') || process.env.RAZORPAY_KEY_ID || 'rzp_test_Tl2nTBopDxOys3';
+    this.keySecret = this.config.get<string>('RAZORPAY_KEY_SECRET') || process.env.RAZORPAY_KEY_SECRET || 'etLGxPhuEDOmz9g5WfyZU3mK';
     this.currency = this.config.get<string>('RAZORPAY_CURRENCY') || process.env.RAZORPAY_CURRENCY || 'INR';
 
     this.razorpay = new Razorpay({
@@ -69,7 +69,7 @@ export class PaymentService {
 
   async initiatePayment(userId: number, user: any, body: any) {
     // Proactively clean up any stale abandoned pending online payment sessions (>1 hour old)
-    this.cleanupAbandonedOnlineOrders().catch(() => {});
+    this.cleanupAbandonedOnlineOrders().catch(() => { });
 
     let cartItems: any[] = [];
     let isSingleItem = false;
@@ -261,8 +261,8 @@ export class PaymentService {
       });
     } catch (rzpErr: any) {
       this.logger.error(`[RAZORPAY_DEBUG][INITIATE_FAILED] Order ${orderNumber}: ${rzpErr.message}`, rzpErr);
-      await this.db.delete(orderItems).where(eq(orderItems.orderId, r.id)).catch(() => {});
-      await this.db.delete(orders).where(eq(orders.id, r.id)).catch(() => {});
+      await this.db.delete(orderItems).where(eq(orderItems.orderId, r.id)).catch(() => { });
+      await this.db.delete(orders).where(eq(orders.id, r.id)).catch(() => { });
       pendingOrders.delete(orderNumber);
       throw new BadRequestException(rzpErr.error?.description || rzpErr.message || 'Failed to initialize Razorpay payment');
     }
@@ -309,9 +309,9 @@ export class PaymentService {
       return { success: false, message: 'Cannot cancel an already-paid order.' };
     }
 
-    await this.db.delete(orderItems).where(eq(orderItems.orderId, existingOrder.id)).catch(() => {});
-    await this.db.delete(orderTrackingRecords).where(eq(orderTrackingRecords.orderId, existingOrder.id)).catch(() => {});
-    await this.db.delete(orders).where(eq(orders.id, existingOrder.id)).catch(() => {});
+    await this.db.delete(orderItems).where(eq(orderItems.orderId, existingOrder.id)).catch(() => { });
+    await this.db.delete(orderTrackingRecords).where(eq(orderTrackingRecords.orderId, existingOrder.id)).catch(() => { });
+    await this.db.delete(orders).where(eq(orders.id, existingOrder.id)).catch(() => { });
     pendingOrders.delete(orderNumber);
 
     this.logger.log(`[CANCEL] Cancelled pending order #${existingOrder.id} (${orderNumber}) for user ${userId}`);
@@ -616,9 +616,9 @@ export class PaymentService {
     } else {
       // Payment FAILED / CANCELLED
       if (existingOrder && existingOrder.paymentStatus !== 'paid') {
-        await this.db.delete(orderItems).where(eq(orderItems.orderId, existingOrder.id)).catch(() => {});
-        await this.db.delete(orderTrackingRecords).where(eq(orderTrackingRecords.orderId, existingOrder.id)).catch(() => {});
-        await this.db.delete(orders).where(eq(orders.id, existingOrder.id)).catch(() => {});
+        await this.db.delete(orderItems).where(eq(orderItems.orderId, existingOrder.id)).catch(() => { });
+        await this.db.delete(orderTrackingRecords).where(eq(orderTrackingRecords.orderId, existingOrder.id)).catch(() => { });
+        await this.db.delete(orders).where(eq(orders.id, existingOrder.id)).catch(() => { });
         this.logger.log(`[CLEANUP] Deleted unpaid/cancelled pending order #${existingOrder.id} (${orderNumber})`);
       }
       pendingOrders.delete(orderNumber);
@@ -643,9 +643,9 @@ export class PaymentService {
       );
       if (staleOrders.length > 0) {
         const staleIds = staleOrders.map(o => o.id);
-        await this.db.delete(orderItems).where(inArray(orderItems.orderId, staleIds)).catch(() => {});
-        await this.db.delete(orderTrackingRecords).where(inArray(orderTrackingRecords.orderId, staleIds)).catch(() => {});
-        await this.db.delete(orders).where(inArray(orders.id, staleIds)).catch(() => {});
+        await this.db.delete(orderItems).where(inArray(orderItems.orderId, staleIds)).catch(() => { });
+        await this.db.delete(orderTrackingRecords).where(inArray(orderTrackingRecords.orderId, staleIds)).catch(() => { });
+        await this.db.delete(orders).where(inArray(orders.id, staleIds)).catch(() => { });
         this.logger.log(`[CLEANUP] Purged ${staleIds.length} stale abandoned online payment order(s)`);
       }
     } catch (err: any) {

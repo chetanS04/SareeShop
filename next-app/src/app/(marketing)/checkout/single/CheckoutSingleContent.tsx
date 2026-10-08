@@ -604,7 +604,7 @@ const CheckoutSingle = () => {
                         }
 
                         const options = {
-                            key: key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TlHJlHDAmuxWUJ",
+                            key: key_id || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_Tl2nTBopDxOys3",
                             amount: amount,
                             currency: currency || "INR",
                             name: "SVastra",
@@ -658,7 +658,7 @@ const CheckoutSingle = () => {
                                     order_number,
                                     razorpay_order_id,
                                     error: failResp?.error,
-                                }).catch(() => {});
+                                }).catch(() => { });
                                 setLoading(false);
                                 const reason = failResp?.error?.reason;
                                 const errDesc = reason === 'international_transaction_not_allowed'
@@ -781,8 +781,7 @@ const CheckoutSingle = () => {
     ];
 
     const inputClass = (hasError?: boolean) =>
-        `w-full px-4 py-3 text-sm text-on-surface bg-pure-white border transition focus:outline-none focus:border-on-surface ${
-            hasError ? "border-primary" : "border-border-line"
+        `w-full px-4 py-3 text-sm text-on-surface bg-pure-white border transition focus:outline-none focus:border-on-surface ${hasError ? "border-primary" : "border-border-line"
         }`;
     const labelClass = "label-caps text-[10px] text-on-surface block mb-1.5";
 
@@ -834,23 +833,21 @@ const CheckoutSingle = () => {
                                     type="button"
                                     onClick={() => isDone && setCurrentStep(step)}
                                     disabled={!isDone && !isCurrent}
-                                    className={`text-left border px-3 py-3 sm:px-4 sm:py-4 transition-colors ${
-                                        isCurrent
+                                    className={`text-left border px-3 py-3 sm:px-4 sm:py-4 transition-colors ${isCurrent
                                             ? "border-on-surface bg-surface-ivory"
                                             : isDone
                                                 ? "border-border-line bg-surface hover:border-on-surface cursor-pointer"
                                                 : "border-border-line bg-surface-subtle opacity-70 cursor-default"
-                                    }`}
+                                        }`}
                                 >
                                     <div className="flex items-center gap-2 mb-1">
                                         <span
-                                            className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold border ${
-                                                isCurrent
+                                            className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold border ${isCurrent
                                                     ? "bg-on-surface text-surface border-on-surface"
                                                     : isDone
                                                         ? "bg-primary text-surface border-primary"
                                                         : "bg-surface text-body-slate border-border-line"
-                                            }`}
+                                                }`}
                                         >
                                             {isDone ? <Check className="w-3 h-3 stroke-[3]" /> : step}
                                         </span>
@@ -1252,11 +1249,10 @@ const CheckoutSingle = () => {
                                 <span className="label-caps text-[9px] text-body-slate">1 Item</span>
                             </div>
 
-                            <div className={`p-3 border space-y-3 ${
-                                isOutOfStock
+                            <div className={`p-3 border space-y-3 ${isOutOfStock
                                     ? "bg-surface border-primary"
                                     : "bg-surface border-border-line"
-                            }`}>
+                                }`}>
                                 <div className="flex items-start gap-3">
                                     <div className="relative w-14 aspect-[3/4] bg-surface-ivory border border-border-line overflow-hidden shrink-0 media-frame">
                                         <Image
@@ -1470,7 +1466,7 @@ const CheckoutSingle = () => {
 
             <Modal
                 isOpen={showPaymentModal}
-                onClose={() => {}}
+                onClose={() => { }}
                 title={
                     paymentStatus === "verifying"
                         ? "Verifying Payment"
