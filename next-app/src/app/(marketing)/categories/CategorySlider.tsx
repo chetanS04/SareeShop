@@ -112,7 +112,7 @@ export default function CategorySlider() {
     }, []);
 
     const onDetail = (category: Category) => {
-        router.push(`/categories/subcategories/${getCategorySlug(category)}`);
+        router.push(`/categories/${getCategorySlug(category)}`);
     };
 
     const scroll = (direction: 'left' | 'right') => {

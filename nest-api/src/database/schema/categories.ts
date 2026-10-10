@@ -5,9 +5,7 @@ import {
   varchar,
   text,
   boolean,
-  decimal,
   timestamp,
-  AnyMySqlColumn,
   primaryKey,
 } from 'drizzle-orm/mysql-core';
 import { attributes } from './attributes';
@@ -20,16 +18,12 @@ export const categories = mysqlTable('categories', {
   image: varchar('image', { length: 255 }),
   secondaryImage: varchar('secondary_image', { length: 255 }),
   link: text('link'),
-  parentId: bigint('parent_id', { mode: 'number', unsigned: true }).references(
-    (): AnyMySqlColumn => categories.id,
-    { onDelete: 'cascade' },
-  ),
   status: boolean('status').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
 });
 
-// Pivot: category <-> attributes (subcategory attribute configuration)
+// Pivot: category <-> attributes (category attribute configuration)
 export const categoryAttributes = mysqlTable(
   'category_attributes',
   {
@@ -47,15 +41,7 @@ export const categoryAttributes = mysqlTable(
   }),
 );
 
-export const categoriesRelations = relations(categories, ({ one, many }) => ({
-  parent: one(categories, {
-    fields: [categories.parentId],
-    references: [categories.id],
-    relationName: 'categoryParent',
-  }),
-  subcategories: many(categories, {
-    relationName: 'categoryParent',
-  }),
+export const categoriesRelations = relations(categories, ({ many }) => ({
   products: many(products),
   categoryAttributes: many(categoryAttributes),
 }));
@@ -74,4 +60,3 @@ export const categoryAttributesRelations = relations(categoryAttributes, ({ one 
 export type Category = typeof categories.$inferSelect;
 export type NewCategory = typeof categories.$inferInsert;
 export type CategoryAttribute = typeof categoryAttributes.$inferSelect;
-

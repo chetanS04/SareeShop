@@ -3,6 +3,7 @@
 html {
   font-size: clamp(14px, 9px + 0.4vw, 16px) !important;
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 @theme inline {

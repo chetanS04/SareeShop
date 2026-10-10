@@ -280,7 +280,7 @@ async function buildFacetCards(
       description: sanitizeCategoryDescription(cat.description),
       imageUrl,
       productCount: count,
-      href: `/categories/subcategories/${getCategorySlug(cat)}`,
+      href: `/categories/${getCategorySlug(cat)}`,
     });
   }
 

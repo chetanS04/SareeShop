@@ -129,7 +129,7 @@ export default function CategoriesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
             {categories.map((cat, index) => {
               const imgSrc = getImageUrl(cat.image) || getImageUrl(cat.secondary_image) || FALLBACK;
-              const href = `/categories/subcategories/${getCategorySlug(cat)}`;
+              const href = `/categories/${getCategorySlug(cat)}`;
               const count = Number(cat.products_count ?? cat.productsCount ?? 0);
               const desc = categoryDescriptionOrFallback(cat.description);
               const roleNo = String(index + 1).padStart(2, "0");

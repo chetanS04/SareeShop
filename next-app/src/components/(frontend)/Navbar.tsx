@@ -356,20 +356,69 @@ export default function Navbar() {
 
             {user ? <NotificationBell /> : null}
 
+            <Link
+              aria-label="Saved Items"
+              href="/wishlist"
+              className={`touch-target relative transition-colors ${iconActive('/wishlist') ? 'text-primary' : 'text-on-surface hover:text-primary'}`}
+            >
+              <RiHeartLine className="text-[20px]" />
+              {wishlistCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-0.5 bg-primary text-surface text-[10px] font-semibold flex items-center justify-center leading-none">
+                  {wishlistCount > 9 ? '9+' : wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            <Link
+              aria-label={`Shopping Bag, ${count} items`}
+              href="/cart"
+              className={`touch-target relative transition-colors ${iconActive('/cart') || iconActive('/checkout') ? 'text-primary' : 'text-on-surface hover:text-primary'}`}
+            >
+              <RiShoppingBagLine className="text-[20px]" />
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-surface text-[10px] font-semibold flex items-center justify-center leading-none">
+                {count > 9 ? '9+' : count}
+              </span>
+            </Link>
+
+            {/* Single Profile Button with Dropdown (Avatar if logged in, outline icon if logged out) */}
             <div className="relative hidden sm:block" ref={accountRef}>
               <button
                 type="button"
                 aria-label="Customer Profile"
-                className={`touch-target transition-colors ${iconActive('/profile') || iconActive('/orders') ? 'text-primary' : 'text-on-surface hover:text-primary'}`}
+                className={`touch-target flex items-center justify-center transition-colors ${
+                  iconActive('/profile') || iconActive('/orders') ? 'text-primary' : 'text-on-surface hover:text-primary'
+                }`}
                 onClick={() => {
                   if (!user) openAuthModal('login');
                   else setAccountOpen((v) => !v);
                 }}
               >
-                <RiUserLine className="text-[20px]" />
+                {user && avatarSrc && !avatarError ? (
+                  <img
+                    alt={user.name || 'Profile'}
+                    src={avatarSrc}
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border transition-all ${
+                      accountOpen ? 'border-primary ring-2 ring-primary/20' : 'border-border-line hover:border-primary'
+                    }`}
+                    width={32}
+                    height={32}
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : user?.name ? (
+                  <span
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center border transition-all ${
+                      accountOpen ? 'border-primary ring-2 ring-primary/20' : 'border-primary/20 hover:border-primary'
+                    }`}
+                  >
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                ) : (
+                  <RiUserLine className="text-[20px]" />
+                )}
               </button>
+
               {accountOpen && user && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-on-surface z-50">
+                <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-on-surface shadow-lg z-50">
                   <div className="px-4 py-3 border-b border-border-line">
                     <p className="text-xs font-semibold uppercase tracking-wider truncate text-on-surface">{user.name || 'Client'}</p>
                     <p className="text-[11px] text-body-slate truncate mt-0.5">{user.email}</p>
@@ -413,43 +462,6 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-
-            <Link
-              aria-label="Saved Items"
-              href="/wishlist"
-              className={`touch-target relative transition-colors ${iconActive('/wishlist') ? 'text-primary' : 'text-on-surface hover:text-primary'}`}
-            >
-              <RiHeartLine className="text-[20px]" />
-              {wishlistCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-0.5 bg-primary text-surface text-[10px] font-semibold flex items-center justify-center leading-none">
-                  {wishlistCount > 9 ? '9+' : wishlistCount}
-                </span>
-              )}
-            </Link>
-
-            <Link
-              aria-label={`Shopping Bag, ${count} items`}
-              href="/cart"
-              className={`touch-target relative transition-colors ${iconActive('/cart') || iconActive('/checkout') ? 'text-primary' : 'text-on-surface hover:text-primary'}`}
-            >
-              <RiShoppingBagLine className="text-[20px]" />
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-surface text-[10px] font-semibold flex items-center justify-center leading-none">
-                {count > 9 ? '9+' : count}
-              </span>
-            </Link>
-
-            {avatarSrc && !avatarError ? (
-              <div className="pl-1 sm:pl-2 ml-0.5 hidden sm:flex items-center">
-                <img
-                  alt="Profile"
-                  src={avatarSrc}
-                  className="sv-round w-8 h-8 object-cover"
-                  width={32}
-                  height={32}
-                  onError={() => setAvatarError(true)}
-                />
-              </div>
-            ) : null}
 
             <button
               type="button"
@@ -517,7 +529,7 @@ export default function Navbar() {
                   {categories.slice(0, 12).map((cat) => (
                     <Link
                       key={cat.id}
-                      href={`/categories/subcategories/${getCategorySlug(cat)}`}
+                      href={`/categories/${getCategorySlug(cat)}`}
                       className="py-2 text-[12px] uppercase tracking-wider text-body-slate hover:text-primary"
                       onClick={() => setMobileOpen(false)}
                     >

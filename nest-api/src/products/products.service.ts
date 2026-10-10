@@ -67,20 +67,7 @@ export class ProductsService {
   }
 
   private async getAllDescendantCategoryIds(parentId: number): Promise<number[]> {
-    try {
-      const directSubs = await this.db.query.categories.findMany({
-        where: and(eq(categories.parentId, parentId), eq(categories.status, true)),
-      });
-      let allIds: number[] = [parentId];
-      for (const sub of directSubs) {
-        const subId = Number(sub.id);
-        const descendants = await this.getAllDescendantCategoryIds(subId);
-        allIds = allIds.concat(descendants);
-      }
-      return Array.from(new Set(allIds));
-    } catch {
-      return [parentId];
-    }
+    return [parentId];
   }
 
   private sanitizeCustomerVariant(variant: any) {
@@ -278,29 +265,8 @@ export class ProductsService {
     }
 
     const allCats: any[] = await this.db.query.categories.findMany();
-
-    // If parent context is provided, resolve parent first and look up child subcategory
-    if (rawParentIdOrSlug !== undefined && rawParentIdOrSlug !== null && rawParentIdOrSlug !== '') {
-      const parentCat = allCats.find((c: any) => matchesSlugOrId(c, rawParentIdOrSlug) && (!c.parentId || c.parentId === null))
-        || allCats.find((c: any) => matchesSlugOrId(c, rawParentIdOrSlug));
-
-      if (parentCat) {
-        const matchingSub = allCats.find((c: any) => matchesSlugOrId(c, rawCatIdOrSlug) && Number(c.parentId) === Number(parentCat.id));
-        if (matchingSub) {
-          return Number(matchingSub.id);
-        }
-      }
-    }
-
-    // Try finding top-level parent category first if it matches
-    const parentMatch = allCats.find((c: any) => matchesSlugOrId(c, rawCatIdOrSlug) && (!c.parentId || c.parentId === null));
-    if (parentMatch) {
-      return Number(parentMatch.id);
-    }
-
-    // Otherwise find any category matching the slug
-    const anyMatch = allCats.find((c: any) => matchesSlugOrId(c, rawCatIdOrSlug));
-    return anyMatch ? Number(anyMatch.id) : null;
+    const match = allCats.find((c: any) => matchesSlugOrId(c, rawCatIdOrSlug));
+    return match ? Number(match.id) : null;
   }
 
   async getAllProductsPaginated(query: any) {
@@ -338,12 +304,7 @@ export class ProductsService {
     const conditions: any[] = [eq(products.status, true)];
     if (isCategoryFilterSpecified) {
       if (categoryId) {
-        const categoryIds = await this.getAllDescendantCategoryIds(categoryId);
-        if (categoryIds.length === 1) {
-          conditions.push(eq(products.categoryId, categoryIds[0]));
-        } else if (categoryIds.length > 1) {
-          conditions.push(inArray(products.categoryId, categoryIds));
-        }
+        conditions.push(eq(products.categoryId, categoryId));
       } else {
         conditions.push(sql`1=0`);
       }
@@ -1285,15 +1246,12 @@ export class ProductsService {
       };
     }
 
-    const categoryIds = await this.getAllDescendantCategoryIds(catId);
     const prodList = await this.db
       .select()
       .from(products)
       .where(
         and(
-          categoryIds.length === 1
-            ? eq(products.categoryId, categoryIds[0])
-            : inArray(products.categoryId, categoryIds),
+          eq(products.categoryId, catId),
           eq(products.status, true),
         ),
       );
@@ -1370,39 +1328,19 @@ export class ProductsService {
       (p: any) => (p.variants ?? []).filter((v: any) => v.status).length > 0
     );
 
-    // Get sibling category IDs under the same parent category if applicable
-    let siblingCatIds: number[] = [];
-    if ((targetProduct.category as any)?.parentId) {
-      const parentId = (targetProduct.category as any).parentId;
-      const siblingCategories = await this.db.query.categories.findMany({
-        where: and(eq(categories.parentId, parentId), eq(categories.status, true)),
-      });
-      siblingCatIds = siblingCategories.map((c) => Number(c.id));
-    }
-
-    // 1. Primary: Same category / subcategory
+    // 1. Primary: Same category
     const sameCategoryProds = validProds.filter(
       (p: any) => Number(p.categoryId) === Number(targetProduct.categoryId)
     );
 
-    // 2. Secondary: Sibling categories
-    const siblingCategoryProds = validProds.filter(
-      (p: any) =>
-        Number(p.categoryId) !== Number(targetProduct.categoryId) &&
-        siblingCatIds.includes(Number(p.categoryId))
-    );
-
-    // 3. Tertiary: Products from all other categories (when related products end)
+    // 2. Secondary: Other categories
     const otherCategoryProds = validProds.filter(
-      (p: any) =>
-        Number(p.categoryId) !== Number(targetProduct.categoryId) &&
-        !siblingCatIds.includes(Number(p.categoryId))
+      (p: any) => Number(p.categoryId) !== Number(targetProduct.categoryId)
     );
 
-    // Combine in order: Same Category -> Sibling Categories -> Other Categories
+    // Combine in order: Same Category -> Other Categories
     const combinedProducts = [
       ...sameCategoryProds,
-      ...siblingCategoryProds,
       ...otherCategoryProds,
     ];
 
@@ -2100,12 +2038,7 @@ export class ProductsService {
       const conditions: any[] = [];
       if (isCategoryFilterSpecified) {
         if (categoryId) {
-          const categoryIds = await this.getAllDescendantCategoryIds(categoryId);
-          if (categoryIds.length === 1) {
-            conditions.push(eq(products.categoryId, categoryIds[0]));
-          } else if (categoryIds.length > 1) {
-            conditions.push(inArray(products.categoryId, categoryIds));
-          }
+          conditions.push(eq(products.categoryId, categoryId));
         } else {
           conditions.push(sql`1=0`);
         }
@@ -3247,17 +3180,6 @@ export class ProductsService {
       const catRows = await this.db.select().from(categories).where(inArray(categories.id, catIds));
       for (const c of catRows) catMap.set(Number(c.id), c);
 
-      const parentIds = Array.from(new Set(catRows.map((c: any) => Number(c.parentId)).filter(Boolean)));
-      if (parentIds.length > 0) {
-        const parentRows = await this.db.select().from(categories).where(inArray(categories.id, parentIds));
-        const parentMap = new Map<number, any>();
-        for (const p of parentRows) parentMap.set(Number(p.id), p);
-        for (const c of catMap.values()) {
-          if (c.parentId && parentMap.has(Number(c.parentId))) {
-            c.parent = parentMap.get(Number(c.parentId));
-          }
-        }
-      }
     }
 
     const bMap = new Map<number, any>();
@@ -3333,15 +3255,7 @@ export class ProductsService {
     if (pRow.categoryId) {
       const [c] = await this.db.select().from(categories).where(eq(categories.id, pRow.categoryId)).limit(1);
       if (c) {
-        let parent: any = null;
-        if (c.parentId) {
-          const [p] = await this.db.select().from(categories).where(eq(categories.id, c.parentId)).limit(1);
-          parent = p ?? null;
-        }
-        category = {
-          ...c,
-          parent,
-        };
+        category = c;
       }
     }
 

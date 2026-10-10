@@ -1,3 +1,4 @@
+// Next.js configuration - updated sticky layout
 import type { NextConfig } from "next";
 
 const securityHeaders = [

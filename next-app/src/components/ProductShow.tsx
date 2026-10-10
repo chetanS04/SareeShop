@@ -11,11 +11,21 @@ import ProductCard from "@/components/(frontend)/ProductCard";
 const basePath = process.env.NEXT_PUBLIC_UPLOAD_BASE || "https://api.zelton.co.in";
 
 type ProductShowProps = {
-    subcategoryId: number;
+    categoryId?: number;
+    categoryName?: string;
+    subcategoryId?: number;
     subcategoryName?: string;
 };
 
-const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subcategoryName }) => {
+const ProductShowComponent: React.FC<ProductShowProps> = ({
+    categoryId,
+    categoryName,
+    subcategoryId,
+    subcategoryName,
+}) => {
+    const targetId = categoryId ?? subcategoryId;
+    const targetName = categoryName ?? subcategoryName;
+
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -32,10 +42,10 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
     const { hideLoader } = useLoader();
 
     useEffect(() => {
-        if (subcategoryId) {
+        if (targetId) {
             fetchProducts(1, false);
         }
-    }, [subcategoryId, priceRange, sortBy]);
+    }, [targetId, priceRange, sortBy]);
 
     const fetchProducts = async (pageToFetch = 1, isAppend = false) => {
         if (isAppend) {
@@ -45,7 +55,7 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
         }
         try {
             const params: any = {
-                category_id: subcategoryId,
+                category_id: targetId,
                 page: pageToFetch,
                 per_page: 20,
             };
@@ -108,7 +118,7 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
 
         observer.observe(target);
         return () => observer.disconnect();
-    }, [hasMore, loading, loadingMore, currentPage, subcategoryId, priceRange, sortBy]);
+    }, [hasMore, loading, loadingMore, currentPage, targetId, priceRange, sortBy]);
 
     const clearFilters = () => {
         setPriceRange('all');
@@ -147,7 +157,7 @@ const ProductShowComponent: React.FC<ProductShowProps> = ({ subcategoryId, subca
                 {/* Left: Category Title & Product Counter */}
                 <div className="flex-shrink-0">
                     <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#0c2340] capitalize">
-                        {subcategoryName || "All Products"}
+                        {targetName || "All Products"}
                     </h1>
                     <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">{products.length} products available</p>
                 </div>

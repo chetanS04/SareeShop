@@ -6,35 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { ChevronUp, Home, ArrowUpRight } from "lucide-react";
 import axios from "../../../../utils/axios";
 import ProductCard from "@/components/(frontend)/ProductCard";
+import { Product, Category } from "@/common/interface";
 import { useProductSync, ProductEventData } from "@/context/ProductSyncContext";
-
-type Product = {
-    id: number;
-    name: string;
-    description: string;
-    image_url: string;
-    min_price: number;
-    max_price: number;
-    average_rating: number;
-    reviews_count: number;
-    brand: { id: number; name: string } | null;
-    category: { id: number; name: string } | null;
-    variants: any[];
-    best_variant: {
-        id: number;
-        sp: number;
-        mrp: number | null;
-        stock: number;
-        image_url: string | null;
-    } | null;
-};
-
-type Category = {
-    id: number;
-    name: string;
-    parent_id: number | null;
-    image?: string;
-};
 
 const SORT_OPTIONS = [
     { id: "newest", label: "Relevance" },
@@ -48,15 +21,11 @@ const ProductsPage = () => {
 
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [subcategories, setSubcategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
-    const [selectedCategory, setSelectedCategory] = useState<number | null>(
-        searchParams.get("category_id") ? parseInt(searchParams.get("category_id")!) : null
-    );
-    const [selectedSubcategory, setSelectedSubcategory] = useState<number | null>(
-        searchParams.get("subcategory_id") ? parseInt(searchParams.get("subcategory_id")!) : null
+    const [selectedCategory, setSelectedCategory] = useState<string | number | null>(
+        searchParams.get("category_id") || searchParams.get("category") || null
     );
 
     const [sortBy, setSortBy] = useState<string>("newest");
@@ -114,7 +83,7 @@ const ProductsPage = () => {
 
     useEffect(() => {
         fetchProducts(1, false);
-    }, [selectedCategory, selectedSubcategory, priceRange, sortBy]);
+    }, [selectedCategory, priceRange, sortBy]);
 
     const loadCategories = async () => {
         try {
@@ -123,21 +92,6 @@ const ProductsPage = () => {
             if (Array.isArray(response.data)) data = response.data;
             else if (response.data?.success && Array.isArray(response.data?.data)) data = response.data.data;
             setCategories(data);
-
-            const allSubs: Category[] = [];
-            data.forEach((cat) => {
-                if (Array.isArray(cat.children)) {
-                    cat.children.forEach((sub: any) => {
-                        allSubs.push({
-                            id: sub.id,
-                            name: sub.name,
-                            parent_id: cat.id,
-                            image: sub.image,
-                        });
-                    });
-                }
-            });
-            setSubcategories(allSubs);
         } catch (error) {
             console.error("Failed to fetch categories:", error);
         }
@@ -150,8 +104,7 @@ const ProductsPage = () => {
         try {
             const params: any = { page: pageToFetch, per_page: 20 };
             if (searchQuery) params.search = searchQuery;
-            if (selectedSubcategory) params.category_id = selectedSubcategory;
-            else if (selectedCategory) params.category_id = selectedCategory;
+            if (selectedCategory) params.category_id = selectedCategory;
             if (priceRange && priceRange !== "all") params.price_range = priceRange;
             if (sortBy) params.sort_by = sortBy;
 
@@ -161,17 +114,20 @@ const ProductsPage = () => {
                 const rawData = response.data.data;
                 const productList = Array.isArray(rawData)
                     ? rawData
-                    : Array.isArray(rawData?.products)
-                      ? rawData.products
-                      : [];
+                    : (Array.isArray(rawData?.products) ? rawData.products : []);
 
                 const pagination = response.data.pagination;
+                const total = pagination?.total ?? productList.length;
                 const totalPagesCount = pagination?.last_page ?? 1;
-                setTotalProducts(pagination?.total ?? productList.length);
+
+                setTotalProducts(total);
                 setHasMore(pageToFetch < totalPagesCount && productList.length > 0);
 
-                if (isAppend) setProducts((prev) => [...prev, ...productList]);
-                else setProducts(productList);
+                if (isAppend) {
+                    setProducts((prev) => [...prev, ...productList]);
+                } else {
+                    setProducts(productList);
+                }
                 setCurrentPage(pageToFetch);
             } else {
                 if (!isAppend) setProducts([]);
@@ -187,9 +143,11 @@ const ProductsPage = () => {
         }
     };
 
+    // IntersectionObserver for Infinite Scroll
     useEffect(() => {
         const target = observerTargetRef.current;
         if (!target) return;
+
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
@@ -200,27 +158,30 @@ const ProductsPage = () => {
         );
         observer.observe(target);
         return () => observer.disconnect();
-    }, [hasMore, loading, loadingMore, currentPage, selectedCategory, selectedSubcategory, priceRange, sortBy, searchQuery]);
+    }, [hasMore, loading, loadingMore, currentPage, selectedCategory, priceRange, sortBy, searchQuery]);
 
     const clearFilters = () => {
         setSearchQuery("");
         setSelectedCategory(null);
-        setSelectedSubcategory(null);
         setPriceRange("all");
         setSortBy("newest");
         setCurrentPage(1);
         fetchProducts(1, false);
     };
 
-    const getSelectedCategoryName = () =>
-        selectedCategory ? categories.find((cat) => cat.id === selectedCategory)?.name : null;
-
-    const getSelectedSubcategoryName = () =>
-        selectedSubcategory ? subcategories.find((sub) => sub.id === selectedSubcategory)?.name : null;
+    const getSelectedCategoryName = () => {
+        if (!selectedCategory) return null;
+        const matched = categories.find(
+            (cat) =>
+                String(cat.id) === String(selectedCategory) ||
+                (cat.slug && String(cat.slug).toLowerCase() === String(selectedCategory).toLowerCase()) ||
+                (cat.name && cat.name.toLowerCase() === String(selectedCategory).toLowerCase())
+        );
+        return matched?.name || (typeof selectedCategory === "string" ? selectedCategory : null);
+    };
 
     const processedProducts = Array.isArray(products) ? products : [];
-    const hasActiveFilters =
-        selectedCategory || selectedSubcategory || priceRange !== "all" || sortBy !== "newest";
+    const hasActiveFilters = selectedCategory || priceRange !== "all" || sortBy !== "newest";
 
     if (loading && products.length === 0) {
         return (
@@ -258,14 +219,6 @@ const ProductsPage = () => {
                             <span className="text-primary truncate max-w-[12rem] sm:max-w-none">{getSelectedCategoryName()}</span>
                         </>
                     )}
-                    {selectedSubcategory && (
-                        <>
-                            <span className="text-on-surface/25" aria-hidden="true">
-                                /
-                            </span>
-                            <span className="text-primary truncate max-w-[12rem] sm:max-w-none">{getSelectedSubcategoryName()}</span>
-                        </>
-                    )}
                 </div>
             </div>
 
@@ -274,14 +227,10 @@ const ProductsPage = () => {
                 <header className="mb-8 sm:mb-10 lg:mb-12 max-w-3xl">
                     <span className="label-caps text-primary block mb-3">Wear Yourself · Shop</span>
                     <h1 className="display-section text-on-surface mb-4">
-                        {selectedSubcategory
-                            ? getSelectedSubcategoryName()
-                            : selectedCategory
-                              ? getSelectedCategoryName()
-                              : "Collections"}
+                        {selectedCategory ? getSelectedCategoryName() : "Collections"}
                     </h1>
                     <p className="text-[15px] sm:text-[16px] text-body-slate leading-relaxed max-w-xl">
-                        {selectedCategory || selectedSubcategory
+                        {selectedCategory
                             ? "Curated handloom pieces from this collection."
                             : "Handloom sarees for work, celebrations, and everyday life."}
                     </p>

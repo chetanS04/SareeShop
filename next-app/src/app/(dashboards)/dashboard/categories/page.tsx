@@ -2,7 +2,7 @@
 
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import * as yup from "yup";
 import Modal from "@/components/(sheared)/Modal";
 import ErrorMessage from "@/components/(sheared)/ErrorMessage";
@@ -10,8 +10,7 @@ import SuccessMessage from "@/components/(sheared)/SuccessMessage";
 import { useLoader } from "@/context/LoaderContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Pencil, Trash2, Search, Loader2, Plus, Check } from "lucide-react";
-import { TiInfoLargeOutline } from "react-icons/ti";
+import { Pencil, Trash2, Search, Loader2, Plus, Check, Package, X } from "lucide-react";
 import ProtectedRoute from "@/components/(sheared)/ProtectedRoute";
 import {
   createCategory,
@@ -20,11 +19,12 @@ import {
   updateCategory,
   toggleCategoryStatus,
 } from "../../../../../utils/category";
+import { fetchAttributes } from "../../../../../utils/attribute";
 import dynamic from "next/dynamic";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 import ImageCropperModal from "@/components/(frontend)/ImageCropperModal";
-import { Category } from "@/common/interface";
+import { Attribute, Category } from "@/common/interface";
 import { getImageUrl } from "../../../../../utils/imageUtils";
 import { getErrorMessage } from "../../../../../utils/errorUtils";
 import { getCategorySlug } from "../../../../../utils/slugUtils";
@@ -41,19 +41,48 @@ const SUPPORTED_FORMATS = [
 
 const schema = yup
   .object({
-    name: yup.string().trim().required("Name is required").min(2, "Name must be at least 2 characters").max(50, "Name cannot exceed 50 characters"),
+    name: yup
+      .string()
+      .trim()
+      .required("Name is required")
+      .min(2, "Name must be at least 2 characters")
+      .max(100, "Name cannot exceed 100 characters"),
     description: yup.string().nullable().max(3000),
     link: yup.string().nullable(),
-    image: yup.mixed().test("fileSize", "Image must be less than 8MB.",
-      (file) => !file || typeof file === "string" || (file instanceof File && file.size <= MAX_FILE_SIZE)
-    ).test("fileType", "Unsupported format", (file) => !file || typeof file === "string" ||
-      (file instanceof File && SUPPORTED_FORMATS.includes(file.type))
-    ),
-    secondary_image: yup.mixed().test("fileSize", "Secondary image must be less than 8MB.",
-      (file) => !file || typeof file === "string" || (file instanceof File && file.size <= MAX_FILE_SIZE)
-    ).test("fileType", "Unsupported format", (file) => !file || typeof file === "string" ||
-      (file instanceof File && SUPPORTED_FORMATS.includes(file.type))
-    ),
+    attributes: yup
+      .array()
+      .of(
+        yup.object({
+          AttributeId: yup.number().typeError("Attribute is required").required("Attribute is required"),
+          HasImages: yup.boolean().default(false),
+          IsPrimary: yup.boolean().default(false),
+        })
+      )
+      .max(2, "You can only add up to 2 attributes"),
+    image: yup
+      .mixed()
+      .test(
+        "fileSize",
+        "Image must be less than 8MB.",
+        (file) => !file || typeof file === "string" || (file instanceof File && file.size <= MAX_FILE_SIZE)
+      )
+      .test(
+        "fileType",
+        "Unsupported format",
+        (file) => !file || typeof file === "string" || (file instanceof File && SUPPORTED_FORMATS.includes(file.type))
+      ),
+    secondary_image: yup
+      .mixed()
+      .test(
+        "fileSize",
+        "Secondary image must be less than 8MB.",
+        (file) => !file || typeof file === "string" || (file instanceof File && file.size <= MAX_FILE_SIZE)
+      )
+      .test(
+        "fileType",
+        "Unsupported format",
+        (file) => !file || typeof file === "string" || (file instanceof File && SUPPORTED_FORMATS.includes(file.type))
+      ),
     status: yup.boolean().required(),
   })
   .required();
@@ -75,6 +104,9 @@ export default function CategoriesManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+
+  // Attributes for dropdown
+  const [availableAttributes, setAvailableAttributes] = useState<Attribute[]>([]);
 
   // Modals & form state
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -103,7 +135,7 @@ export default function CategoriesManagement() {
       buttonsXS: "bold,italic,ul",
       askBeforePasteHTML: false,
       askBeforePasteFromWord: false,
-      defaultActionOnPaste: 'insert_clear_html' as any
+      defaultActionOnPaste: "insert_clear_html" as any,
     }),
     []
   );
@@ -118,12 +150,35 @@ export default function CategoriesManagement() {
     formState: { errors },
   } = useForm<any>({
     resolver: yupResolver(schema),
-    defaultValues: { status: true },
+    defaultValues: { name: "", description: "", attributes: [], status: true },
   });
 
-  const disableScrollNumberInput = (e: React.WheelEvent<HTMLInputElement>) => {
-    e.currentTarget.blur();
+  const { fields, append, remove } = useFieldArray({ control, name: "attributes" });
+
+  // Load available attributes for dropdown
+  const loadAttributes = async () => {
+    try {
+      const res = await fetchAttributes({ status: "active" });
+      let activeAttributes: any[] = [];
+      if (res && res.data && Array.isArray(res.data.attributes)) {
+        activeAttributes = res.data.attributes;
+      } else if (res && Array.isArray(res.attributes)) {
+        activeAttributes = res.attributes;
+      } else if (Array.isArray(res)) {
+        activeAttributes = res;
+      }
+      const filtered = activeAttributes.filter(
+        (attr: any) => attr.status === true || attr.status === 1 || attr.status === "1"
+      );
+      setAvailableAttributes(filtered);
+    } catch {
+      console.error("Failed to load attributes");
+    }
   };
+
+  useEffect(() => {
+    loadAttributes();
+  }, []);
 
   // Debounce search query
   useEffect(() => {
@@ -180,9 +235,9 @@ export default function CategoriesManagement() {
       const total = paginationData?.total ?? list.length;
       const hasNext = Boolean(
         paginationData?.has_next_page ??
-        paginationData?.hasNextPage ??
-        paginationData?.has_more ??
-        (paginationData ? pageNum < paginationData.last_page : list.length >= PAGE_SIZE)
+          paginationData?.hasNextPage ??
+          paginationData?.has_more ??
+          (paginationData ? pageNum < paginationData.last_page : list.length >= PAGE_SIZE)
       );
 
       setTotalCategories(total);
@@ -247,7 +302,9 @@ export default function CategoriesManagement() {
   }, [loadNextPage]);
 
   const openModal = (category: Category | null = null) => {
+    loadAttributes();
     setSelectedCategory(category);
+    remove();
 
     if (category) {
       setValue("name", category.name);
@@ -263,8 +320,30 @@ export default function CategoriesManagement() {
       setPreviewSecondary(normalize(secImg));
       if (category.image) setValue("image", category.image);
       if (secImg) setValue("secondary_image", secImg);
+
+      if (category.attributes && category.attributes.length > 0) {
+        const hasAnyPrimary = category.attributes.some((attr) => {
+          const a = attr as any;
+          return Boolean(a.pivot?.is_primary ?? a.pivot?.isPrimary ?? a.is_primary ?? a.isPrimary ?? false);
+        });
+
+        category.attributes.forEach((attr, idx) => {
+          const a = attr as any;
+          const attrId = attr.id ?? a.attributeId ?? a.AttributeId ?? a.pivot?.attribute_id;
+          const hasImg = Boolean(a.pivot?.has_images ?? a.pivot?.hasImages ?? a.has_images ?? a.hasImages ?? false);
+          let isPri = Boolean(a.pivot?.is_primary ?? a.pivot?.isPrimary ?? a.is_primary ?? a.isPrimary ?? false);
+          if (!hasAnyPrimary && idx === 0) {
+            isPri = true;
+          }
+          append({
+            AttributeId: Number(attrId),
+            HasImages: hasImg,
+            IsPrimary: isPri,
+          });
+        });
+      }
     } else {
-      reset({ status: true, name: "", description: "", link: "" });
+      reset({ status: true, name: "", description: "", link: "", attributes: [] });
       setPreviewPrimary(null);
       setPreviewSecondary(null);
     }
@@ -333,7 +412,7 @@ export default function CategoriesManagement() {
     try {
       await toggleCategoryStatus(category.id);
       setCategories((prev) =>
-        prev.map((c) => c.id === category.id ? { ...c, status: !c.status } : c)
+        prev.map((c) => (c.id === category.id ? { ...c, status: !c.status } : c))
       );
       setSuccessMessage("Status updated successfully!");
     } catch (err: any) {
@@ -348,9 +427,8 @@ export default function CategoriesManagement() {
     }
   };
 
-  const onDetail = (category: Category) => {
-    const slug = getCategorySlug(category);
-    router.push(`/dashboard/categories/sub-categories/${slug}`);
+  const onViewProducts = (category: Category) => {
+    router.push(`/dashboard/categories/${category.id}/products`);
   };
 
   return (
@@ -369,7 +447,6 @@ export default function CategoriesManagement() {
         {/* Header */}
         <div className="mb-4 md:mb-6 rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-xl shadow-md">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 md:px-6 py-3.5 md:py-4">
-
             {/* Title & Count */}
             <div className="flex items-center gap-3">
               <h2 className="text-lg md:text-xl lg:text-3xl font-extrabold text-gray-900 tracking-tight">
@@ -428,9 +505,10 @@ export default function CategoriesManagement() {
                 <tr>
                   <th className="px-6 py-4">S.No.</th>
                   <th className="px-6 py-4">Name</th>
+                  <th className="px-6 py-4">Attributes</th>
+                  <th className="px-6 py-4">Products</th>
                   <th className="px-6 py-4">Primary Image</th>
                   <th className="px-6 py-4">Secondary Image</th>
-                  <th className="px-6 py-4">Link</th>
                   <th className="px-6 py-4">Description</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-end">Actions</th>
@@ -439,7 +517,7 @@ export default function CategoriesManagement() {
               <tbody className="divide-y divide-gray-200 text-gray-700">
                 {isLoadingInitial && categories.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-16">
+                    <td colSpan={9} className="text-center py-16">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <Loader2 className="w-8 h-8 animate-spin text-[#007FFF]" />
                         <span className="text-sm font-medium text-gray-500">Loading categories...</span>
@@ -449,11 +527,47 @@ export default function CategoriesManagement() {
                 ) : categories.length ? (
                   categories.map((category, index) => {
                     const image = getImageUrl(category.image);
-                    const secondary_image = getImageUrl(category.secondary_image || (category as any).secondaryImage);
+                    const secondary_image = getImageUrl(
+                      category.secondary_image || (category as any).secondaryImage
+                    );
+                    const catAttrs = category.attributes || [];
+                    const prodCount = Number(
+                      category.products_count ?? (category as any).productsCount ?? 0
+                    );
+
                     return (
                       <tr key={category.id} className="hover:bg-blue-50/30 transition-colors">
                         <td className="px-6 py-4 font-semibold text-gray-500">{index + 1}</td>
-                        <td className="px-6 py-4 max-w-[200px] break-all whitespace-normal font-semibold text-gray-900">{category.name}</td>
+                        <td className="px-6 py-4 max-w-[200px] break-all whitespace-normal font-semibold text-gray-900">
+                          {category.name}
+                        </td>
+                        <td className="px-6 py-4">
+                          {catAttrs.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {catAttrs.map((ca: any, i: number) => (
+                                <span
+                                  key={i}
+                                  className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                                >
+                                  {ca.name || `Attr #${ca.id ?? ca.attributeId}`}
+                                  {ca.is_primary || ca.IsPrimary ? " (Primary)" : ""}
+                                  {ca.has_images || ca.HasImages ? " 📷" : ""}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">No Attributes</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => onViewProducts(category)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition cursor-pointer"
+                          >
+                            <Package className="w-3.5 h-3.5" />
+                            <span>{prodCount} products</span>
+                          </button>
+                        </td>
                         <td className="px-6 py-4">
                           {image ? (
                             <Image
@@ -482,21 +596,6 @@ export default function CategoriesManagement() {
                             <span className="text-xs text-gray-400 italic">No Image</span>
                           )}
                         </td>
-                        <td className="px-4 py-4">
-                          {category.link ? (
-                            <a
-                              href={category.link}
-                              className="text-[#007FFF] hover:text-blue-700 underline truncate max-w-[160px] inline-block font-medium"
-                              title={category.link}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              {category.link}
-                            </a>
-                          ) : (
-                            <span className="text-gray-400 italic">—</span>
-                          )}
-                        </td>
                         <td className="px-6 py-4">
                           <button
                             className="px-3 py-1.5 text-xs rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold transition cursor-pointer"
@@ -508,24 +607,26 @@ export default function CategoriesManagement() {
                         <td className="px-6 py-4">
                           <button
                             onClick={() => handleStatusToggle(category)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full p-0.5 transition-colors cursor-pointer ${category.status ? "bg-green-500" : "bg-red-500"
-                              }`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full p-0.5 transition-colors cursor-pointer ${
+                              category.status ? "bg-green-500" : "bg-red-500"
+                            }`}
                             title="Toggle Status"
                           >
                             <span
-                              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${category.status ? "translate-x-5" : "translate-x-0"
-                                }`}
+                              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                                category.status ? "translate-x-5" : "translate-x-0"
+                              }`}
                             />
                           </button>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex gap-2 justify-end">
                             <button
-                              title="View Subcategories"
-                              onClick={() => onDetail(category)}
-                              className="size-10 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full flex items-center justify-center transition cursor-pointer"
+                              title="View Products"
+                              onClick={() => onViewProducts(category)}
+                              className="size-10 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-full flex items-center justify-center transition cursor-pointer"
                             >
-                              <TiInfoLargeOutline className="h-5 w-5" />
+                              <Package className="h-4 w-4" />
                             </button>
                             <button
                               title="Edit Category"
@@ -548,10 +649,7 @@ export default function CategoriesManagement() {
                   })
                 ) : (
                   <tr>
-                    <td
-                      colSpan={8}
-                      className="text-center text-gray-400 py-12 italic"
-                    >
+                    <td colSpan={9} className="text-center text-gray-400 py-12 italic">
                       No Categories Found
                     </td>
                   </tr>
@@ -571,7 +669,14 @@ export default function CategoriesManagement() {
           ) : categories.length ? (
             categories.map((category, index) => {
               const image = getImageUrl(category.image);
-              const secondary_image = getImageUrl(category.secondary_image || (category as any).secondaryImage);
+              const secondary_image = getImageUrl(
+                category.secondary_image || (category as any).secondaryImage
+              );
+              const catAttrs = category.attributes || [];
+              const prodCount = Number(
+                category.products_count ?? (category as any).productsCount ?? 0
+              );
+
               return (
                 <div
                   key={category.id}
@@ -583,13 +688,15 @@ export default function CategoriesManagement() {
                         <h3 className="font-bold text-gray-900 text-base">{category.name}</h3>
                         <button
                           onClick={() => handleStatusToggle(category)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full p-0.5 transition-colors cursor-pointer ${category.status ? "bg-green-500" : "bg-red-500"
-                            }`}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full p-0.5 transition-colors cursor-pointer ${
+                            category.status ? "bg-green-500" : "bg-red-500"
+                          }`}
                           title="Toggle Status"
                         >
                           <span
-                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${category.status ? "translate-x-5" : "translate-x-0"
-                              }`}
+                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                              category.status ? "translate-x-5" : "translate-x-0"
+                            }`}
                           />
                         </button>
                       </div>
@@ -597,54 +704,69 @@ export default function CategoriesManagement() {
                     </div>
                   </div>
 
+                  {catAttrs.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {catAttrs.map((ca: any, i: number) => (
+                        <span
+                          key={i}
+                          className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                        >
+                          {ca.name || `Attr #${ca.id ?? ca.attributeId}`}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    {image ? (
-                      <Image
-                        src={image}
-                        alt={category.name}
-                        width={80}
-                        height={80}
-                        className="object-cover rounded-lg w-full h-24 border border-gray-100"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-full h-24 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <span className="text-xs text-gray-400">No Primary Image</span>
-                      </div>
-                    )}
-                    {secondary_image ? (
-                      <Image
-                        src={secondary_image}
-                        alt={category.name}
-                        width={80}
-                        height={80}
-                        className="object-cover rounded-lg w-full h-24 border border-gray-100"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-full h-24 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <span className="text-xs text-gray-400">No Secondary Image</span>
-                      </div>
-                    )}
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Primary Image</p>
+                      {image ? (
+                        <Image
+                          src={image}
+                          alt={category.name}
+                          width={50}
+                          height={50}
+                          className="object-cover rounded-lg mx-auto border border-gray-200"
+                          unoptimized
+                        />
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">No Image</span>
+                      )}
+                    </div>
+                    <div className="p-2 bg-gray-50 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Secondary Image</p>
+                      {secondary_image ? (
+                        <Image
+                          src={secondary_image}
+                          alt={category.name}
+                          width={50}
+                          height={50}
+                          className="object-cover rounded-lg mx-auto border border-gray-200"
+                          unoptimized
+                        />
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">No Image</span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="mb-3">
+                  <div className="space-y-2 mb-4 text-xs">
                     <button
-                      className="w-full py-1.5 text-xs rounded-lg bg-blue-50 text-blue-700 font-semibold transition cursor-pointer"
+                      className="w-full py-1.5 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold transition cursor-pointer"
                       onClick={() => openDescriptionModal(category)}
                     >
                       View Description
                     </button>
                   </div>
 
-                  <div className="flex gap-2 pt-3 border-t border-gray-100">
+                  <div className="flex gap-2 pt-2 border-t border-gray-100">
                     <button
-                      title="View Subcategories"
-                      onClick={() => onDetail(category)}
-                      className="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg flex items-center justify-center gap-1.5 transition font-medium text-sm cursor-pointer"
+                      title="View Products"
+                      onClick={() => onViewProducts(category)}
+                      className="flex-1 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg flex items-center justify-center gap-1.5 transition font-medium text-sm cursor-pointer"
                     >
-                      <TiInfoLargeOutline className="h-4 w-4" />
-                      Subcategories
+                      <Package className="h-4 w-4" />
+                      {prodCount} Products
                     </button>
                     <button
                       title="Edit Category"
@@ -694,12 +816,12 @@ export default function CategoriesManagement() {
           </div>
         )}
 
-        {/* Modal */}
+        {/* Modal: Create / Edit Category with Attributes */}
         <Modal
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
-            reset({ name: "", description: "", link: "", status: true });
+            reset({ name: "", description: "", link: "", attributes: [], status: true });
             setPreviewPrimary(null);
             setPreviewSecondary(null);
             setSelectedCategory(null);
@@ -819,18 +941,120 @@ export default function CategoriesManagement() {
               </div>
             </div>
 
+            {/* Category Attributes (Max 2) */}
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs md:text-sm font-bold text-gray-900">
+                  Category Attributes (Max 2)
+                </label>
+                {fields.length < 2 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentAttrs = watch("attributes") || [];
+                      const hasPrimary = currentAttrs.some((a: any) => a?.IsPrimary);
+                      append({
+                        AttributeId: "" as any,
+                        HasImages: false,
+                        IsPrimary: fields.length === 0 || !hasPrimary,
+                      });
+                    }}
+                    className="px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition cursor-pointer"
+                  >
+                    + Add Attribute
+                  </button>
+                )}
+              </div>
+
+              {fields.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="p-3 bg-white rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center"
+                >
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      Select Attribute
+                    </label>
+                    <select
+                      {...register(`attributes.${index}.AttributeId` as const)}
+                      className="w-full py-2 px-3 rounded-lg border border-gray-300 text-sm bg-white text-gray-900"
+                    >
+                      <option value="">Select Attribute</option>
+                      {availableAttributes.map((attr) => (
+                        <option key={attr.id} value={attr.id}>
+                          {attr.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
+                      <input
+                        type="checkbox"
+                        {...register(`attributes.${index}.HasImages` as const)}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          if (checked) {
+                            fields.forEach((_, fIdx) => {
+                              setValue(`attributes.${fIdx}.HasImages`, fIdx === index);
+                            });
+                          } else {
+                            setValue(`attributes.${index}.HasImages`, false);
+                          }
+                        }}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                      Has Images
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
+                      <input
+                        type="checkbox"
+                        {...register(`attributes.${index}.IsPrimary` as const)}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          if (checked) {
+                            fields.forEach((_, fIdx) => {
+                              setValue(`attributes.${fIdx}.IsPrimary`, fIdx === index);
+                            });
+                          } else {
+                            setValue(`attributes.${index}.IsPrimary`, false);
+                          }
+                        }}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                      Is Primary
+                    </label>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => remove(index)}
+                      className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             {/* Status + Submit */}
             <div className="flex items-center justify-between gap-4 pt-2 border-t border-gray-200">
               <label className="flex items-center gap-3 cursor-pointer">
                 <span className="text-sm font-semibold text-gray-900">Status</span>
                 <div
-                  className={`flex items-center h-6 w-12 rounded-full transition-all duration-300 ${watch("status") ? "bg-green-500" : "bg-red-500"
-                    }`}
+                  className={`flex items-center h-6 w-12 rounded-full transition-all duration-300 ${
+                    watch("status") ? "bg-green-500" : "bg-red-500"
+                  }`}
                 >
                   <input type="checkbox" {...register("status")} hidden />
                   <div
-                    className={`h-6 w-6 rounded-full bg-white shadow-md transform transition-all duration-300 ${watch("status") ? "translate-x-6" : "translate-x-0"
-                      }`}
+                    className={`h-6 w-6 rounded-full bg-white shadow-md transform transition-all duration-300 ${
+                      watch("status") ? "translate-x-6" : "translate-x-0"
+                    }`}
                   ></div>
                 </div>
               </label>

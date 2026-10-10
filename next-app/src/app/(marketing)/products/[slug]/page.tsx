@@ -1918,7 +1918,7 @@ const ProductPage = () => {
 
                         {/* ── RIGHT: Related Products Scrollable Column (No header, no outer borders, standard ProductCard size, hidden scrollbar) ── */}
                         {similarProducts.length > 0 && (
-                            <div className="hidden xl:block w-[240px] xl:w-[260px] 2xl:w-[275px] flex-shrink-0 sticky top-24 self-start pl-2 xl:pl-6">
+                            <div className="hidden xl:block w-[240px] xl:w-[260px] 2xl:w-[275px] flex-shrink-0 sticky top-24 self-start pl-2 xl:pl-6 z-10">
                                 <div
                                     onScroll={(e) => {
                                         const el = e.currentTarget;
@@ -1926,7 +1926,7 @@ const ProductPage = () => {
                                             loadNextSimilarPage();
                                         }
                                     }}
-                                    className="space-y-4 overflow-y-auto max-h-[calc(100vh-80px)] scrollbar-hide select-none"
+                                    className="space-y-4 overflow-y-auto max-h-[calc(100vh-7.5rem)] scrollbar-hide select-none"
                                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                                 >
                                     {similarProducts.map((prod) => (

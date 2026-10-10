@@ -156,10 +156,14 @@ export interface DropdownOption {
 }
 
 export interface CategoryAttribute {
-  attributeId: number;
-  name: string;
-  has_images: boolean;
-  values: DropdownOption[];
+  attributeId?: number;
+  AttributeId?: number;
+  name?: string;
+  has_images?: boolean;
+  HasImages?: boolean;
+  is_primary?: boolean;
+  IsPrimary?: boolean;
+  values?: DropdownOption[];
 }
 
 export interface CreateCategory {
@@ -168,13 +172,17 @@ export interface CreateCategory {
   link: string;
   image?: string;
   secondary_image?: string;
+  attributes?: any[];
 }
 
 export interface Category extends CreateCategory {
-  id: string;
+  id: string | number;
   slug?: string;
   status: boolean;
-  attributes?: CategoryAttribute[];
+  attributes?: any[];
+  children?: any[];
+  products_count?: number;
+  productsCount?: number;
 }
 
 export interface Attribute {

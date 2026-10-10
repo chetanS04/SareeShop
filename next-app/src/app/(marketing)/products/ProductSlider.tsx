@@ -418,7 +418,7 @@ export default function ProductSlider() {
 
     const handleCategoryClick = (cat: { id: number; name: string; slug?: string }) => {
         if (filterHasDraggedRef.current) return;
-        router.push(`/categories/subcategories/${getCategorySlug(cat)}`);
+        router.push(`/categories/${getCategorySlug(cat)}`);
     };
 
     if (!loading && products.length === 0) {
