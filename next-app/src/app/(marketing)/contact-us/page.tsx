@@ -242,7 +242,7 @@ export default function ContactUsPage() {
     const inputError = 'border-primary focus:border-primary bg-surface-ivory/60';
 
     return (
-        <div className="min-h-screen bg-surface text-on-surface pb-24 sm:pb-0">
+        <div className="min-h-screen bg-surface text-on-surface pb-24 sm:pb-0 overflow-x-hidden">
             {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
             {successMessage && <SuccessMessage message={successMessage} onClose={() => setSuccessMessage(null)} />}
 
@@ -547,7 +547,7 @@ export default function ContactUsPage() {
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-[14px] font-bold uppercase tracking-tight text-on-surface">Business Location</h3>
                                         <p className="text-[13px] text-body-slate mt-1.5 leading-[1.55]">
-                                            SVASTRA<br />
+                                            SVastra<br />
                                             Nagpur, Maharashtra, India
                                         </p>
                                         <p className="text-[12px] text-body-slate mt-2 leading-[1.55]">

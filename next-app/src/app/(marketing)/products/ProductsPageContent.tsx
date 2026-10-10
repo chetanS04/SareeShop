@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ChevronDown, ChevronUp, X, Home, SlidersHorizontal, ArrowUpRight } from "lucide-react";
+import { ChevronUp, Home, ArrowUpRight } from "lucide-react";
 import axios from "../../../../utils/axios";
 import ProductCard from "@/components/(frontend)/ProductCard";
 import { useProductSync, ProductEventData } from "@/context/ProductSyncContext";
@@ -36,13 +36,6 @@ type Category = {
     image?: string;
 };
 
-const PRICE_OPTIONS = [
-    { id: "all", label: "All Prices" },
-    { id: "under1000", label: "Under ₹1,000" },
-    { id: "1000to2000", label: "₹1,000 – ₹2,000" },
-    { id: "above2000", label: "Above ₹2,000" },
-];
-
 const SORT_OPTIONS = [
     { id: "newest", label: "Relevance" },
     { id: "price_low", label: "Price: Low to High" },
@@ -68,9 +61,6 @@ const ProductsPage = () => {
 
     const [sortBy, setSortBy] = useState<string>("newest");
     const [priceRange, setPriceRange] = useState<string>("all");
-
-    const [openFilter, setOpenFilter] = useState<string | null>("categories");
-    const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalProducts, setTotalProducts] = useState(0);
@@ -222,11 +212,6 @@ const ProductsPage = () => {
         fetchProducts(1, false);
     };
 
-    const getFilteredSubcategories = () => {
-        if (!selectedCategory) return [];
-        return subcategories.filter((sub) => sub.parent_id === selectedCategory);
-    };
-
     const getSelectedCategoryName = () =>
         selectedCategory ? categories.find((cat) => cat.id === selectedCategory)?.name : null;
 
@@ -234,169 +219,13 @@ const ProductsPage = () => {
         selectedSubcategory ? subcategories.find((sub) => sub.id === selectedSubcategory)?.name : null;
 
     const processedProducts = Array.isArray(products) ? products : [];
-    const quickTags = categories;
     const hasActiveFilters =
         selectedCategory || selectedSubcategory || priceRange !== "all" || sortBy !== "newest";
 
-    const toggleFilter = (key: string) => {
-        setOpenFilter((prev) => (prev === key ? null : key));
-    };
-
-    const filterItemClass = (active: boolean) =>
-        `block w-full text-left text-[13px] leading-snug py-2 pl-3 border-l-2 transition-colors ${
-            active
-                ? "border-primary text-primary font-semibold bg-surface-subtle"
-                : "border-transparent text-body-slate hover:text-on-surface hover:border-[rgba(14,14,13,0.2)]"
-        }`;
-
-    const FilterSidebar = ({ className = "" }: { className?: string }) => (
-        <aside className={`bg-pure-white border border-[rgba(14,14,13,0.1)] ${className}`}>
-            <div className="px-5 py-4 border-b border-border-line bg-surface-subtle flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-primary" aria-hidden />
-                    <span className="label-caps text-on-surface">Refine</span>
-                </div>
-                {hasActiveFilters && (
-                    <button type="button" onClick={clearFilters} className="label-caps text-primary hover:text-on-surface">
-                        Clear
-                    </button>
-                )}
-            </div>
-
-            {/* Categories */}
-            <div className="border-b border-border-line">
-                <button
-                    type="button"
-                    onClick={() => toggleFilter("categories")}
-                    className="w-full flex items-center justify-between px-5 py-4 text-left"
-                >
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-on-surface">Categories</span>
-                    {openFilter === "categories" ? (
-                        <ChevronUp className="w-4 h-4 text-body-slate" />
-                    ) : (
-                        <ChevronDown className="w-4 h-4 text-body-slate" />
-                    )}
-                </button>
-                {openFilter === "categories" && (
-                    <div className="px-5 pb-5 space-y-0.5 max-h-72 overflow-y-auto">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setSelectedCategory(null);
-                                setSelectedSubcategory(null);
-                            }}
-                            className={filterItemClass(!selectedCategory)}
-                        >
-                            All Collections
-                        </button>
-                        {categories.map((cat) => (
-                            <button
-                                key={cat.id}
-                                type="button"
-                                onClick={() => {
-                                    setSelectedCategory(cat.id);
-                                    setSelectedSubcategory(null);
-                                }}
-                                className={filterItemClass(selectedCategory === cat.id && !selectedSubcategory)}
-                            >
-                                {cat.name}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* Subcategories when parent selected */}
-            {selectedCategory && getFilteredSubcategories().length > 0 && (
-                <div className="border-b border-border-line">
-                    <button
-                        type="button"
-                        onClick={() => toggleFilter("subcategories")}
-                        className="w-full flex items-center justify-between px-5 py-4 text-left"
-                    >
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-on-surface">Subcategories</span>
-                        {openFilter === "subcategories" ? (
-                            <ChevronUp className="w-4 h-4 text-body-slate" />
-                        ) : (
-                            <ChevronDown className="w-4 h-4 text-body-slate" />
-                        )}
-                    </button>
-                    {openFilter === "subcategories" && (
-                        <div className="px-5 pb-5 space-y-0.5 max-h-48 overflow-y-auto">
-                            {getFilteredSubcategories().map((sub) => (
-                                <button
-                                    key={sub.id}
-                                    type="button"
-                                    onClick={() => setSelectedSubcategory(sub.id === selectedSubcategory ? null : sub.id)}
-                                    className={filterItemClass(selectedSubcategory === sub.id)}
-                                >
-                                    {sub.name}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Price */}
-            <div className="border-b border-border-line">
-                <button
-                    type="button"
-                    onClick={() => toggleFilter("price")}
-                    className="w-full flex items-center justify-between px-5 py-4 text-left"
-                >
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-on-surface">Price</span>
-                    {openFilter === "price" ? (
-                        <ChevronUp className="w-4 h-4 text-body-slate" />
-                    ) : (
-                        <ChevronDown className="w-4 h-4 text-body-slate" />
-                    )}
-                </button>
-                {openFilter === "price" && (
-                    <div className="px-5 pb-5 space-y-0.5">
-                        {PRICE_OPTIONS.map((opt) => (
-                            <button
-                                key={opt.id}
-                                type="button"
-                                onClick={() => setPriceRange(opt.id)}
-                                className={filterItemClass(priceRange === opt.id)}
-                            >
-                                {opt.label}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* Discount hint */}
-            <div>
-                <button
-                    type="button"
-                    onClick={() => toggleFilter("discount")}
-                    className="w-full flex items-center justify-between px-5 py-4 text-left"
-                >
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-on-surface">Offers</span>
-                    {openFilter === "discount" ? (
-                        <ChevronUp className="w-4 h-4 text-body-slate" />
-                    ) : (
-                        <ChevronDown className="w-4 h-4 text-body-slate" />
-                    )}
-                </button>
-                {openFilter === "discount" && (
-                    <div className="px-5 pb-5">
-                        <p className="text-[13px] text-body-slate leading-relaxed pl-3 border-l-2 border-accent-ochre/60">
-                            Sale pieces carry a primary off-badge on the card when an offer is live.
-                        </p>
-                    </div>
-                )}
-            </div>
-        </aside>
-    );
-
     if (loading && products.length === 0) {
         return (
-            <div className="min-h-screen bg-surface">
-                <div className="site-pad section-y">
+            <div className="min-h-screen bg-surface overflow-x-hidden">
+                <div className="max-w-site mx-auto site-pad section-y">
                     <div className="flex flex-col items-center justify-center gap-4">
                         <div className="w-12 h-12 border-2 border-border-line border-t-primary animate-spin" />
                         <p className="label-caps text-primary">Loading Collections</p>
@@ -407,10 +236,10 @@ const ProductsPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-surface">
+        <div className="min-h-screen bg-surface overflow-x-hidden">
             {/* Breadcrumb */}
             <div className="border-b border-border-line bg-surface">
-                <div className="site-pad py-3.5 flex flex-wrap items-center gap-2 label-caps text-body-slate">
+                <div className="max-w-site mx-auto site-pad py-3.5 flex flex-wrap items-center gap-2 label-caps text-body-slate min-w-0">
                     <Link href="/" className="hover:text-primary transition-colors flex items-center gap-1.5">
                         <Home className="w-3.5 h-3.5" />
                         <span>Home</span>
@@ -426,7 +255,7 @@ const ProductsPage = () => {
                             <span className="text-on-surface/25" aria-hidden="true">
                                 /
                             </span>
-                            <span className="text-primary">{getSelectedCategoryName()}</span>
+                            <span className="text-primary truncate max-w-[12rem] sm:max-w-none">{getSelectedCategoryName()}</span>
                         </>
                     )}
                     {selectedSubcategory && (
@@ -434,7 +263,7 @@ const ProductsPage = () => {
                             <span className="text-on-surface/25" aria-hidden="true">
                                 /
                             </span>
-                            <span className="text-primary">{getSelectedSubcategoryName()}</span>
+                            <span className="text-primary truncate max-w-[12rem] sm:max-w-none">{getSelectedSubcategoryName()}</span>
                         </>
                     )}
                 </div>
@@ -453,90 +282,19 @@ const ProductsPage = () => {
                     </h1>
                     <p className="text-[15px] sm:text-[16px] text-body-slate leading-relaxed max-w-xl">
                         {selectedCategory || selectedSubcategory
-                            ? "Curated handloom pieces from this edit. Refine by price or clear filters to browse the full archive."
-                            : "Architectural Indian handlooms — browse by collection, price, and mood."}
+                            ? "Curated handloom pieces from this collection."
+                            : "Handloom sarees for work, celebrations, and everyday life."}
                     </p>
                     <div className="mt-6 h-px w-16 bg-primary" aria-hidden />
                 </header>
 
-                <div className="flex gap-6 xl:gap-10 2xl:gap-14 items-start">
-                    {/* Left filters — desktop */}
-                    <div className="hidden lg:block w-[240px] xl:w-[264px] 2xl:w-[288px] flex-shrink-0 sticky top-24">
-                        <FilterSidebar />
-                    </div>
-
-                    {/* Main */}
-                    <div className="flex-1 min-w-0">
-                        {/* Collection tabs — underline style */}
-                        {quickTags.length > 0 && (
-                            <div className="mb-7 border-b border-border-line overflow-x-auto scrollHide">
-                                <div className="flex items-stretch gap-0 min-w-min">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSelectedCategory(null);
-                                            setSelectedSubcategory(null);
-                                        }}
-                                        className={`relative shrink-0 px-4 sm:px-5 py-3 text-[11px] font-semibold tracking-[0.08em] uppercase transition-colors ${
-                                            !selectedCategory
-                                                ? "text-on-surface"
-                                                : "text-body-slate hover:text-on-surface"
-                                        }`}
-                                    >
-                                        All
-                                        {!selectedCategory && (
-                                            <span className="absolute left-0 right-0 bottom-0 h-[2px] bg-primary" />
-                                        )}
-                                    </button>
-                                    {quickTags.map((cat) => {
-                                        const active = selectedCategory === cat.id;
-                                        return (
-                                            <button
-                                                key={cat.id}
-                                                type="button"
-                                                title={cat.name}
-                                                onClick={() => {
-                                                    if (active) {
-                                                        setSelectedCategory(null);
-                                                        setSelectedSubcategory(null);
-                                                    } else {
-                                                        setSelectedCategory(cat.id);
-                                                        setSelectedSubcategory(null);
-                                                    }
-                                                }}
-                                                className={`relative shrink-0 px-4 sm:px-5 py-3 text-[11px] font-semibold tracking-[0.08em] uppercase transition-colors max-w-[11rem] truncate ${
-                                                    active
-                                                        ? "text-on-surface"
-                                                        : "text-body-slate hover:text-on-surface"
-                                                }`}
-                                            >
-                                                {cat.name}
-                                                {active && (
-                                                    <span className="absolute left-0 right-0 bottom-0 h-[2px] bg-primary" />
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Toolbar */}
+                <div>
+                    <div className="min-w-0">
                         <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-4 mb-8">
-                            <div className="flex items-center justify-between sm:justify-start gap-3 flex-wrap">
-                                <button
-                                    type="button"
-                                    className="lg:hidden label-caps px-4 py-2.5 border border-[rgba(14,14,13,0.14)] bg-pure-white text-on-surface inline-flex items-center gap-2"
-                                    onClick={() => setMobileFiltersOpen(true)}
-                                >
-                                    <SlidersHorizontal className="w-3.5 h-3.5" />
-                                    Refine
-                                </button>
-                                <p className="text-[13px] text-body-slate">
-                                    <span className="font-semibold text-on-surface">{totalProducts}</span>{" "}
-                                    {totalProducts === 1 ? "Piece" : "Pieces"}
-                                </p>
-                            </div>
+                            <p className="text-[13px] text-body-slate">
+                                <span className="font-semibold text-on-surface">{totalProducts}</span>{" "}
+                                {totalProducts === 1 ? "Piece" : "Pieces"}
+                            </p>
 
                             <div className="flex items-center gap-3">
                                 <label htmlFor="collections-sort" className="label-caps text-body-slate shrink-0">
@@ -618,7 +376,7 @@ const ProductsPage = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8 lg:gap-x-5">
+                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-2.5 gap-y-5 sm:gap-x-4 sm:gap-y-8 lg:gap-x-5">
                                 {processedProducts.map((product) => (
                                     <ProductCard key={product.id} product={product} compact />
                                 ))}
@@ -642,34 +400,6 @@ const ProductsPage = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Mobile filter drawer */}
-            {mobileFiltersOpen && (
-                <div className="fixed inset-0 z-[70] lg:hidden">
-                    <button
-                        type="button"
-                        className="absolute inset-0 bg-surface-dark/50"
-                        aria-label="Close filters"
-                        onClick={() => setMobileFiltersOpen(false)}
-                    />
-                    <div className="absolute top-0 left-0 h-full w-[min(20rem,90vw)] bg-surface overflow-y-auto p-4 border-r border-border-line">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="label-caps text-primary">Refine</span>
-                            <button type="button" onClick={() => setMobileFiltersOpen(false)} aria-label="Close">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <FilterSidebar />
-                        <button
-                            type="button"
-                            className="sv-btn-primary w-full mt-4"
-                            onClick={() => setMobileFiltersOpen(false)}
-                        >
-                            Show Results
-                        </button>
-                    </div>
-                </div>
-            )}
 
             <button
                 type="button"

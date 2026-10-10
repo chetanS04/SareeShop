@@ -9,8 +9,20 @@ const PDFDocument = require('pdfkit');
 export class InvoicePdfService {
   private readonly logger = new Logger(InvoicePdfService.name);
 
+  private resolveLogoPath(): string | null {
+    const candidates = [
+      path.join(process.cwd(), 'uploads', 'logo', 'svastra-logo.png'),
+      path.join(process.cwd(), 'uploads', 'logo', 'logo-mark.png'),
+      path.join(process.cwd(), '..', 'next-app', 'public', 'svastra', 'logo-mark.png'),
+    ];
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate)) return candidate;
+    }
+    return null;
+  }
+
   /**
-   * Generates a Tax Invoice PDF matching the Truckage-group format.
+   * Generates a Tax Invoice PDF for SVastra orders.
    * Uses PDFKit native APIs only — no splitTextToSize (that is jsPDF only).
    */
   async generateInvoicePdf(orderData: any, settingsData: Record<string, string> = {}): Promise<Buffer> {
@@ -121,6 +133,8 @@ export class InvoicePdfService {
         const paymentStatus = (orderData.paymentStatus || orderData.payment_status || 'pending').toUpperCase();
         const transactionId = orderData.transactionId || orderData.transaction_id || null;
 
+        const fmtRs = (amount: number) => `Rs. ${amount.toFixed(2)}`;
+
         // ── Layout constants (matching Truckage X-positions) ───────────────
         const L = 39.68;   // left margin
         const R = 555.59;  // right margin
@@ -144,93 +158,107 @@ export class InvoicePdfService {
         const vLine = (x: number, y1: number, y2: number, lw = 0.6, color = '#cccccc') =>
           doc.moveTo(x, y1).lineTo(x, y2).lineWidth(lw).strokeColor(color).stroke();
 
+        const websiteUrl = settingsData?.website_url?.trim() || 'www.svastrastore.com';
+
         // ════════════════════════════════════════════════════════════════
-        // 1.  HEADER  — title + sold-by + logo + invoice-number box
+        // 1.  HEADER  — title, logo, sold-by, invoice meta box
         // ════════════════════════════════════════════════════════════════
-        doc.font('Helvetica-Bold').fontSize(16).fillColor('#000000')
-          .text('Tax Invoice', 0, 39.68, { align: 'center', width: 595.28 });
+        doc.font('Helvetica-Bold').fontSize(17).fillColor('#8B1313')
+          .text('TAX INVOICE', 0, 28, { align: 'center', width: 595.28 });
 
-        // Sold By (left column)
-        doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
-          .text(`Sold By: ${soldByName} ,`, L, 62.36);
-        doc.font('Helvetica-Oblique').fontSize(8.5).fillColor('#333333');
-        const shipFromText = `Ship-from Address: ${soldByAddress}`;
-        const shipFromH = doc.heightOfString(shipFromText, { width: 340 });
-        doc.text(shipFromText, L, 73.70, { width: 340 });
+        const headerY = 46;
+        const soldByX = L + 58;
+        const soldByW = 248;
 
-        const gstinY = Math.max(99, 73.70 + shipFromH + 3);
-        doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#000000')
-          .text(`PAN: ${soldByPan}   |   GSTIN - ${soldByGstin}`, L, gstinY);
-
-        // Logo (top-right) — shifted to right (x=445) so right edge aligns cleanly above invoice box
-        const logoPath = path.join(process.cwd(), 'uploads', 'logo', 'ZeltonLogoBlack.png');
-        let logoRendered = false;
-        if (fs.existsSync(logoPath)) {
+        const logoPath = this.resolveLogoPath();
+        if (logoPath) {
           try {
-            // Logo at x=445, y=18, height=52 → ends at y=70, aligned to right
-            doc.image(logoPath, 475, 18, { height: 52, fit: [110, 52] });
-            logoRendered = true;
-          } catch (e) { /* fall through */ }
-        }
-        if (!logoRendered) {
-          // Fallback: icon placeholder square + brand name
-          doc.rect(450, 34, 28, 28).fillColor('#1e293b').fill();
-          doc.font('Helvetica-Bold').fontSize(18).fillColor('#0f172a')
-            .text('ZELTON', 483, 40, { width: 72 });
+            doc.image(logoPath, L, headerY, { height: 48, fit: [48, 48] });
+          } catch (e) {
+            doc.font('Helvetica-Bold').fontSize(14).fillColor('#8B1313')
+              .text('SVastra', L, headerY + 14);
+          }
+        } else {
+          doc.font('Helvetica-Bold').fontSize(14).fillColor('#8B1313')
+            .text('SVastra', L, headerY + 14);
         }
 
-        // Invoice Number box  — Truckage: rect(391.18, 85, 164.4, 19.8)
-        doc.rect(391.18, 85.0, 164.4, 19.8).lineWidth(0.85).strokeColor('#969696').stroke();
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
+          .text(`Sold By: ${soldByName}`, soldByX, headerY + 2);
+        doc.font('Helvetica').fontSize(8).fillColor('#333333');
+        const shipFromText = soldByAddress;
+        const shipFromH = doc.heightOfString(shipFromText, { width: soldByW });
+        doc.text(shipFromText, soldByX, headerY + 14, { width: soldByW });
+
+        const gstinY = headerY + 14 + shipFromH + 4;
         doc.font('Helvetica-Bold').fontSize(8).fillColor('#000000')
-          .text('Invoice Number', 396.85, 90.5);
-        doc.font('Helvetica').fontSize(8).fillColor('#000000')
-          .text(invoiceNum, 464.8, 90.5, { width: 88, align: 'right' });
+          .text(`PAN: ${soldByPan}  |  GSTIN: ${soldByGstin}`, soldByX, gstinY, { width: soldByW });
 
-        // ── Top divider (Truckage: Y = 141.73)
-        hLine(141.73, 1.1);
-
-        // ════════════════════════════════════════════════════════════════
-        // 2.  ORDER INFO  +  SHIPPING ADDRESS  (dynamic height)
-        // ════════════════════════════════════════════════════════════════
-        const infoY = 158.74;
-
-        // Left: order meta
-        doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000');
-        doc.text(`Order ID:     ${formattedOrderId}`, L, infoY);
-        doc.text(`Order Date:   ${orderDate}`, L, infoY + 17);
-        doc.text(`Invoice Date: ${invoiceDate}`, L, infoY + 34);
-        doc.text(`Payment:      ${paymentMethod}`, L, infoY + 51);
-        let leftEndY = infoY + 68;
+        const invBoxX = 368;
+        const invBoxW = R - invBoxX;
+        const invBoxY = headerY;
+        const invRowH = 14;
+        const invRows: Array<[string, string]> = [
+          ['Invoice No.', invoiceNum],
+          ['Order ID', formattedOrderId],
+          ['Invoice Date', invoiceDate],
+          ['Order Date', orderDate],
+          ['Payment', paymentMethod],
+        ];
         if (transactionId) {
-          doc.text(`Txn ID:       ${transactionId}`, L, infoY + 68);
-          leftEndY = infoY + 85;
+          invRows.push(['Txn ID', String(transactionId)]);
+        }
+        const invBoxH = invRows.length * invRowH + 10;
+
+        doc.rect(invBoxX, invBoxY, invBoxW, invBoxH).lineWidth(0.85).strokeColor('#8B1313').stroke();
+        let invRowY = invBoxY + 7;
+        for (const [label, value] of invRows) {
+          doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#444444')
+            .text(label, invBoxX + 8, invRowY, { width: 62 });
+          doc.font('Helvetica').fontSize(7.5).fillColor('#000000')
+            .text(value, invBoxX + 72, invRowY, { width: invBoxW - 80, align: 'right' });
+          invRowY += invRowH;
         }
 
-        // Right: shipping address (positioned further right: col2X = 275.0)
-        const col2X = 275.0;
+        const headerEndY = Math.max(gstinY + 14, invBoxY + invBoxH) + 12;
+        hLine(headerEndY, 1.1);
+
+        // ════════════════════════════════════════════════════════════════
+        // 2.  SHIPPING / BILLING ADDRESS
+        // ════════════════════════════════════════════════════════════════
+        const infoY = headerEndY + 14;
+        const col2X = 300;
+        const col1W = col2X - L - 12;
         const col2W = R - col2X;
 
-        doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
-          .text('Shipping / Billing Address', col2X, infoY);
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#8B1313')
+          .text('Bill To / Ship To', L, infoY);
         doc.font('Helvetica').fontSize(8.5).fillColor('#333333');
-        doc.text(`Name:  ${customerName}`, col2X, infoY + 17);
+        doc.text(`Name: ${customerName}`, L, infoY + 16, { width: col1W });
 
-        let addrSubY = infoY + 32;
+        let leftSubY = infoY + 30;
         if (customerPhone) {
-          doc.text(`Phone: ${customerPhone}`, col2X, addrSubY);
-          addrSubY += 14;
+          doc.text(`Phone: ${customerPhone}`, L, leftSubY, { width: col1W });
+          leftSubY += 14;
         }
         if (customerEmail) {
-          doc.text(`Email: ${customerEmail}`, col2X, addrSubY);
-          addrSubY += 14;
+          doc.text(`Email: ${customerEmail}`, L, leftSubY, { width: col1W });
+          leftSubY += 14;
         }
-        // PDFKit wraps automatically with {width}; use heightOfString to measure
-        const addrText = `Address: ${shippingAddr}`;
-        doc.text(addrText, col2X, addrSubY, { width: col2W });
-        const addrH = doc.heightOfString(addrText, { width: col2W });
-        const rightEndY = addrSubY + addrH + 8;
 
-        // Table top Y — must be below both columns
+        const addrText = `Address: ${shippingAddr}`;
+        doc.text(addrText, L, leftSubY, { width: col1W });
+        const leftAddrH = doc.heightOfString(addrText, { width: col1W });
+        const leftEndY = leftSubY + leftAddrH + 6;
+
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#8B1313')
+          .text('Order Summary', col2X, infoY);
+        doc.font('Helvetica').fontSize(8.5).fillColor('#333333');
+        doc.text(`Items: ${items.length}`, col2X, infoY + 16, { width: col2W });
+        doc.text(`Payment Status: ${paymentStatus}`, col2X, infoY + 30, { width: col2W });
+        doc.text(`Amount Payable: Rs. ${totalAmount.toFixed(2)}`, col2X, infoY + 44, { width: col2W });
+        const rightEndY = infoY + 58;
+
         const tableTopY = Math.max(leftEndY, rightEndY) + 14;
 
         // ── Table-top divider (Truckage style: thick)
@@ -260,7 +288,7 @@ export class InvoicePdfService {
         let curY = HDR_LINE + 8;
         let grandIgst = 0;
         let grandTaxable = 0;
-        let grandGross = 0;
+        let grandLineTotal = 0;
         let grandQty = 0;
 
         if (items.length === 0) {
@@ -330,7 +358,7 @@ export class InvoicePdfService {
           grandQty += qty;
           grandTaxable += taxable;
           grandIgst += taxAmount;
-          grandGross += computedLineTotal;
+          grandLineTotal += computedLineTotal;
 
           const taxInfoList: string[] = [];
           // if (hsnCode) taxInfoList.push(`HSN: ${hsnCode}`);
@@ -377,11 +405,11 @@ export class InvoicePdfService {
           const numY = curY + Math.max(0, (rowH - numH) / 2 - 1);
 
           doc.text(String(qty), C_QTY, numY, { align: 'center', width: W_QTY });
-          doc.text(lineTotal.toFixed(2), C_GROSS, numY, { align: 'center', width: W_GROSS });
+          doc.text(taxable.toFixed(2), C_GROSS, numY, { align: 'center', width: W_GROSS });
           doc.text('0.00', C_DISC, numY, { align: 'center', width: W_DISC });
           doc.text(taxable.toFixed(2), C_TAX, numY, { align: 'center', width: W_TAX });
           doc.text(taxAmount.toFixed(2), C_IGST, numY, { align: 'center', width: W_IGST });
-          doc.text(lineTotal.toFixed(2), C_TOTAL, numY, { align: 'center', width: W_TOTAL });
+          doc.text(computedLineTotal.toFixed(2), C_TOTAL, numY, { align: 'center', width: W_TOTAL });
 
           curY += rowH;
 
@@ -400,98 +428,102 @@ export class InvoicePdfService {
         // ── Line below items (Truckage: 0.85)
         hLine(curY, 0.85);
 
-        // ── Total row  (Truckage bold summary)
-        curY += 7;
+        // ── Total row
+        const totalRowY = curY + 6;
+        const totalRowH = 20;
+        doc.rect(L, totalRowY - 2, R - L, totalRowH).fillColor('#f8f4f0').fill();
+        curY = totalRowY + 5;
+
         doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#0f172a');
         doc.text('Total', C_DESC, curY);
         doc.text(String(grandQty), C_QTY, curY, { align: 'center', width: W_QTY });
-        doc.text(grandGross.toFixed(2), C_GROSS, curY, { align: 'center', width: W_GROSS });
+        doc.text(grandTaxable.toFixed(2), C_GROSS, curY, { align: 'center', width: W_GROSS });
         doc.text('0.00', C_DISC, curY, { align: 'center', width: W_DISC });
         doc.text(grandTaxable.toFixed(2), C_TAX, curY, { align: 'center', width: W_TAX });
         doc.text(grandIgst.toFixed(2), C_IGST, curY, { align: 'center', width: W_IGST });
-        doc.text(grandGross.toFixed(2), C_TOTAL, curY, { align: 'center', width: W_TOTAL });
+        doc.text(grandLineTotal.toFixed(2), C_TOTAL, curY, { align: 'center', width: W_TOTAL });
 
-        curY += 14;
-
-        // Double-line below totals (Truckage: thick + thin)
-        hLine(curY, 1.4);
-        hLine(curY + 3, 0.5);
+        curY = totalRowY + totalRowH + 6;
+        hLine(curY, 1.2);
+        hLine(curY + 2.5, 0.45, '#888888');
 
         // ════════════════════════════════════════════════════════════════
-        // 4.  PAYMENT DETAILS  +  GRAND TOTAL  +  SIGNATURE
+        // 4.  PAYMENT DETAILS  +  AMOUNT SUMMARY
         // ════════════════════════════════════════════════════════════════
-        curY += 18;
+        curY += 16;
+        const sectionTopY = curY;
+        const payBoxW = 252;
+        const payBoxH = transactionId ? 88 : 72;
+        const totalsBoxX = 318;
+        const totalsBoxW = R - totalsBoxX;
+        const totalsLabelW = 92;
+        const summaryTaxable = grandTaxable > 0 ? grandTaxable : subtotalAmount;
+        const summaryIgst = grandIgst > 0 ? grandIgst : Math.max(0, totalAmount - summaryTaxable - shippingFee);
+        const summaryRowCount = 2 + (shippingFee > 0 ? 1 : 0) + 1;
+        const totalsBoxH = 14 + summaryRowCount * 15 + 12;
 
-        // Left: payment block
-        doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#0f172a')
-          .text('Payment Details', L, curY);
-        doc.font('Helvetica').fontSize(8).fillColor('#3b82f6');
-        doc.text(`Payment Method: ${paymentMethod}`, L, curY + 14);
-        // doc.text(`Payment Status: ${paymentStatus}`, L, curY + 27);
+        // Payment details box
+        doc.rect(L, sectionTopY, payBoxW, payBoxH).lineWidth(0.75).strokeColor('#d4d4d4').stroke();
+        doc.rect(L, sectionTopY, payBoxW, 20).fillColor('#8B1313').fill();
+        doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#ffffff')
+          .text('Payment Details', L + 10, sectionTopY + 6);
+
+        const payLabelX = L + 10;
+        const payValueX = L + 78;
+        const payValueW = payBoxW - 88;
+        let payRowY = sectionTopY + 30;
+
+        const drawPayRow = (label: string, value: string, valueColor = '#333333', bold = false) => {
+          doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#666666')
+            .text(label, payLabelX, payRowY, { width: 64 });
+          doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(8).fillColor(valueColor)
+            .text(value, payValueX, payRowY, { width: payValueW });
+          payRowY += 15;
+        };
+
+        drawPayRow('Method', paymentMethod);
+        const statusColor = paymentStatus === 'PAID' ? '#15803d' : paymentStatus === 'PENDING' ? '#b45309' : '#333333';
+        drawPayRow('Status', paymentStatus, statusColor, true);
         if (transactionId) {
-          doc.font('Helvetica').fontSize(8).fillColor('#333333');
-          doc.text(`Transaction ID: ${transactionId}`, L, curY + 40);
+          drawPayRow('Txn ID', String(transactionId));
         }
 
-        // Right: subtotal + grand total
-        const sumX = 310.0;
-        const sumLabelW = 130;
-        const sumValX = sumX + sumLabelW + 5;
-        const sumValW = R - sumValX;
+        // Amount summary box
+        doc.rect(totalsBoxX, sectionTopY, totalsBoxW, totalsBoxH).lineWidth(0.75).strokeColor('#d4d4d4').stroke();
+        doc.rect(totalsBoxX, sectionTopY, totalsBoxW, 20).fillColor('#f8f4f0').fill();
+        doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#8B1313')
+          .text('Amount Summary', totalsBoxX + 10, sectionTopY + 6);
 
-        doc.font('Helvetica').fontSize(8).fillColor('#333333');
-        doc.text('Subtotal:', sumX, curY, { align: 'right', width: sumLabelW });
-        doc.text(`Rs. ${subtotalAmount.toFixed(2)}`, sumValX, curY, { align: 'right', width: sumValW });
-
-        let sumLineY = curY + 14;
-        if (shippingFee > 0) {
-          doc.text('Shipping Fee:', sumX, sumLineY, { align: 'right', width: sumLabelW });
-          doc.text(`Rs. ${shippingFee.toFixed(2)}`, sumValX, sumLineY, { align: 'right', width: sumValW });
-          sumLineY += 14;
-        }
-
-        doc.moveTo(sumX, sumLineY).lineTo(R, sumLineY).lineWidth(0.8).strokeColor('#000000').stroke();
-        sumLineY += 10;
-
-        // Grand Total — Truckage style: large bold
-        doc.font('Helvetica-Bold').fontSize(13).fillColor('#0f172a')
-          .text('Grand Total:', sumX, sumLineY, { align: 'right', width: sumLabelW });
-        doc.font('Helvetica-Bold').fontSize(15).fillColor('#0f172a')
-          .text(`Rs. ${totalAmount.toFixed(2)}`, sumValX, sumLineY - 1, { align: 'right', width: sumValW });
-
-        sumLineY += 20;
-        // const statusColor = paymentStatus === 'PAID' ? '#16a34a' : '#d97706';
-        // doc.font('Helvetica-Bold').fontSize(8).fillColor(statusColor)
-        //   .text(`Payment Status: ${paymentStatus}`, sumX, sumLineY, { align: 'right', width: sumLabelW + sumValW });
-
-        // Signature box  — Truckage: sigX=419.5, sigY=..., sigW=136, sigH=54
-        const sigTopY = sumLineY + 16;
-        const sigX = 419.5;
-        const sigW = 136.0;
-        const sigH = 54.0;
-        doc.rect(sigX, sigTopY, sigW, sigH).lineWidth(0.85).strokeColor('#b4b4b4').stroke();
-        doc.font('Helvetica-Bold').fontSize(8).fillColor('#000000')
-          .text(soldByName, sigX + 4, sigTopY + 5, { width: sigW - 8, align: 'center' });
-
-        // Authorized Signature Image
-        const sigPathPng = path.join(process.cwd(), 'uploads', 'signature', 'dummy-signature.png');
-        const sigPathJpg = path.join(process.cwd(), 'uploads', 'signature', 'dummy-signature.jpg');
-        const sigFile = fs.existsSync(sigPathPng) ? sigPathPng : (fs.existsSync(sigPathJpg) ? sigPathJpg : null);
-
-        if (sigFile) {
-          try {
-            doc.image(sigFile, sigX + (sigW - 80) / 2, sigTopY + 14, {
-              width: 80,
-              height: 26,
-              fit: [80, 26],
+        let sumLineY = sectionTopY + 30;
+        const drawSumRow = (label: string, value: string, bold = false, valueColor = '#333333') => {
+          doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(8).fillColor('#555555')
+            .text(label, totalsBoxX + 10, sumLineY, { width: totalsLabelW });
+          doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(bold ? 9 : 8).fillColor(valueColor)
+            .text(value, totalsBoxX + totalsLabelW + 6, sumLineY, {
+              width: totalsBoxW - totalsLabelW - 16,
+              align: 'right',
             });
-          } catch (e) {
-            // fallback if image rendering fails
-          }
+          sumLineY += 15;
+        };
+
+        drawSumRow('Taxable Value:', fmtRs(summaryTaxable));
+        drawSumRow('IGST:', fmtRs(summaryIgst));
+        if (shippingFee > 0) {
+          drawSumRow('Shipping:', fmtRs(shippingFee));
         }
 
-        doc.font('Helvetica').fontSize(7.5).fillColor('#666666')
-          .text('Authorized Signatory', sigX + 4, sigTopY + 42, { width: sigW - 8, align: 'center' });
+        doc.moveTo(totalsBoxX + 8, sumLineY + 1).lineTo(R - 8, sumLineY + 1).lineWidth(0.8).strokeColor('#8B1313').stroke();
+        sumLineY += 9;
+        drawSumRow('Grand Total:', fmtRs(totalAmount), true, '#8B1313');
+
+        const sectionBottomY = Math.max(sectionTopY + payBoxH, sectionTopY + totalsBoxH);
+        doc.font('Helvetica-Oblique').fontSize(7).fillColor('#777777')
+          .text(
+            'This is a computer-generated tax invoice and does not require a physical signature.',
+            L,
+            sectionBottomY + 12,
+            { width: R - L, align: 'center' },
+          );
 
         // ════════════════════════════════════════════════════════════════
         // 5.  FOOTER  (Truckage: footer at bottom of page ~759)
@@ -500,19 +532,18 @@ export class InvoicePdfService {
         hLine(ftLineY, 1.1);
 
         const ftY = ftLineY + 6;
-        doc.font('Helvetica-Bold').fontSize(10).fillColor('#0f172a')
+        doc.font('Helvetica-Bold').fontSize(10).fillColor('#8B1313')
           .text(soldByName, 355.59, ftY, { align: 'right', width: 200 });
         doc.font('Helvetica-Oblique').fontSize(7).fillColor('#646464')
-          .text('Thank You for shopping with us!', 355.59, ftY + 12, { align: 'right', width: 200 });
+          .text('Thank you for shopping with SVastra!', 355.59, ftY + 12, { align: 'right', width: 200 });
 
-        doc.font('Helvetica-Oblique').fontSize(6.5).fillColor('#505050');
-        const regdText = `Regd. office: ${soldByName}, ${soldByAddress}`;
-        const regdH = doc.heightOfString(regdText, { width: 300 });
-        doc.text(regdText, L, ftY + 5, { width: 300 });
+        doc.font('Helvetica').fontSize(6.5).fillColor('#505050');
+        const regdText = `Regd. Office: ${soldByName}, ${soldByAddress}`;
+        const regdH = doc.heightOfString(regdText, { width: 320 });
+        doc.text(regdText, L, ftY + 5, { width: 320 });
 
         const suppY = ftY + 5 + regdH + 2;
-        doc.font('Helvetica').fontSize(6.5).fillColor('#505050')
-          .text(`Support: ${supportPhone} | ${supportEmail} | www.zelton.co.in`, L, suppY);
+        doc.text(`Support: ${supportPhone} | ${supportEmail} | ${websiteUrl}`, L, suppY);
 
         const botLineY = Math.max(ftY + 27, suppY + 10);
         doc.moveTo(L, botLineY).lineTo(R, botLineY).lineWidth(0.85).strokeColor('#000000').stroke();

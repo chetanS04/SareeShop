@@ -637,12 +637,10 @@ export class AuthService {
     }
 
     try {
-      const configuredClientId = this.config.get<string>('GOOGLE_CLIENT_ID');
-      const validAudiences = Array.from(new Set([
-        configuredClientId,
-        '470842240344-3a3rgpa8iepca97mk57s8nekdipah3e2.apps.googleusercontent.com',
-        '320457787922-e7ca6bq62fsbl8o5po4m8686vsbj3q8b.apps.googleusercontent.com',
-      ].filter(Boolean))) as string[];
+      const configuredClientId =
+        this.config.get<string>('GOOGLE_CLIENT_ID') ||
+        '851645133462-lh7ju3gb9poiot0alugsi0pe5crkbpv4.apps.googleusercontent.com';
+      const validAudiences = [configuredClientId];
 
       const ticket = await this.googleClient.verifyIdToken({
         idToken: googleToken,

@@ -24,7 +24,7 @@ async function seed() {
   const db = drizzle(connection);
 
   // 1. Seed Admin User
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+  const adminEmail = process.env.ADMIN_EMAIL || 'svastrastore@gmail.com';
   const adminPassword = process.env.ADMIN_PASSWORD || 'root1234';
   const adminName = process.env.ADMIN_NAME || 'Admin User';
 
@@ -51,17 +51,40 @@ async function seed() {
       .where(eq(users.email, adminEmail));
     console.log('✓ Admin user updated successfully.');
   } else {
-    console.log(`Creating admin user "${adminEmail}"...`);
-    await db.insert(users).values({
-      name: adminName,
-      email: adminEmail,
-      password: hashedPassword,
-      role: 'Admin',
-      isVerified: 'true',
-      emailVerifiedAt: new Date(),
-      status: true,
-    });
-    console.log('✓ Admin user created successfully.');
+    const [legacyAdmin] = await db
+      .select()
+      .from(users)
+      .where(eq(users.role, 'Admin'))
+      .limit(1);
+
+    if (legacyAdmin) {
+      console.log(`Migrating legacy admin account to "${adminEmail}"...`);
+      await db
+        .update(users)
+        .set({
+          name: adminName,
+          email: adminEmail,
+          password: hashedPassword,
+          role: 'Admin',
+          isVerified: 'true',
+          emailVerifiedAt: new Date(),
+          status: true,
+        })
+        .where(eq(users.id, legacyAdmin.id));
+      console.log('✓ Legacy admin migrated successfully.');
+    } else {
+      console.log(`Creating admin user "${adminEmail}"...`);
+      await db.insert(users).values({
+        name: adminName,
+        email: adminEmail,
+        password: hashedPassword,
+        role: 'Admin',
+        isVerified: 'true',
+        emailVerifiedAt: new Date(),
+        status: true,
+      });
+      console.log('✓ Admin user created successfully.');
+    }
   }
 
   // 2. Seed States & Cities

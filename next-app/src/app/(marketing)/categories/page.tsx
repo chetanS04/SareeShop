@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Home, ArrowRight } from "lucide-react";
 import axios from "../../../../utils/axios";
 import { getCategorySlug } from "../../../../utils/slugUtils";
 import { getImageUrl } from "../../../../utils/imageUtils";
+import { categoryDescriptionOrFallback, sanitizeCategoryDescription } from "../../../../utils/textUtils";
 
 type Category = {
   id: number;
@@ -14,12 +15,15 @@ type Category = {
   secondary_image: string | null;
   link: string | null;
   image: string | null;
+  products_count?: number;
+  productsCount?: number;
 };
+
+const FALLBACK = "/svastra/logo-mark.png";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -37,83 +41,146 @@ export default function CategoriesPage() {
     fetchCategories();
   }, []);
 
+  const totalPieces = categories.reduce(
+    (sum, cat) => sum + Number(cat.products_count ?? cat.productsCount ?? 0),
+    0
+  );
+
   return (
-    <div className="min-h-screen bg-surface pb-20">
+    <div className="min-h-screen bg-surface overflow-x-hidden pb-16 sm:pb-20">
+      {/* Breadcrumb */}
+      <div className="border-b border-border-line bg-surface">
+        <div className="max-w-site mx-auto site-pad py-3.5 flex flex-wrap items-center gap-2 label-caps text-body-slate min-w-0">
+          <Link href="/" className="hover:text-primary transition-colors flex items-center gap-1.5">
+            <Home className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span>Home</span>
+          </Link>
+          <span className="text-on-surface/25" aria-hidden="true">/</span>
+          <span className="text-primary">Categories</span>
+        </div>
+      </div>
+
+      {/* Header */}
       <section className="border-b border-border-line bg-pure-white">
-        <div className="max-w-site mx-auto site-pad py-10 sm:py-14">
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="label-caps text-body-slate hover:text-primary border border-border-line px-4 py-2 bg-surface"
+        <div className="max-w-site mx-auto site-pad py-10 sm:py-12 lg:py-14">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 lg:gap-10">
+            <div className="max-w-2xl min-w-0">
+              <span className="label-caps text-primary block mb-3">Wear Yourself · Catalog</span>
+              <h1 className="display-section text-on-surface uppercase break-words">Shop By Category</h1>
+              <p className="text-[15px] sm:text-[17px] text-body-slate mt-4 leading-relaxed max-w-xl">
+                Browse sarees by weave, fabric, and occasion. Each category is curated from our live
+                handloom collection.
+              </p>
+              {!loading && categories.length > 0 && (
+                <p className="text-[13px] text-body-slate mt-3">
+                  <span className="font-semibold text-on-surface">{categories.length}</span>{" "}
+                  {categories.length === 1 ? "category" : "categories"}
+                  {totalPieces > 0 && (
+                    <>
+                      {" "}
+                      ·{" "}
+                      <span className="font-semibold text-on-surface">{totalPieces}</span> pieces
+                    </>
+                  )}
+                </p>
+              )}
+              <div className="mt-6 h-px w-16 bg-primary" aria-hidden="true" />
+            </div>
+
+            <Link
+              href="/products"
+              className="label-caps text-primary hover:text-on-surface transition-colors inline-flex items-center gap-2 shrink-0 self-start lg:self-end"
             >
-              ← Back
-            </button>
-            <Link href="/products" className="label-caps text-primary hover:text-on-surface">
-              The Edit →
+              <span>View All Collections</span>
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </Link>
           </div>
-          <span className="label-caps text-primary block mb-2">Catalog</span>
-          <h1 className="display-section text-on-surface uppercase">Shop By Category</h1>
-          {!loading && (
-            <p className="text-[15px] text-body-slate mt-3">
-              {categories.length} live categories from the archive
-            </p>
-          )}
         </div>
       </section>
 
-      <main className="max-w-site mx-auto site-pad pt-8 sm:pt-12">
+      <main className="max-w-site mx-auto site-pad py-10 sm:py-12 lg:py-14 min-w-0">
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] bg-surface-ivory border border-border-line animate-pulse" />
+              <div key={i} className="border border-border-line bg-surface-ivory animate-pulse">
+                <div className="aspect-[3/4] bg-surface-subtle" />
+                <div className="p-5 space-y-3">
+                  <div className="h-3 w-16 bg-surface-subtle" />
+                  <div className="h-5 w-3/4 bg-surface-subtle" />
+                  <div className="h-10 w-full bg-surface-subtle" />
+                </div>
+              </div>
             ))}
           </div>
         ) : categories.length === 0 ? (
-          <div className="text-center py-20 border border-border-line bg-surface-subtle max-w-md mx-auto p-8">
-            <h2 className="text-lg font-bold uppercase text-on-surface mb-2">No Categories Found</h2>
-            <p className="text-sm text-body-slate mb-6">
-              Categories will appear here once added in the dashboard.
+          <div className="text-center py-16 sm:py-20 border border-border-line bg-surface-subtle max-w-lg mx-auto px-6 sm:px-8">
+            <span className="label-caps text-primary block mb-3">Catalog Empty</span>
+            <h2 className="text-xl sm:text-2xl font-bold uppercase text-on-surface mb-3">
+              No Categories Yet
+            </h2>
+            <p className="text-[15px] text-body-slate mb-8 leading-relaxed">
+              Categories will appear here once added from the dashboard.
             </p>
             <Link href="/" className="sv-btn-primary inline-flex">
               Return Home
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-            {categories.map((cat) => {
-              const imgSrc = getImageUrl(cat.image) || getImageUrl(cat.secondary_image);
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+            {categories.map((cat, index) => {
+              const imgSrc = getImageUrl(cat.image) || getImageUrl(cat.secondary_image) || FALLBACK;
+              const href = `/categories/subcategories/${getCategorySlug(cat)}`;
+              const count = Number(cat.products_count ?? cat.productsCount ?? 0);
+              const desc = categoryDescriptionOrFallback(cat.description);
+              const roleNo = String(index + 1).padStart(2, "0");
+              const shortDesc = sanitizeCategoryDescription(cat.description, 120) || desc;
+
               return (
-                <button
+                <Link
                   key={cat.id}
-                  type="button"
-                  onClick={() => router.push(`/categories/subcategories/${getCategorySlug(cat)}`)}
-                  className="group text-left border border-border-line bg-pure-white hover:border-on-surface transition-colors"
+                  href={href}
+                  className="group bg-surface border border-border-line hover:border-on-surface transition-colors flex flex-col h-full"
                 >
-                  <div className="aspect-[3/4] bg-surface-ivory overflow-hidden border-b border-border-line">
-                    {imgSrc ? (
-                      <img
-                        src={imgSrc}
-                        alt={cat.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-body-slate label-caps">
-                        {cat.name.charAt(0)}
+                  <div className="media-frame facet-media relative overflow-hidden bg-surface-ivory">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imgSrc}
+                      alt={cat.name}
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                      loading="lazy"
+                      decoding="async"
+                      width={600}
+                      height={800}
+                    />
+                    <div className="absolute top-3 left-3 bg-surface-dark text-surface px-2 py-1 text-[10px] font-semibold tracking-widest uppercase">
+                      {roleNo}
+                    </div>
+                    {count > 0 && (
+                      <div className="absolute bottom-3 right-3 bg-surface/95 border border-border-line px-2 py-1 text-[10px] font-semibold tracking-wider uppercase text-on-surface">
+                        {count} {count === 1 ? "Piece" : "Pieces"}
                       </div>
                     )}
                   </div>
-                  <div className="p-4">
-                    <h2 className="text-[13px] sm:text-sm font-bold uppercase tracking-tight text-on-surface group-hover:text-primary line-clamp-2">
+
+                  <div className="p-5 sm:p-6 flex flex-col flex-1 min-w-0">
+                    <span className="text-[10px] font-semibold tracking-[0.14em] uppercase text-primary block mb-2">
+                      Category
+                    </span>
+                    <h2 className="text-lg sm:text-xl font-bold uppercase tracking-[-0.015em] text-on-surface group-hover:text-primary transition-colors line-clamp-2">
                       {cat.name}
                     </h2>
-                    {cat.description && (
-                      <p className="text-[12px] text-body-slate mt-2 line-clamp-2">{cat.description}</p>
-                    )}
+                    <p className="text-[14px] leading-[1.6] text-body-slate mt-3 line-clamp-3 flex-1">
+                      {shortDesc}
+                    </p>
+
+                    <div className="mt-auto pt-5 border-t border-border-line/60 flex items-center justify-between text-[11px] font-semibold tracking-[0.1em] uppercase text-on-surface group-hover:text-primary transition-colors">
+                      <span>Shop Now</span>
+                      <span className="group-hover:translate-x-1 transition-transform" aria-hidden="true">
+                        →
+                      </span>
+                    </div>
                   </div>
-                </button>
+                </Link>
               );
             })}
           </div>

@@ -1546,7 +1546,7 @@ const ProductPage = () => {
                             {/* Meta info table */}
                             <div className="grid grid-cols-3 gap-y-2 text-[13px] pt-2 border-t border-[#0E0E0D]/10">
                                 <span className="label-caps text-[10px] text-[#4A4742]">Sold by</span>
-                                <span className="col-span-2 text-[#0E0E0D] font-medium">{product.brand?.name || 'SVASTRA'}</span>
+                                <span className="col-span-2 text-[#0E0E0D] font-medium">{product.brand?.name || 'SVastra'}</span>
 
                                 <span className="label-caps text-[10px] text-[#4A4742]">Packaging</span>
                                 <span className="col-span-2 text-[#0E0E0D] font-medium">Ships in signature packaging</span>

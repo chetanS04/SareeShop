@@ -1,7 +1,21 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Bell, Check, CheckCheck, Trash2, ExternalLink, ShoppingBag, Mail, Info, X, ShieldAlert, Sparkles, Truck, RefreshCw, Layers } from "lucide-react";
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  Trash2,
+  ExternalLink,
+  ShoppingBag,
+  Mail,
+  Info,
+  ShieldAlert,
+  Sparkles,
+  Truck,
+  RefreshCw,
+  Layers,
+} from "lucide-react";
 import { useNotifications, AppNotification } from "@/context/NotificationContext";
 import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation";
@@ -18,20 +32,21 @@ export default function NotificationBell() {
     deleteNotification,
   } = useNotifications();
 
-  const isAdminView = pathname?.startsWith("/dashboard") || ["Admin", "Manager", "superadmin"].includes(user?.role || "");
+  const isAdminView =
+    pathname?.startsWith("/dashboard") ||
+    ["Admin", "Manager", "superadmin"].includes(user?.role || "");
   const viewAllUrl = isAdminView ? "/dashboard/notifications" : "/notifications";
-  const themeAccentClass = "text-[#007FFF]";
-  const themeHoverClass = "hover:text-[#0066CC]";
 
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Calculate exact unread count based on loaded notifications state
   const unreadInState = notifications.filter((n) => !n.isRead).length;
-  const effectiveUnreadCount = notifications.length > 0 && notifications.length <= unreadCount ? unreadInState : unreadCount;
+  const effectiveUnreadCount =
+    notifications.length > 0 && notifications.length <= unreadCount
+      ? unreadInState
+      : unreadCount;
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -48,13 +63,17 @@ export default function NotificationBell() {
 
   const getNotificationIcon = (type: string) => {
     const t = (type || "").toUpperCase();
-    if (t.startsWith("ORDER")) return <ShoppingBag className={`w-4 h-4 ${themeAccentClass}`} />;
-    if (t.startsWith("PAYMENT")) return <Sparkles className="w-4 h-4 text-emerald-600" />;
-    if (t.startsWith("SHIPMENT") || t.startsWith("DELIVERY")) return <Truck className="w-4 h-4 text-indigo-600" />;
-    if (t.startsWith("RETURN") || t.startsWith("REFUND")) return <RefreshCw className="w-4 h-4 text-amber-600" />;
-    if (t.startsWith("SECURITY") || t.startsWith("PASSWORD") || t === "ACCOUNT") return <ShieldAlert className="w-4 h-4 text-red-600" />;
-    if (t === "CONTACT") return <Mail className="w-4 h-4 text-purple-600" />;
-    return <Info className="w-4 h-4 text-gray-600" />;
+    const cls = "w-4 h-4 text-primary";
+    if (t.startsWith("ORDER")) return <ShoppingBag className={cls} strokeWidth={1.5} />;
+    if (t.startsWith("PAYMENT")) return <Sparkles className="w-4 h-4 text-accent-ochre" strokeWidth={1.5} />;
+    if (t.startsWith("SHIPMENT") || t.startsWith("DELIVERY"))
+      return <Truck className="w-4 h-4 text-on-surface" strokeWidth={1.5} />;
+    if (t.startsWith("RETURN") || t.startsWith("REFUND"))
+      return <RefreshCw className={cls} strokeWidth={1.5} />;
+    if (t.startsWith("SECURITY") || t.startsWith("PASSWORD") || t === "ACCOUNT")
+      return <ShieldAlert className={cls} strokeWidth={1.5} />;
+    if (t === "CONTACT") return <Mail className="w-4 h-4 text-on-surface" strokeWidth={1.5} />;
+    return <Info className="w-4 h-4 text-body-slate" strokeWidth={1.5} />;
   };
 
   const formatTime = (dateStr?: string) => {
@@ -66,13 +85,14 @@ export default function NotificationBell() {
 
       let d: Date;
       if (parts.length >= 6) {
-        const year = Number(parts[0]);
-        const month = Number(parts[1]) - 1;
-        const day = Number(parts[2]);
-        const hour = Number(parts[3]);
-        const minute = Number(parts[4]);
-        const second = Number(parts[5]);
-        d = new Date(year, month, day, hour, minute, second || 0);
+        d = new Date(
+          Number(parts[0]),
+          Number(parts[1]) - 1,
+          Number(parts[2]),
+          Number(parts[3]),
+          Number(parts[4]),
+          Number(parts[5]) || 0
+        );
       } else {
         d = new Date(raw);
       }
@@ -89,7 +109,7 @@ export default function NotificationBell() {
       if (diffSec < 2592000) return `${Math.floor(diffSec / 86400)}d ago`;
 
       return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    } catch (e) {
+    } catch {
       return "Just now";
     }
   };
@@ -97,7 +117,12 @@ export default function NotificationBell() {
   const getItemLink = (n: AppNotification) => {
     if (!isAdminView) {
       const type = (n.type || "").toUpperCase();
-      if (type.startsWith("ORDER") || !n.link || n.link === "/orders" || n.link.startsWith("/orders")) {
+      if (
+        type.startsWith("ORDER") ||
+        !n.link ||
+        n.link === "/orders" ||
+        n.link.startsWith("/orders")
+      ) {
         return "/profile?tab=orders";
       }
     }
@@ -106,30 +131,35 @@ export default function NotificationBell() {
 
   return (
     <div className="relative inline-block" ref={dropdownRef}>
-      {/* Bell Trigger Button */}
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-1.5 sm:p-2 rounded-full text-gray-800 hover:text-black hover:bg-gray-100 transition-all focus:outline-none flex items-center justify-center"
+        className="relative p-1.5 sm:p-2 text-on-surface hover:text-primary transition-colors focus:outline-none flex items-center justify-center"
         title="Notifications"
         aria-label="Notifications"
+        aria-expanded={isOpen}
       >
-        <Bell className={`w-5 h-5 sm:w-5.5 sm:h-5.5 ${effectiveUnreadCount > 0 ? themeAccentClass : "text-gray-900"}`} />
+        <Bell
+          className={`w-5 h-5 ${effectiveUnreadCount > 0 ? "text-primary" : "text-on-surface"}`}
+          strokeWidth={1.5}
+        />
         {effectiveUnreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold text-white bg-red-600 rounded-full border-2 border-white shadow-xs pointer-events-none">
+          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[15px] h-[15px] px-1 text-[9px] font-bold text-surface bg-primary border border-surface pointer-events-none">
             {effectiveUnreadCount > 99 ? "99+" : effectiveUnreadCount}
           </span>
         )}
       </button>
 
-      {/* Floating Drawer / Dropdown */}
       {isOpen && (
-        <div className="absolute -right-16 sm:right-0 mt-3 w-[310px] sm:w-80 md:w-96 max-w-[calc(100vw-20px)] bg-white border border-gray-200 rounded-2xl shadow-2xl z-[9999] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute -right-16 sm:right-0 mt-3 w-[310px] sm:w-80 md:w-96 max-w-[calc(100vw-20px)] bg-surface border border-border-line z-[9999] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 bg-gray-50/80">
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-gray-900">Notifications</h3>
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-border-line bg-surface-ivory">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <h3 className="text-[13px] font-bold uppercase tracking-tight text-on-surface">
+                Notifications
+              </h3>
               {effectiveUnreadCount > 0 && (
-                <span className="px-2.5 py-0.5 text-[11px] font-bold bg-red-100 text-red-700 rounded-full">
+                <span className="label-caps text-[9px] px-2 py-0.5 bg-primary text-surface shrink-0">
                   {effectiveUnreadCount > 99 ? "99+" : effectiveUnreadCount} unread
                 </span>
               )}
@@ -137,8 +167,9 @@ export default function NotificationBell() {
 
             {effectiveUnreadCount > 0 && (
               <button
+                type="button"
                 onClick={markAllAsRead}
-                className={`flex items-center gap-1 text-xs font-bold ${themeAccentClass} ${themeHoverClass} hover:underline transition-colors`}
+                className="flex items-center gap-1 label-caps text-[10px] text-primary hover:text-on-surface transition-colors shrink-0"
               >
                 <CheckCheck className="w-3.5 h-3.5" />
                 Mark all read
@@ -146,34 +177,38 @@ export default function NotificationBell() {
             )}
           </div>
 
-          {/* Filter Tabs */}
-          <div className="flex border-b border-gray-100 px-4 py-2 gap-2 bg-white">
+          {/* Filter tabs */}
+          <div className="flex border-b border-border-line px-4 py-2.5 gap-2 bg-surface">
             <button
+              type="button"
               onClick={() => setFilter("all")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors ${filter === "all"
-                  ? "bg-[#0A0908] text-white shadow-xs"
-                  : "text-gray-600 hover:bg-gray-100"
-                }`}
+              className={`px-3 py-1.5 label-caps text-[10px] transition-colors border ${
+                filter === "all"
+                  ? "bg-surface-dark text-surface border-surface-dark"
+                  : "bg-surface text-body-slate border-border-line hover:border-on-surface hover:text-on-surface"
+              }`}
             >
               All ({notifications.length})
             </button>
             <button
+              type="button"
               onClick={() => setFilter("unread")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors ${filter === "unread"
-                  ? "bg-[#0A0908] text-white shadow-xs"
-                  : "text-gray-600 hover:bg-gray-100"
-                }`}
+              className={`px-3 py-1.5 label-caps text-[10px] transition-colors border ${
+                filter === "unread"
+                  ? "bg-surface-dark text-surface border-surface-dark"
+                  : "bg-surface text-body-slate border-border-line hover:border-on-surface hover:text-on-surface"
+              }`}
             >
               Unread ({effectiveUnreadCount})
             </button>
           </div>
 
-          {/* Notification Items List */}
-          <div className="max-h-[360px] overflow-y-auto divide-y divide-gray-100 bg-white">
+          {/* List */}
+          <div className="max-h-[360px] overflow-y-auto divide-y divide-border-line bg-surface">
             {filteredNotifications.length === 0 ? (
               <div className="py-12 text-center px-4">
-                <Bell className="w-9 h-9 mx-auto text-gray-300 mb-2 stroke-[1.5]" />
-                <p className="text-xs font-semibold text-gray-500">
+                <Bell className="w-9 h-9 mx-auto text-body-slate/35 mb-2" strokeWidth={1.25} />
+                <p className="label-caps text-[10px] text-body-slate">
                   {filter === "unread" ? "No unread notifications" : "No notifications yet"}
                 </p>
               </div>
@@ -183,28 +218,31 @@ export default function NotificationBell() {
                 return (
                   <div
                     key={n.id}
-                    className={`p-3.5 flex gap-3 transition-colors ${!n.isRead
-                        ? "bg-blue-50/60"
-                        : "hover:bg-gray-50"
-                      }`}
+                    className={`p-3.5 flex gap-3 transition-colors ${
+                      !n.isRead
+                        ? "bg-surface-ivory border-l-2 border-l-primary"
+                        : "hover:bg-surface-subtle/80"
+                    }`}
                   >
-                    <div className="p-2 rounded-xl bg-gray-100 h-fit shrink-0">
+                    <div className="w-9 h-9 bg-surface border border-border-line flex items-center justify-center shrink-0">
                       {getNotificationIcon(n.type)}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-1 mb-0.5">
-                        <h4 className="text-xs font-bold text-gray-900 truncate">
+                      <div className="flex items-start justify-between gap-2 mb-0.5">
+                        <h4 className="text-[12px] font-bold uppercase tracking-tight text-on-surface truncate">
                           {n.title}
                         </h4>
-                        <span className="text-[10px] text-gray-400 shrink-0 font-medium">{formatTime(n.createdAt)}</span>
+                        <span className="label-caps text-[9px] text-body-slate shrink-0">
+                          {formatTime(n.createdAt)}
+                        </span>
                       </div>
 
-                      <p className="text-xs text-gray-600 line-clamp-2 leading-snug mb-2">
+                      <p className="text-[12px] text-body-slate line-clamp-2 leading-snug mb-2">
                         {n.message}
                       </p>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         {targetLink && (
                           <Link
                             href={targetLink}
@@ -212,7 +250,7 @@ export default function NotificationBell() {
                               if (!n.isRead) markAsRead(n.id);
                               setIsOpen(false);
                             }}
-                            className={`inline-flex items-center gap-1 text-[11px] font-bold ${themeAccentClass} ${themeHoverClass} hover:underline`}
+                            className="inline-flex items-center gap-1 label-caps text-[10px] text-primary hover:text-on-surface underline underline-offset-2 decoration-border-line hover:decoration-primary"
                           >
                             View Details <ExternalLink className="w-3 h-3" />
                           </Link>
@@ -220,17 +258,20 @@ export default function NotificationBell() {
 
                         {!n.isRead && (
                           <button
+                            type="button"
                             onClick={() => markAsRead(n.id)}
-                            className="text-[11px] font-semibold text-gray-500 hover:text-gray-900 flex items-center gap-1"
+                            className="label-caps text-[10px] text-body-slate hover:text-on-surface inline-flex items-center gap-1"
                           >
                             <Check className="w-3 h-3" /> Mark read
                           </button>
                         )}
 
                         <button
+                          type="button"
                           onClick={() => deleteNotification(n.id)}
-                          className="ml-auto text-gray-400 hover:text-red-600 transition-colors p-1"
+                          className="ml-auto text-body-slate/50 hover:text-primary transition-colors p-1"
                           title="Delete"
+                          aria-label="Delete notification"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -242,12 +283,12 @@ export default function NotificationBell() {
             )}
           </div>
 
-          {/* Footer Link to Dedicated Page */}
-          <div className="p-3 border-t border-gray-100 bg-gray-50/80 text-center">
+          {/* Footer */}
+          <div className="px-4 py-3 border-t border-border-line bg-surface-ivory text-center">
             <Link
               href={viewAllUrl}
               onClick={() => setIsOpen(false)}
-              className={`inline-flex items-center justify-center gap-1.5 text-xs font-extrabold ${themeAccentClass} ${themeHoverClass} hover:underline w-full py-1`}
+              className="inline-flex items-center justify-center gap-1.5 label-caps text-[10px] text-primary hover:text-on-surface w-full py-1 transition-colors"
             >
               <Layers className="w-3.5 h-3.5" />
               View All Notifications

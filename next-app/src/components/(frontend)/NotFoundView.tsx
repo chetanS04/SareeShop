@@ -38,8 +38,8 @@ export default function NotFoundView() {
       <header className="w-full border-b border-border-line bg-surface site-pad py-5 flex items-center justify-between">
         <Link href="/" className="inline-flex items-center gap-2.5 hover:opacity-80 transition" aria-label="SVastra Home">
           <img src={LOGO_MARK} alt="" className="h-8 w-8 object-contain shrink-0" width={32} height={32} />
-          <span className="text-[22px] sm:text-[26px] font-semibold tracking-tight uppercase text-on-surface leading-none">
-            SVASTRA
+          <span className="text-[22px] sm:text-[26px] font-semibold tracking-tight text-on-surface leading-none">
+            SVastra
           </span>
         </Link>
         <nav className="flex items-center gap-4 sm:gap-7">

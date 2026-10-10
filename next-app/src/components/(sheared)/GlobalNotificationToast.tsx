@@ -28,7 +28,6 @@ export default function GlobalNotificationToast() {
     setMounted(true);
   }, []);
 
-  // Auto-dismiss active toast after 6 seconds
   useEffect(() => {
     if (activeToast) {
       const timer = setTimeout(() => {
@@ -48,19 +47,29 @@ export default function GlobalNotificationToast() {
 
   const getNotificationIcon = (type: string) => {
     const t = (type || "").toUpperCase();
-    if (t.startsWith("ORDER")) return <ShoppingBag className="w-5 h-5 text-[#007FFF]" />;
-    if (t.startsWith("PAYMENT")) return <Sparkles className="w-5 h-5 text-emerald-600" />;
-    if (t.startsWith("SHIPMENT") || t.startsWith("DELIVERY")) return <Truck className="w-5 h-5 text-indigo-600" />;
-    if (t.startsWith("RETURN") || t.startsWith("REFUND")) return <RefreshCw className="w-5 h-5 text-amber-600" />;
-    if (t.startsWith("SECURITY") || t.startsWith("PASSWORD") || t === "ACCOUNT") return <ShieldAlert className="w-5 h-5 text-red-600" />;
-    if (t === "CONTACT") return <Mail className="w-5 h-5 text-purple-600" />;
-    return <Info className="w-5 h-5 text-gray-600" />;
+    const cls = "w-5 h-5 text-primary";
+    if (t.startsWith("ORDER")) return <ShoppingBag className={cls} strokeWidth={1.5} />;
+    if (t.startsWith("PAYMENT"))
+      return <Sparkles className="w-5 h-5 text-accent-ochre" strokeWidth={1.5} />;
+    if (t.startsWith("SHIPMENT") || t.startsWith("DELIVERY"))
+      return <Truck className="w-5 h-5 text-on-surface" strokeWidth={1.5} />;
+    if (t.startsWith("RETURN") || t.startsWith("REFUND"))
+      return <RefreshCw className={cls} strokeWidth={1.5} />;
+    if (t.startsWith("SECURITY") || t.startsWith("PASSWORD") || t === "ACCOUNT")
+      return <ShieldAlert className={cls} strokeWidth={1.5} />;
+    if (t === "CONTACT") return <Mail className="w-5 h-5 text-on-surface" strokeWidth={1.5} />;
+    return <Info className="w-5 h-5 text-body-slate" strokeWidth={1.5} />;
   };
 
   const getItemLink = (n: AppNotification) => {
     if (!isAdminView) {
       const type = (n.type || "").toUpperCase();
-      if (type.startsWith("ORDER") || !n.link || n.link === "/orders" || n.link.startsWith("/orders")) {
+      if (
+        type.startsWith("ORDER") ||
+        !n.link ||
+        n.link === "/orders" ||
+        n.link.startsWith("/orders")
+      ) {
         return "/profile?tab=orders";
       }
     }
@@ -73,21 +82,21 @@ export default function GlobalNotificationToast() {
     <div
       role="alert"
       aria-live="assertive"
-      className="fixed top-5 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-[99999999] max-w-sm w-[calc(100vw-2rem)] sm:w-96 bg-white/95 backdrop-blur-md border border-gray-200/90 rounded-2xl shadow-2xl p-4 sm:p-4.5 flex gap-3.5 animate-in slide-in-from-top-4 fade-in duration-300 pointer-events-auto select-none"
+      className="fixed top-5 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-[99999999] max-w-sm w-[calc(100vw-2rem)] sm:w-96 bg-surface border border-border-line border-l-2 border-l-primary p-4 sm:p-5 flex gap-3.5 animate-in slide-in-from-top-4 fade-in duration-300 pointer-events-auto select-none"
     >
-      <div className="p-2.5 rounded-xl bg-blue-50/90 border border-blue-100/80 h-fit shrink-0 mt-0.5">
+      <div className="w-10 h-10 bg-surface-ivory border border-border-line flex items-center justify-center shrink-0 mt-0.5">
         {getNotificationIcon(activeToast.type)}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <h4 className="text-xs sm:text-[13px] font-bold text-gray-900 leading-tight">
+          <h4 className="text-[12px] sm:text-[13px] font-bold uppercase tracking-tight text-on-surface leading-tight">
             {activeToast.title || "Notification"}
           </h4>
           <button
             type="button"
             onClick={clearActiveToast}
-            className="text-gray-400 hover:text-gray-700 p-1 -mr-1 -mt-1 rounded-lg hover:bg-gray-100 transition-colors"
+            className="text-body-slate hover:text-primary p-1 -mr-1 -mt-1 transition-colors"
             title="Close"
             aria-label="Close notification"
           >
@@ -95,7 +104,7 @@ export default function GlobalNotificationToast() {
           </button>
         </div>
 
-        <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed mb-2.5">
+        <p className="text-[12px] text-body-slate line-clamp-3 leading-relaxed mb-2.5">
           {activeToast.message}
         </p>
 
@@ -103,7 +112,7 @@ export default function GlobalNotificationToast() {
           <Link
             href={targetLink}
             onClick={clearActiveToast}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#007FFF] hover:text-[#0066CC] hover:underline transition-colors"
+            className="inline-flex items-center gap-1.5 label-caps text-[10px] text-primary hover:text-on-surface underline underline-offset-2 decoration-border-line hover:decoration-primary transition-colors"
           >
             View Now <ExternalLink className="w-3.5 h-3.5" />
           </Link>

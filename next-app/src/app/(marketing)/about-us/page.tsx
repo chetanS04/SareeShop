@@ -1,480 +1,306 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { TensionMatrixGraphic } from "@/components/(frontend)/svastra/SvastraManifesto";
-import { ARCHETYPES } from "@/data/archetypes";
-import { fetchActiveSliderImage } from "@/utils/archetypeCatalog";
+import { Truck, RotateCcw, Leaf, ShieldCheck, BadgeCheck } from "lucide-react";
 
-const FALLBACK = "/svastra/logo-mark.png";
+const MANIFESTO_SPECS = [
+  { label: "Specs", value: "100% Organic Handloom" },
+  { label: "Purity", value: "Zero Synthetic Weft" },
+  { label: "Function", value: "All-Day Thermal Reg" },
+] as const;
 
-const COMMITMENTS = [
-  {
-    title: "100% Handloom",
-    copy: "Pure fiber architecture. No synthetic polyester. Generational weaver hours over shortcuts.",
-  },
-  {
-    title: "Zero Filigree",
-    copy: "We reject nostalgic costume. Structural integrity and fabric weight over decorative clutter.",
-  },
-  {
-    title: "Concierge Care",
-    copy: "Complimentary atelier guidance — drape engineering, sizing precision, and edit curation.",
-  },
-  {
-    title: "Archival Dispatch",
-    copy: "Curated edits ship in signature archival protection with worldwide tracked delivery.",
-  },
-];
+const BRAND_PERSONALITY = "/svastra/brand-personality.png";
+const STORY_IMAGE = "/svastra/hero-she-knows.png";
 
-const PROVENANCE_HIGHLIGHTS = [
+const PROMISES = [
   {
-    title: "The Architect Saree",
-    silhouette: "Noir & Haldi Raw Silk",
-    gsm: "380 GSM",
-    origin: "Bhagalpur, Bihar",
-    discipline: "Monolithic drape weight engineered to settle into an uncompromising vertical line.",
+    icon: Leaf,
+    title: "Handloom Fabric",
+    body: "Every saree is a genuine handloom weave in cotton, silk, or linen. No polyester blends.",
   },
   {
-    title: "The Razor Pallu Overlay",
-    silhouette: "Structured Habotai Silk",
-    gsm: "340 GSM",
-    origin: "Bengal Handloom",
-    discipline: "Engineered drape system that stays crisp without safety pins or costume constraints.",
+    icon: Truck,
+    title: "Delivered Across India",
+    body: "Carefully packed and shipped nationwide, with tracking on every order.",
   },
   {
-    title: "The Grounded Drape",
-    silhouette: "Wild Tussar & Chanderi",
-    gsm: "320 GSM",
-    origin: "Chanderi & Kutch",
-    discipline: "Organic mineral pigments and natural raw slubs that deepen with age and poise.",
+    icon: RotateCcw,
+    title: "Easy Returns",
+    body: "Return or exchange eligible pieces within the return window shown on each product.",
   },
   {
-    title: "The Kinetic Pleat",
-    silhouette: "Mulberry Silk Architecture",
-    gsm: "360 GSM",
-    origin: "Calcutta & Bagru",
-    discipline: "Accordion micro-folds that compress in stillness and expand in fluid motion.",
-  },
-];
-
-const AFFECTIVE_FREQUENCIES = [
-  {
-    tag: "POWER",
-    tagline: "Command Without Costume",
-    desc: "High-density 380 GSM raw silks and razor-sharp pallu overlays that anchor the room without raising their voice.",
-    href: "/products?search=silk",
-  },
-  {
-    tag: "MINIMAL",
-    tagline: "Quiet Structural Clarity",
-    desc: "Unbleached wild tussar and crisp linen-silk blends with zero distraction and disciplined mathematical geometry.",
-    href: "/products?search=linen",
-  },
-  {
-    tag: "CELEBRATION",
-    tagline: "Presence For The Occasion",
-    desc: "Deep mineral-dyed artisanal weaves engineered for sovereign gravitas rather than nostalgic bridal ornament.",
-    href: "/products?search=georgette",
+    icon: ShieldCheck,
+    title: "Secure Checkout",
+    body: "Pay by UPI, card, or net banking. Cash on delivery available on eligible orders.",
   },
 ];
 
 export default function AboutUsPage() {
-  const [heroImg, setHeroImg] = useState(FALLBACK);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const slider = await fetchActiveSliderImage();
-      if (!cancelled && slider) {
-        setHeroImg(slider);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   return (
-    <div className="min-h-screen bg-surface text-on-surface">
-      {/* 1. TOP BREADCRUMB & HERO */}
+    <div className="min-h-screen bg-surface text-on-surface overflow-x-hidden">
+      {/* Hero */}
       <section className="w-full bg-surface border-b border-border-line">
-        <div className="max-w-site mx-auto site-pad section-y">
-          <nav className="label-caps text-body-slate mb-8 flex flex-wrap items-center gap-2">
+        <div className="max-w-site mx-auto site-pad pt-6 sm:pt-8 pb-12 sm:pb-16 lg:pb-20">
+          <nav
+            className="label-caps text-body-slate mb-5 sm:mb-6 flex flex-wrap items-center gap-2"
+            aria-label="Breadcrumb"
+          >
             <Link href="/" className="hover:text-primary transition-colors">
               Home
             </Link>
-            <span className="text-on-surface/30" aria-hidden="true">
-              /
-            </span>
-            <span className="text-on-surface">The Atelier & Manifesto</span>
+            <span className="text-on-surface/30" aria-hidden="true">/</span>
+            <span className="text-on-surface">About</span>
           </nav>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            <div className="lg:col-span-6 space-y-6">
-              <div className="inline-block bg-surface-ivory px-3 py-1.5 border border-border-line label-caps text-primary">
-                The Atelier · Wear Yourself
-              </div>
-              <h1 className="text-[clamp(2.4rem,5.5vw,4.25rem)] font-bold uppercase tracking-[-0.03em] leading-[0.96] text-on-surface">
-                ONE WOMAN.
+            <div className="lg:col-span-6 space-y-5 sm:space-y-6 order-2 lg:order-1">
+              <span className="label-caps text-primary block">About Svastra</span>
+
+              <h1 className="text-[clamp(2.35rem,5.2vw,3.75rem)] font-bold tracking-[-0.03em] leading-[1.05] text-on-surface">
+                Many roles. Many moods.
                 <br />
-                <span className="text-primary">MANY ROLES.</span>
-                <br />
-                MANY MOODS.
+                <span className="text-primary">Always you.</span>
               </h1>
-              <p className="text-[15px] sm:text-lg leading-[1.65] text-body-slate max-w-xl font-normal">
-                SVastra crafts architectural Indian handlooms for sovereign identities — rooted in
-                structural modernism and archival artistry, never in costume or cliché.
+
+              <p className="text-[15px] sm:text-[17px] leading-[1.65] text-body-slate max-w-xl">
+                What a woman wears should reflect who she is and the strength she carries within.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-1">
                 <Link href="/products" className="sv-btn-primary">
-                  Explore Collections
+                  Explore The Collection
                 </Link>
                 <Link href="/contact-us" className="sv-btn-outline">
-                  Atelier Concierge
+                  Contact Us
                 </Link>
               </div>
             </div>
 
-            <div className="lg:col-span-6">
-              <div className="media-frame hero-media border border-on-surface/20 bg-surface-dark relative">
+            <div className="lg:col-span-6 order-1 lg:order-2">
+              <figure className="media-frame hero-media border border-on-surface/15 bg-surface-dark relative overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={heroImg}
-                  alt="SVastra atelier portrait"
-                  className="object-cover w-full h-full"
+                  src={BRAND_PERSONALITY}
+                  alt="Svastra brand personality — confident, bold, feminine, ambitious, rooted, and unapologetic"
+                  className="object-cover w-full h-full object-center"
                   loading="eager"
                   width={960}
-                  height={720}
+                  height={540}
                 />
-                <div className="absolute bottom-0 inset-x-0 bg-surface-dark/95 text-surface p-4 sm:p-5 border-t border-surface/15">
-                  <span className="text-[10px] font-semibold tracking-[0.16em] uppercase text-surface/60 block mb-1">
-                    Foundational Ethos
-                  </span>
-                  <p className="text-[13px] sm:text-[14px] font-semibold tracking-tight text-surface uppercase">
-                    PRESENCE OVER NOISE // NEVER A COSTUME
+                <figcaption className="absolute bottom-0 inset-x-0 bg-surface-dark/95 text-surface px-4 py-3.5 sm:px-5 sm:py-4 border-t border-surface/10">
+                  <span className="label-caps text-surface/55 block mb-1">Brand Personality</span>
+                  <p className="text-[12px] sm:text-[13px] font-semibold tracking-[0.06em] uppercase text-surface">
+                    Wear Yourself
                   </p>
-                </div>
-              </div>
+                </figcaption>
+              </figure>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. ARCHITECTURAL METRICS */}
-      <section className="w-full bg-surface-subtle border-b border-border-line">
-        <div className="max-w-site mx-auto site-pad py-10 sm:py-12">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
-            {[
-              { value: "4", label: "Sovereign Roles", note: "One Unified Wardrobe" },
-              { value: "0%", label: "Synthetic Polyester", note: "Pure Fiber Architecture" },
-              { value: "380 GSM", label: "High-Density Silks", note: "Monolithic Drape Weight" },
-              { value: "0.0%", label: "Decorative Filigree", note: "Structure Over Cliché" },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="text-center lg:text-left lg:border-l lg:first:border-l-0 border-border-line lg:pl-6 first:pl-0"
-              >
-                <span className="text-3xl sm:text-4xl font-bold text-primary tracking-[-0.025em] block">
-                  {stat.value}
+      {/* Manifesto note */}
+      <section
+        id="philosophy"
+        className="w-full bg-surface-dark text-surface border-b border-border-line scroll-mt-24"
+        aria-labelledby="about-manifesto-title"
+      >
+        <div className="max-w-site mx-auto site-pad py-14 sm:py-16 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+            <div className="lg:col-span-8 space-y-6 sm:space-y-8">
+              <div>
+                <span className="inline-flex items-center gap-2 label-caps text-accent-ochre mb-4">
+                  <span className="w-2 h-2 bg-primary shrink-0" aria-hidden="true" />
+                  Our Philosophy
                 </span>
-                <span className="label-caps text-on-surface mt-2 block font-semibold">{stat.label}</span>
-                <span className="text-[11px] text-body-slate mt-0.5 block">{stat.note}</span>
+                <h2
+                  id="about-manifesto-title"
+                  className="text-[clamp(1.75rem,4vw,2.75rem)] font-bold uppercase tracking-[-0.025em] leading-[1.05] text-surface max-w-3xl"
+                >
+                  The Architecture of Quiet Power.
+                </h2>
+                <p className="text-[15px] sm:text-[17px] leading-[1.7] text-surface/75 mt-5 max-w-2xl">
+                  Managing worlds requires garments that never bind, pinch, or demand performance.
+                  Pure unforced fabric engineered for the woman who centers everything.
+                </p>
               </div>
-            ))}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-2xl">
+                {MANIFESTO_SPECS.map((spec) => (
+                  <div
+                    key={spec.label}
+                    className="bg-surface/10 border border-surface/15 p-4 sm:p-5"
+                  >
+                    <span className="text-[10px] font-semibold tracking-[0.14em] uppercase text-accent-ochre block mb-2">
+                      {spec.label}
+                    </span>
+                    <span className="text-base sm:text-lg font-bold text-surface tracking-tight">
+                      {spec.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <aside className="lg:col-span-4 bg-surface/10 border border-surface/15 p-6 sm:p-8 flex flex-col">
+              <BadgeCheck className="w-8 h-8 text-accent-ochre mb-5 shrink-0" strokeWidth={1.5} aria-hidden />
+              <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-surface mb-4">
+                Unforced Reverence
+              </h3>
+              <p className="text-[14px] sm:text-[15px] leading-[1.7] text-surface/75 flex-1">
+                We do not believe luxury should ask you to suffer for a silhouette. Our master
+                weavers in Chanderi set the loom tension to deliberate low-density breathability so
+                every drape feels like clean air.
+              </p>
+              <Link
+                href="#story"
+                className="mt-6 label-caps text-accent-ochre hover:text-surface transition-colors inline-flex items-center gap-2"
+              >
+                <span>Explore Weaver Diaries</span>
+                <span aria-hidden="true">→</span>
+              </Link>
+            </aside>
           </div>
         </div>
       </section>
 
-      {/* 3. THE TENSION MATRIX & ATELIER MANIFESTO (Full-Bleed Noir) */}
+      {/* Brand story */}
+      <section id="story" className="w-full bg-surface-subtle border-b border-border-line scroll-mt-24">
+        <div className="max-w-site mx-auto site-pad section-y">
+          <div className="mb-8 sm:mb-10 max-w-2xl">
+            <span className="label-caps text-primary block mb-2">Our Story</span>
+            <h2 className="text-2xl sm:text-3xl font-bold uppercase tracking-[-0.025em] text-on-surface leading-tight">
+              Built on belief. Worn with confidence.
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+            <figure className="lg:col-span-4 w-full max-w-[min(100%,320px)] sm:max-w-[360px] mx-auto lg:mx-0">
+              <div className="media-frame aspect-[3/4] sm:max-h-[420px] lg:max-h-none border border-on-surface/15 bg-surface-dark relative overflow-hidden w-full">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={STORY_IMAGE}
+                  alt="Svastra founder story — a woman in confidence and poise"
+                  className="object-cover w-full h-full object-center"
+                  loading="lazy"
+                  width={800}
+                  height={1000}
+                />
+              </div>
+              <figcaption className="mt-4 border-l-2 border-primary pl-4">
+                <span className="label-caps text-primary block mb-1">Founded by Sapna Acharya</span>
+                <p className="text-[13px] sm:text-[14px] text-body-slate leading-relaxed">
+                  A working professional, mother, and entrepreneur who believes every woman should
+                  wear herself with confidence.
+                </p>
+              </figcaption>
+            </figure>
+
+            <div className="lg:col-span-8 space-y-6 sm:space-y-7">
+              <p className="text-[16px] sm:text-[18px] leading-[1.7] text-on-surface">
+                Svastra began with a simple belief: what a woman wears should reflect who she is and
+                the strength she carries within.
+              </p>
+
+              <p className="text-[15px] sm:text-[16px] leading-[1.75] text-body-slate">
+                Founded by Sapna Acharya, Svastra brings together a love for sarees and a vision of
+                women feeling confident, comfortable, and connected to their roots. As a working
+                professional, mother, and entrepreneur, Sapna understands the many roles a woman
+                moves through—and the importance of keeping her own identity within them.
+              </p>
+
+              <p className="text-[15px] sm:text-[16px] leading-[1.75] text-on-surface font-medium border-l-2 border-primary pl-4 py-1">
+                That thought is at the heart of Svastra: Wear Yourself.
+              </p>
+
+              <p className="text-[15px] sm:text-[16px] leading-[1.75] text-body-slate">
+                Our collections celebrate your different moods and moments. From soft cottons for
+                everyday living and work to elegant sarees for celebrations, we choose pieces with
+                comfort, individuality, and understated beauty in mind.
+              </p>
+
+              <p className="text-[15px] sm:text-[16px] leading-[1.75] text-body-slate">
+                We believe a saree belongs wherever you choose to take it—to an important meeting, a
+                festive gathering, a lunch with friends, or simply a day when you feel like wearing
+                one.
+              </p>
+
+              <p className="text-[15px] sm:text-[16px] leading-[1.75] text-body-slate">
+                Whether you are building a career, nurturing a home, pursuing a dream, or
+                discovering something new about yourself, Svastra celebrates the woman you are—and
+                the woman you are becoming.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Promises */}
       <section
-        id="manifesto"
-        className="w-full bg-surface-dark text-surface border-b border-border-line scroll-mt-24"
+        className="w-full bg-surface border-b border-border-line"
+        aria-labelledby="promises-title"
       >
         <div className="max-w-site mx-auto site-pad section-y">
-          <div className="border-b border-border-line-dark pb-5 sm:pb-6 mb-8 sm:mb-12">
-            <span className="label-caps text-accent-ochre block tracking-[0.18em]">
-              THE SVASTRA TENSION MATRIX // FOUNDATIONAL PRINCIPLES
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center mb-12 sm:mb-16">
-            <div className="lg:col-span-6">
-              <TensionMatrixGraphic />
-            </div>
-            <div className="lg:col-span-6 space-y-6">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-[-0.025em] text-surface">
-                PRESENCE OVER NOISE
+          <div className="border-b border-border-line pb-6 sm:pb-8 mb-8 sm:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span className="label-caps text-primary block mb-2">Why Svastra</span>
+              <h2 id="promises-title" className="display-section text-on-surface uppercase">
+                What You Can Count On
               </h2>
-              <div className="bg-surface-dark border-l-2 border-primary pl-4 sm:pl-5 py-2">
-                <p className="text-base sm:text-lg font-medium text-surface/90 leading-relaxed">
-                  “She doesn’t ask the room for permission to belong. She leads without needing to announce it.”
-                </p>
-                <span className="text-[11px] font-semibold tracking-wider uppercase text-surface/50 mt-2 block">
-                  — The Leader Manifesto
-                </span>
-              </div>
-              <p className="text-[14px] sm:text-base leading-[1.65] text-surface/75 font-normal">
-                Leadership in her world is not costume. It is posture, fabric weight, and the refusal of
-                ornamental distraction. Every seam is a decision. Every drape holds the room without raising its voice.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 pt-2 text-[13px]">
-                <div className="border-l-2 border-primary pl-3.5 py-1">
-                  <span className="font-bold text-surface uppercase block text-[13px] tracking-wide">Indian</span>
-                  <span className="text-surface/60 text-xs">Never stereotypical or ornamental costume.</span>
-                </div>
-                <div className="border-l-2 border-accent-magenta pl-3.5 py-1">
-                  <span className="font-bold text-surface uppercase block text-[13px] tracking-wide">Feminine</span>
-                  <span className="text-surface/60 text-xs">Softness engineered with undeniable backbone.</span>
-                </div>
-                <div className="border-l-2 border-accent-ochre pl-3.5 py-1">
-                  <span className="font-bold text-surface uppercase block text-[13px] tracking-wide">Bold</span>
-                  <span className="text-surface/60 text-xs">Quiet command through material weight.</span>
-                </div>
-                <div className="border-l-2 border-accent-blue pl-3.5 py-1">
-                  <span className="font-bold text-surface uppercase block text-[13px] tracking-wide">Modern</span>
-                  <span className="text-surface/60 text-xs">Without relinquishing historical roots.</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-10 sm:pt-14 border-t border-border-line-dark">
-            <span className="label-caps text-primary block mb-3">Atelier Manifesto</span>
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-[-0.03em] text-surface leading-[1.1] max-w-4xl">
-              We do not design costumes for occasions.
-              <br className="hidden sm:block" />
-              We craft modern armour for real life.
-            </h2>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. ATELIER CRAFT & PROVENANCE DISCIPLINE */}
-      <section className="w-full bg-surface border-b border-border-line">
-        <div className="max-w-site mx-auto site-pad section-y">
-          <div className="border-b border-border-line pb-6 sm:pb-8 mb-8 sm:mb-12">
-            <span className="label-caps text-primary block mb-2">Atelier Craft Discipline</span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-[-0.025em] text-on-surface">
-              FABRIC ARCHITECTURE & PROVENANCE
-            </h2>
-            <p className="text-[14px] sm:text-base text-body-slate mt-2 max-w-2xl font-normal">
-              Structured drapes, razor pallu engineering, and monolithic fabric density designed for long-term presence.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {PROVENANCE_HIGHLIGHTS.map((item, index) => (
-              <article
-                key={item.title}
-                className="bg-surface-ivory border border-border-line p-6 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4 border-b border-border-line pb-3">
-                    <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-primary">
-                      Spec 0{index + 1}
-                    </span>
-                    <span className="text-[11px] font-semibold tracking-wider text-body-slate uppercase">
-                      {item.gsm}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold uppercase tracking-tight text-on-surface mb-1">
-                    {item.title}
-                  </h3>
-                  <span className="text-[12px] font-semibold text-primary block uppercase tracking-wider mb-3">
-                    {item.silhouette}
-                  </span>
-                  <p className="text-[13px] text-body-slate leading-relaxed mb-4">
-                    {item.discipline}
-                  </p>
-                </div>
-                <div className="pt-3 border-t border-border-line/60">
-                  <span className="text-[10px] font-bold tracking-widest text-body-slate uppercase block">
-                    Weave Origin
-                  </span>
-                  <span className="text-[12px] font-semibold text-on-surface uppercase">
-                    {item.origin}
-                  </span>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {/* Provenance specs ribbon */}
-          <div className="mt-8 bg-surface-subtle border border-border-line p-5 sm:p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-body-slate block">
-                Primary Fibers
-              </span>
-              <span className="text-[13px] sm:text-[14px] font-bold text-on-surface uppercase block mt-1">
-                Tussar · Mulberry · Chanderi · Linen
-              </span>
-            </div>
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-body-slate block">
-                Weave Clusters
-              </span>
-              <span className="text-[13px] sm:text-[14px] font-bold text-on-surface uppercase block mt-1">
-                Bhagalpur · Bengal · Chanderi · Kutch
-              </span>
-            </div>
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-body-slate block">
-                Drape System
-              </span>
-              <span className="text-[13px] sm:text-[14px] font-bold text-on-surface uppercase block mt-1">
-                Razor Pallu · Zero Pins Required
-              </span>
-            </div>
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-body-slate block">
-                Geometry & Finish
-              </span>
-              <span className="text-[13px] sm:text-[14px] font-bold text-on-surface uppercase block mt-1">
-                0px Sharp Edge · Restrained Border
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. AFFECTIVE FREQUENCIES ("HOW THE WEARER FEELS") */}
-      <section className="w-full bg-surface-subtle border-b border-border-line">
-        <div className="max-w-site mx-auto site-pad section-y">
-          <div className="border-b border-border-line pb-6 mb-8 sm:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <span className="label-caps text-primary block mb-2">Affective Frequencies</span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-[-0.025em] text-on-surface">
-                HOW THE LEADER FEELS
-              </h2>
-            </div>
-            <p className="text-[14px] text-body-slate max-w-md font-normal">
-              Draping as an intentional state of mind. Curated across three essential frequencies.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {AFFECTIVE_FREQUENCIES.map((freq) => (
-              <div
-                key={freq.tag}
-                className="bg-surface border border-border-line p-6 sm:p-8 flex flex-col justify-between hover:border-on-surface transition-colors"
-              >
-                <div>
-                  <span className="inline-block bg-surface-dark text-surface px-2.5 py-1 text-[10px] font-bold tracking-widest uppercase mb-4">
-                    {freq.tag}
-                  </span>
-                  <h3 className="text-xl font-bold uppercase tracking-tight text-on-surface mb-2">
-                    {freq.tagline}
-                  </h3>
-                  <p className="text-[13px] sm:text-[14px] text-body-slate leading-relaxed mt-3">
-                    {freq.desc}
-                  </p>
-                </div>
-                <Link
-                  href={freq.href}
-                  className="mt-6 pt-4 border-t border-border-line label-caps text-primary hover:text-on-surface inline-flex items-center gap-1.5 transition-colors font-semibold text-[11px]"
-                >
-                  Explore {freq.tag} Edits →
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 6. SOVEREIGN IDENTITIES ("DISCOVER ANOTHER VERSION OF YOU") */}
-      <section className="w-full bg-surface border-b border-border-line">
-        <div className="max-w-site mx-auto site-pad section-y">
-          <div className="border-b border-border-line pb-6 sm:pb-8 mb-8 sm:mb-12">
-            <span className="label-caps text-primary block mb-2">Chapter Navigation</span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-[-0.025em] text-on-surface">
-              DISCOVER ANOTHER VERSION OF YOU
-            </h2>
-            <p className="text-[14px] sm:text-base text-body-slate mt-2 max-w-2xl font-normal">
-              Four distinct sovereign roles engineered into one modern wardrobe. Move fluidly between who you are and who you choose to be.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {ARCHETYPES.map((arch) => (
-              <article
-                key={arch.slug}
-                className="bg-surface-ivory border border-border-line p-6 flex flex-col justify-between hover:border-on-surface transition-colors"
-              >
-                <div>
-                  <span className="inline-block bg-surface-dark text-surface px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase mb-3">
-                    {arch.chapter} · {arch.roleNo}
-                  </span>
-                  <h3 className="text-xl font-bold uppercase tracking-tight text-on-surface">
-                    {arch.name}
-                  </h3>
-                  <span className="text-[12px] font-semibold text-primary block uppercase tracking-wider mt-1 mb-3">
-                    {arch.tag}
-                  </span>
-                  <div className="border-l-2 border-border-line pl-3 py-1 my-3 bg-surface/50">
-                    <p className="text-[12px] italic text-on-surface/90 leading-snug">
-                      “{arch.quote}”
-                    </p>
-                  </div>
-                  <p className="text-[13px] text-body-slate leading-relaxed line-clamp-3">
-                    {arch.blurb}
-                  </p>
-                </div>
-                <Link
-                  href={`/shop/${arch.slug}`}
-                  className="mt-6 pt-3 border-t border-border-line label-caps text-on-surface hover:text-primary transition-colors inline-flex items-center gap-1.5 text-[11px]"
-                >
-                  Explore {arch.name} →
-                </Link>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 7. OUR STORY & COMMITMENTS */}
-      <section className="w-full bg-surface-subtle border-b border-border-line">
-        <div className="max-w-site mx-auto site-pad section-y">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
-            <div className="lg:col-span-4">
-              <span className="label-caps text-primary block mb-3">Our Story</span>
-              <h2 className="text-2xl sm:text-3xl font-bold uppercase tracking-[-0.025em] text-on-surface leading-tight">
-                BUILT FOR REAL LIFE
-              </h2>
-              <p className="text-[13px] text-body-slate mt-4 leading-relaxed">
-                Direct weaver partnerships across Bhagalpur, Chanderi, Bengal, and Kutch. Honest pricing based on material density rather than label markup.
+              <p className="text-[14px] sm:text-[15px] text-body-slate mt-2 max-w-xl leading-relaxed">
+                Straightforward promises on the fabric, the delivery, and the returns.
               </p>
             </div>
-            <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {COMMITMENTS.map((c) => (
-                <div key={c.title} className="border border-border-line bg-surface p-5 sm:p-6">
-                  <h3 className="text-[13px] font-bold uppercase tracking-[0.08em] text-on-surface mb-2">
-                    {c.title}
+            <Link
+              href="/contact-us"
+              className="label-caps text-on-surface hover:text-primary transition-colors inline-flex items-center gap-2 shrink-0"
+            >
+              Get In Touch
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+            {PROMISES.map((p) => {
+              const Icon = p.icon;
+              return (
+                <div
+                  key={p.title}
+                  className="p-6 sm:p-7 flex flex-col gap-3 bg-surface-subtle border border-border-line"
+                >
+                  <Icon className="w-5 h-5 text-primary" strokeWidth={1.5} aria-hidden />
+                  <h3 className="text-[12px] font-semibold uppercase tracking-[0.08em] text-on-surface">
+                    {p.title}
                   </h3>
-                  <p className="text-[13px] text-body-slate leading-relaxed">{c.copy}</p>
+                  <p className="text-[13px] leading-relaxed text-body-slate">{p.body}</p>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* 8. EDITORIAL CODA */}
+      {/* Closing */}
       <section className="w-full bg-surface-dark text-surface">
         <div className="max-w-site mx-auto site-pad py-16 lg:py-24 text-center">
-          <span className="label-caps text-surface/50 block mb-4">SVastra Ethos</span>
-          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-bold uppercase tracking-[-0.03em] mb-4 text-surface">
-            WEAR YOURSELF.
+          <span className="text-[10px] font-semibold tracking-[0.18em] text-surface/50 block mb-4">
+            Svastra
+          </span>
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-[-0.03em] mb-4 text-surface">
+            Draped in Confidence.
           </h2>
-          <p className="text-sm sm:text-base text-surface/70 max-w-xl mx-auto mb-8 leading-relaxed font-normal">
-            Leadership looks different on everyone. The same silhouette, rewritten by the woman who wears it.
-            Authority is not a size — it is a stance.
+          <p className="text-sm sm:text-base text-surface/65 max-w-xl mx-auto mb-8 leading-relaxed">
+            Wear Yourself. Celebrate the woman you are and the woman you are becoming.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/products" className="sv-btn-primary !bg-primary hover:!bg-surface-ivory hover:!text-on-surface">
-              Explore The Edit
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <Link href="/products" className="sv-btn-primary">
+              Shop The Collection
             </Link>
-            <Link href="/contact-us" className="sv-btn-outline !border-surface/30 !text-surface hover:!bg-surface hover:!text-on-surface">
-              Atelier Concierge
+            <Link
+              href="/contact-us"
+              className="sv-btn-outline !border-surface/35 !text-surface hover:!bg-surface hover:!text-on-surface"
+            >
+              Contact Us
             </Link>
           </div>
         </div>

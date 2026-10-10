@@ -699,7 +699,7 @@ export default function AuthModal() {
         </button>
 
         <div className="px-6 sm:px-8 pt-7 pb-5">
-          <p className="label-caps text-[10px] text-primary tracking-[0.18em] mb-2">SVastra</p>
+          <p className="text-[10px] font-semibold tracking-[0.18em] text-primary mb-2">SVastra</p>
           <h1 className="text-[22px] font-bold uppercase tracking-tight text-on-surface leading-none">
             {isRegisterTab ? "Create Account" : "Welcome Back"}
           </h1>

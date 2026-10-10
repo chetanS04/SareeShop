@@ -69,25 +69,25 @@ export default function OrderDossier({
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-ivory mb-6">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               <span className="label-caps text-[10px] tracking-widest text-body-slate">
-                Chapter 01 · Purchase Confirmed
+                Order Confirmed
               </span>
             </div>
           )}
 
           <h1 className="display-hero text-on-surface mb-4">
-            {confirmed ? "It's yours." : "Order dossier"}
+            {confirmed ? "It's yours." : "Order details"}
           </h1>
 
           <p className="text-base md:text-lg text-body-slate max-w-[620px] mx-auto leading-relaxed mb-6">
             {confirmed ? (
               <>
-                Your sartorial order{" "}
-                <span className="text-on-surface font-semibold">#{orderNum}</span> is now being
-                prepared. A confirmation has been sent to your email.
+                Your order{" "}
+                <span className="text-on-surface font-semibold">#{orderNum}</span> is being
+                prepared. A confirmation email has been sent to you.
               </>
             ) : (
               <>
-                Archive reference{" "}
+                Order{" "}
                 <span className="text-on-surface font-semibold">#{orderNum}</span>
                 {" · "}
                 {formatOrderDate(created)}
@@ -112,7 +112,7 @@ export default function OrderDossier({
           <div className="bg-surface-ivory/80 p-6 md:p-8">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
               <div className="flex flex-col">
-                <span className="label-caps text-[10px] text-body-slate mb-1">Order Dossier</span>
+                <span className="label-caps text-[10px] text-body-slate mb-1">Order ID</span>
                 <span className="text-lg font-semibold tracking-tight text-on-surface">
                   #{orderNum}
                 </span>
@@ -145,7 +145,7 @@ export default function OrderDossier({
             <div className="mt-6 pt-6 border-t border-border-line">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                 <span className="label-caps text-[10px] text-body-slate tracking-wider">
-                  Atelier Prep Lifecycle
+                  Order Status
                 </span>
                 <span
                   className={`label-caps text-[10px] font-semibold tracking-wider ${
@@ -188,10 +188,10 @@ export default function OrderDossier({
           <div className="p-6 md:p-8 flex flex-col gap-6 border-t border-border-line">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <h2 className="label-caps text-[10px] tracking-widest text-body-slate">
-                Curated Pieces In This Acquisition ({String(items.length).padStart(2, "0")})
+                Items in This Order ({items.length})
               </h2>
               <span className="label-caps text-[10px] text-body-slate tracking-wider">
-                Inspected &amp; Documented
+                Order Summary
               </span>
             </div>
 
@@ -199,7 +199,7 @@ export default function OrderDossier({
               {items.length === 0 ? (
                 <div className="py-10 text-center bg-pure-white border border-border-line">
                   <Package className="w-8 h-8 text-body-slate/40 mx-auto mb-2" />
-                  <p className="text-sm text-body-slate">No pieces recorded for this dossier.</p>
+                  <p className="text-sm text-body-slate">No items recorded for this order.</p>
                 </div>
               ) : (
                 items.map((item: any) => {
@@ -209,7 +209,7 @@ export default function OrderDossier({
                     item.product?.image_url ||
                     item.product?.imageUrl;
                   const imageSrc = getImageUrl(rawImage) || imgPlaceholder.src;
-                  const name = item.product?.name || "Piece";
+                  const name = item.product?.name || "Product";
                   const variant = item.variant?.title || item.variant?.sku || "";
                   const attrs = item.selected_attributes || item.selectedAttributes;
                   const attrLine =
@@ -241,7 +241,7 @@ export default function OrderDossier({
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className="label-caps text-[10px] tracking-wider text-accent-ochre font-semibold mb-0.5">
-                            Archive Piece
+                            Product
                           </span>
                           <h3 className="text-base md:text-lg font-semibold text-on-surface tracking-tight line-clamp-2">
                             {name}
@@ -270,7 +270,7 @@ export default function OrderDossier({
                 <div className="flex items-center gap-2 mb-3 text-primary">
                   <Truck className="w-5 h-5 shrink-0" aria-hidden />
                   <span className="label-caps text-[10px] tracking-widest text-on-surface">
-                    Concierge Destination
+                    Delivery Address
                   </span>
                 </div>
                 <span className="text-lg font-semibold text-on-surface mb-1">{ship.name}</span>
@@ -299,20 +299,20 @@ export default function OrderDossier({
                 <div className="flex items-center gap-2 mb-3 text-primary">
                   <Leaf className="w-5 h-5 shrink-0" aria-hidden />
                   <span className="label-caps text-[10px] tracking-widest text-on-surface">
-                    Archival Preservation Protocol
+                    Packaging &amp; Delivery
                   </span>
                 </div>
                 <span className="text-lg font-semibold text-on-surface mb-1">
-                  Signature Packaging
+                  Careful Packaging
                 </span>
                 <p className="text-sm text-body-slate leading-relaxed">
-                  Your pieces ship in SVastra archival packaging — protective wrap, care guidance,
-                  and provenance documentation included with every dispatch.
+                  Your saree is packed with protective wrap and care instructions. Every order is
+                  shipped with tracking for your peace of mind.
                 </p>
                 <div className="mt-3 flex items-center gap-1.5 text-accent-ochre">
                   <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden />
                   <span className="label-caps text-[10px] font-semibold tracking-wider">
-                    Tracked Transit
+                    Tracked Shipping
                   </span>
                 </div>
               </div>
@@ -325,16 +325,16 @@ export default function OrderDossier({
                 href={trackHref}
                 className="sv-btn-primary flex-1 w-full sm:w-auto gap-2"
               >
-                <span>Track Shipment &amp; View Order</span>
+                <span>Track Order</span>
                 <ArrowRight className="w-4 h-4" aria-hidden />
               </Link>
               {onExplore ? (
                 <button type="button" onClick={onExplore} className="sv-btn-outline w-full sm:w-auto">
-                  Continue Exploring SVastra
+                  Continue Shopping
                 </button>
               ) : (
                 <Link href={exploreHref} className="sv-btn-outline w-full sm:w-auto text-center">
-                  Continue Exploring SVastra
+                  Continue Shopping
                 </Link>
               )}
             </div>
@@ -360,21 +360,21 @@ export function ClientMembershipTeaser({ email }: { email?: string | null }) {
             <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-surface-subtle mb-4">
               <Fingerprint className="w-3.5 h-3.5 text-primary" aria-hidden />
               <span className="label-caps text-[10px] tracking-widest text-body-slate">
-                Client Membership
+                Your Account
               </span>
             </div>
             <h2 className="display-section text-on-surface mb-2">
-              Want to make your next visit seamless?
+              Manage your SVastra account
             </h2>
             <p className="text-sm text-body-slate mb-6 leading-relaxed">
               You&apos;re signed in as{" "}
               <span className="text-on-surface font-medium">{email}</span>. Save delivery
-              addresses, track fits, and keep your archive with SVastra.
+              addresses, track orders, and manage your profile anytime.
             </p>
             <div className="flex items-center gap-2 text-body-slate">
               <Lock className="w-4 h-4 shrink-0" aria-hidden />
               <span className="label-caps text-[10px] tracking-wider">
-                Account secured · Private client protocol
+                Secure account · Your data is protected
               </span>
             </div>
           </div>

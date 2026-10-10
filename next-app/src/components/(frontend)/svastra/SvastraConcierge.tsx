@@ -68,7 +68,7 @@ export default function SvastraConcierge() {
                   required
                   type="email"
                 />
-                <button className="sv-btn-primary" type="submit">
+                <button className="sv-btn-primary w-full sm:w-auto" type="submit">
                   Subscribe
                 </button>
               </div>

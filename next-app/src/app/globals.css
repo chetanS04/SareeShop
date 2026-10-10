@@ -42,7 +42,7 @@ html {
   --foreground: #0E0E0D;
   --theme-blue: #8B1313;
   --theme-blue-hover: #680D0D;
-  --navbar-height: 5.5rem;
+  --navbar-height: 4rem;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -105,8 +105,26 @@ button {
 }
 
 .sv-theme .site-pad {
-  padding-left: clamp(1.15rem, 3.5vw, 4rem);
-  padding-right: clamp(1.15rem, 3.5vw, 4rem);
+  padding-left: clamp(1rem, 3.5vw, 4rem);
+  padding-right: clamp(1rem, 3.5vw, 4rem);
+}
+
+.sv-theme .max-w-site {
+  width: 100%;
+  max-width: var(--max-width-site);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sv-theme #main {
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --navbar-height: 5rem;
+  }
 }
 
 .sv-theme .section-y {
@@ -183,6 +201,52 @@ button {
   aspect-ratio: 16 / 9;
 }
 
+@keyframes sv-hero-line-slide {
+  from {
+    opacity: 0;
+    transform: translate3d(-1.75rem, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.sv-theme .sv-hero-line {
+  display: block;
+  overflow: hidden;
+}
+
+.sv-theme .sv-hero-line > span {
+  display: inline-block;
+  opacity: 0;
+  animation: sv-hero-line-slide 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.sv-theme .sv-hero-line-1 > span {
+  animation-delay: 0.08s;
+}
+
+.sv-theme .sv-hero-line-2 > span {
+  animation-delay: 0.22s;
+}
+
+.sv-theme .sv-hero-line-3 > span {
+  animation-delay: 0.36s;
+}
+
+.sv-theme .sv-hero-line-4 > span {
+  animation-delay: 0.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sv-theme .sv-hero-line > span {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Tension matrix — Inter (same as home.html), condensed display weight */
 .sv-theme .sv-tension-word {
   font-family: var(--font-inter), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -214,11 +278,11 @@ button {
 .sv-theme .sv-btn-primary {
   background: #8B1313;
   color: #FFF8F2;
-  font-size: 12px;
+  font-size: clamp(10px, 2.5vw, 12px);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 1rem 2rem;
+  padding: 0.875rem clamp(1.1rem, 4vw, 2rem);
   min-height: 48px;
   display: inline-flex;
   align-items: center;
@@ -237,11 +301,11 @@ button {
   border: 1px solid #0E0E0D;
   color: #0E0E0D;
   background: transparent;
-  font-size: 12px;
+  font-size: clamp(10px, 2.5vw, 12px);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 1rem 2rem;
+  padding: 0.875rem clamp(1.1rem, 4vw, 2rem);
   min-height: 48px;
   display: inline-flex;
   align-items: center;

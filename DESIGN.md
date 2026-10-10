@@ -96,7 +96,7 @@ Admin dashboard may keep separate chrome; storefront must follow this document.
 
 ### Nav
 
-- Logo mark + **SVASTRA** wordmark (or wordmark asset)
+- Logo mark + **SVastra** wordmark (**SV** capitals; do **not** render as all-caps `SVASTRA`)
 - Uppercase nav links, hairline bottom border
 - Icons: search, profile, wishlist, bag
 

@@ -20,16 +20,26 @@ const Footer = () => {
   return (
     <footer className="w-full bg-surface-subtle border-t border-border-line pb-24 md:pb-0">
       <div className="max-w-site mx-auto site-pad pt-12 sm:pt-16 lg:pt-20 pb-10">
-        <div className="grid grid-cols-2 md:grid-cols-12 gap-8 md:gap-10 lg:gap-12 mb-12 sm:mb-16">
-          <div className="col-span-2 md:col-span-5 space-y-4">
-            <div className="flex items-center gap-3">
-              <img src={LOGO_MARK} alt="" className="h-8 w-8 object-contain" width={32} height={32} />
-              <span className="text-xl font-bold uppercase tracking-tight text-on-surface">SVASTRA</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-10 lg:gap-12 mb-12 sm:mb-16">
+          <div className="sm:col-span-2 md:col-span-5 space-y-4 min-w-0">
+            <div className="space-y-3 max-w-md">
+              <div className="flex items-start gap-3 sm:gap-3.5">
+                <img
+                  src={LOGO_MARK}
+                  alt=""
+                  className="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0"
+                  width={44}
+                  height={44}
+                />
+                <span className="text-[2rem] sm:text-[2.375rem] font-bold tracking-tight text-on-surface leading-none">
+                  SVastra
+                </span>
+              </div>
+              <p className="text-[13px] sm:text-[14px] leading-[1.65] text-body-slate">
+                Handwoven sarees and drapes — tussar, chanderi and linen weaves in clean, modern
+                colours. Natural fabrics, honest pricing.
+              </p>
             </div>
-            <p className="text-[14px] leading-relaxed text-body-slate max-w-sm">
-              Handwoven sarees and drapes — tussar, chanderi and linen weaves in clean, modern
-              colours. Natural fabrics, honest pricing.
-            </p>
             <div className="pt-1 space-y-1.5">
               <span className="text-[10px] font-bold tracking-[0.08em] uppercase text-primary block">
                 Customer Support
@@ -118,7 +128,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="col-span-2 sm:col-span-1 md:col-span-2 space-y-4">
+          <div className="sm:col-span-1 md:col-span-2 space-y-4 min-w-0">
             <h4 className="label-caps text-on-surface">Account</h4>
             <ul className="space-y-2.5 text-[13px] text-body-slate list-none p-0 m-0">
               <li>
@@ -147,7 +157,7 @@ const Footer = () => {
 
         <div className="border-t border-border-line pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[10px] font-semibold tracking-[0.08em] uppercase text-body-slate">
           <p className="m-0">
-            © {new Date().getFullYear()} SVASTRA. All rights reserved.
+            © {new Date().getFullYear()} SVastra. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <Link className="hover:text-on-surface transition-colors" href="/terms-conditions">

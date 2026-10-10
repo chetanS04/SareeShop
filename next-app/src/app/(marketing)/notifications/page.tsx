@@ -212,7 +212,7 @@ export default function NotificationsPage() {
     <div className="min-h-screen bg-surface py-8 sm:py-12 text-on-surface">
       <div className="max-w-site mx-auto site-pad space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-pure-white p-6 sm:p-8 border border-border-line shadow-none">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-ivory p-6 sm:p-8 border border-border-line">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
@@ -273,7 +273,7 @@ export default function NotificationsPage() {
               className={`px-4 py-2.5 text-xs font-bold label-caps whitespace-nowrap transition-all border ${
                 activeTab === cat.id
                   ? "bg-surface-dark text-surface border-surface-dark"
-                  : "bg-pure-white text-body-slate border-border-line hover:text-on-surface hover:border-on-surface"
+                  : "bg-surface-ivory text-body-slate border-border-line hover:text-on-surface hover:border-on-surface"
               }`}
             >
               {cat.label}
@@ -283,7 +283,7 @@ export default function NotificationsPage() {
 
         {/* Bulk Action Controls Bar */}
         {notifications.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-pure-white border border-border-line text-xs text-on-surface shadow-none">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-surface-ivory border border-border-line text-xs text-on-surface">
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-2 cursor-pointer font-bold select-none label-caps text-xs text-on-surface">
                 <input
@@ -326,12 +326,12 @@ export default function NotificationsPage() {
         {/* Notifications List */}
         <div className="space-y-3">
           {loading ? (
-            <div className="py-16 text-center bg-pure-white border border-border-line">
-              <div className="w-8 h-8 border-2 border-border-line border-t-primary rounded-full animate-spin mx-auto mb-3"></div>
+            <div className="py-16 text-center bg-surface-ivory border border-border-line">
+              <div className="w-8 h-8 border-2 border-border-line border-t-primary animate-spin mx-auto mb-3"></div>
               <p className="label-caps text-xs text-body-slate">Curating notifications...</p>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="py-20 text-center bg-pure-white border border-border-line px-4 shadow-none">
+            <div className="py-20 text-center bg-surface-ivory border border-border-line px-4">
               <Bell className="w-12 h-12 mx-auto text-body-slate/40 mb-3 stroke-[1.25]" />
               <span className="label-caps text-primary block mb-1">Clean Inbox</span>
               <h3 className="display-section text-lg sm:text-xl text-on-surface mb-1">
@@ -347,10 +347,10 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={n.id}
-                  className={`p-5 sm:p-6 border transition-all flex items-start gap-4 ${
+                  className={`p-5 sm:p-6 border transition-colors flex items-start gap-4 ${
                     !n.isRead
-                      ? "bg-pure-white border-border-line border-l-4 border-l-primary shadow-none"
-                      : "bg-pure-white/90 border-border-line"
+                      ? "bg-surface-ivory border-border-line border-l-2 border-l-primary"
+                      : "bg-surface border-border-line"
                   }`}
                 >
                   <input
@@ -424,7 +424,7 @@ export default function NotificationsPage() {
 
         {/* Infinite Scroll Indicators */}
         {loadingMore && (
-          <div className="py-4 text-center text-xs font-bold label-caps text-body-slate bg-pure-white border border-border-line">
+          <div className="py-4 text-center text-xs font-bold label-caps text-body-slate bg-surface-ivory border border-border-line">
             Curating more notifications...
           </div>
         )}
@@ -437,8 +437,8 @@ export default function NotificationsPage() {
 
       {/* Customer Notification Preferences Modal */}
       {showPreferencesModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-surface-dark/70 backdrop-blur-xs animate-fade-in-up">
-          <div className="bg-pure-white border border-border-line max-w-xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-surface-dark/70 animate-fade-in-up">
+          <div className="bg-surface border border-border-line max-w-xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-border-line pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-surface-ivory border border-border-line flex items-center justify-center text-primary">

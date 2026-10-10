@@ -31,18 +31,42 @@ SareeShop/
 ```bash
 cd /mnt/d/SapnaEcom/SareeShop/ansible
 cp inventory.ini.example inventory.ini
+cp group_vars/all.yml.example group_vars/all.yml
 nano inventory.ini          # server IP + SSH user
-nano group_vars/all.yml     # domain + passwords
+nano group_vars/all.yml     # domain + passwords (never commit this file)
 ```
 
-**Must change:** `app_domain`, `mysql_root_password`, `db_password`, `jwt_secret`, `admin_password`.
+**Must change:** `mysql_root_password`, `db_password`, `jwt_secret`, `admin_password`.
 
-Default DB name is **`saree_app`** (matches the SQL dump).
+**Payments & shipping (in `group_vars/all.yml`):**
 
-First deploy without SSL:
+| Variable | Purpose |
+|----------|---------|
+| `payment_gateway` | `razorpay` (online checkout) |
+| `razorpay_key_id` | Razorpay Key ID (`rzp_test_...` or live `rzp_live_...`) |
+| `razorpay_key_secret` | Razorpay secret (server only — never in Next.js) |
+| `delhivery_api_key` | Delhivery API token |
+| `delhivery_pickup_location` | Warehouse name in Delhivery dashboard |
+| `delhivery_return_*` | Return address for shipments |
+
+Default domain is **`svastrastore.com`**. Point Hostinger DNS A-records first:
+
+| Host | Type | Value |
+|------|------|--------|
+| `@` | A | `YOUR_SERVER_IP` |
+| `www` | A | `YOUR_SERVER_IP` |
+
+Then deploy. After DNS works, enable SSL:
 
 ```yaml
-frontend_url: "http://YOUR_DOMAIN_OR_IP"
+frontend_url: "https://svastrastore.com"
+enable_ssl: true
+```
+
+First deploy without SSL (HTTP):
+
+```yaml
+frontend_url: "http://svastrastore.com"
 enable_ssl: false
 import_sql_dump: true
 sync_storage: true

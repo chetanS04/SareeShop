@@ -82,7 +82,7 @@ export default function ArchetypePageContent({ archetype }: Props) {
   const second = sorted.slice(8, 12);
 
   return (
-    <div className="w-full bg-surface">
+    <div className="w-full min-w-0 bg-surface overflow-x-hidden">
       <section className="w-full bg-pure-white border-b border-border-line">
         <div className="max-w-site mx-auto site-pad py-3.5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 label-caps text-body-slate">
@@ -90,7 +90,7 @@ export default function ArchetypePageContent({ archetype }: Props) {
               Shop Who You Are
             </Link>
             <span className="text-on-surface/25">/</span>
-            <span className="text-primary">
+            <span className="text-primary truncate max-w-[14rem] sm:max-w-none">
               {archetype.chapter}: {archetype.name}
             </span>
           </div>
@@ -398,7 +398,7 @@ export default function ArchetypePageContent({ archetype }: Props) {
             href="/#manifesto"
             className="sv-btn-outline !border-surface/30 !text-surface hover:!bg-surface hover:!text-on-surface inline-flex"
           >
-            Read The Manifesto
+            Read Our Philosophy
           </Link>
         </div>
       </section>

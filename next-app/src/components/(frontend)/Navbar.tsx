@@ -38,9 +38,8 @@ const NAV_LINKS: NavLink[] = [
   // { href: '/new-arrivals', label: 'New In', route: '/new-arrivals' },
   { href: '/#shop-who', label: 'Shop Who You Are', section: 'shop-who' },
   { href: '/#shop-feel', label: 'Shop How You Feel', section: 'shop-feel' },
-  { href: '/products', label: 'The Edit', route: '/products' },
-  { href: '/#manifesto', label: 'Manifesto', section: 'manifesto' },
-  { href: '/about-us#voices', label: 'Stories', route: '/about-us', section: 'voices' },
+  { href: '/products', label: 'Collections', route: '/products' },
+  { href: '/#manifesto', label: 'Our Philosophy', section: 'manifesto' },
   { href: '/about-us', label: 'About', route: '/about-us' },
 ];
 
@@ -162,13 +161,12 @@ export default function Navbar() {
     applyHash();
     window.addEventListener('hashchange', applyHash);
 
-    // Home: spy on marketing sections. About: only spy voices (Stories).
-    if (pathname !== '/' && pathname !== '/about-us') {
+    if (pathname !== '/') {
       setActiveSection(null);
       return () => window.removeEventListener('hashchange', applyHash);
     }
 
-    const ids = pathname === '/' ? HOME_SECTIONS : ['voices'];
+    const ids = HOME_SECTIONS;
     const elements = ids
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => Boolean(el));
@@ -179,12 +177,6 @@ export default function Navbar() {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // About page: Stories only while #voices is in view; otherwise About.
-        if (pathname === '/about-us') {
-          const voices = entries.find((entry) => entry.target.id === 'voices');
-          if (voices) setActiveSection(voices.isIntersecting ? 'voices' : null);
-          return;
-        }
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
@@ -283,12 +275,8 @@ export default function Navbar() {
 
   const isActive = (link: NavLink) => {
     // Exactly one nav item active at a time.
-    if (link.label === 'Stories') {
-      return pathname === '/about-us' && activeSection === 'voices';
-    }
     if (link.label === 'About') {
-      // About page, but not when Stories (#voices) is the focus
-      return pathname === '/about-us' && activeSection !== 'voices';
+      return pathname === '/about-us' || pathname.startsWith('/about-us/');
     }
     // Section links (Shop Who / Feel / Manifesto) only on the home page
     if (link.section) {
@@ -328,11 +316,11 @@ export default function Navbar() {
       </aside>
 
       <header className="sticky top-0 z-40 bg-surface/90 backdrop-blur-md border-b border-border-line">
-        <div className="max-w-site mx-auto site-pad h-20 flex items-center justify-between gap-4">
+        <div className="max-w-site mx-auto site-pad h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4 min-w-0">
           <Link href="/" aria-label="SVastra Home" className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <img src={LOGO_MARK} alt="" className="h-8 w-8 object-contain shrink-0" width={32} height={32} />
-            <span className="text-[22px] sm:text-[26px] md:text-[28px] font-semibold tracking-tight uppercase text-on-surface leading-none">
-              SVASTRA
+            <span className="text-[22px] sm:text-[26px] md:text-[28px] font-semibold tracking-tight text-on-surface leading-none">
+              SVastra
             </span>
           </Link>
 
@@ -346,9 +334,7 @@ export default function Navbar() {
                   className={`nav-link ${active ? 'is-active' : ''}`}
                   aria-current={active ? 'page' : undefined}
                   onClick={() => {
-                    if (link.label === 'About') setActiveSection(null);
-                    else if (link.label === 'Stories') setActiveSection('voices');
-                    else if (link.section) setActiveSection(link.section);
+                    if (link.section) setActiveSection(link.section);
                     else setActiveSection(null);
                   }}
                 >
@@ -487,7 +473,7 @@ export default function Navbar() {
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2.5">
                 <img src={LOGO_MARK} alt="" className="h-7 w-7 object-contain" width={28} height={28} />
-                <span className="font-semibold uppercase tracking-tight text-lg">SVASTRA</span>
+                <span className="font-semibold tracking-tight text-lg">SVastra</span>
               </div>
               <button type="button" className="touch-target" aria-label="Close menu" onClick={() => setMobileOpen(false)}>
                 <RiCloseLine className="text-[24px]" />
@@ -513,9 +499,7 @@ export default function Navbar() {
                         : 'text-body-slate hover:text-on-surface'
                     }`}
                     onClick={() => {
-                      if (link.label === 'About') setActiveSection(null);
-                      else if (link.label === 'Stories') setActiveSection('voices');
-                      else if ('section' in link && link.section) setActiveSection(link.section);
+                      if ('section' in link && link.section) setActiveSection(link.section);
                       else setActiveSection(null);
                       setMobileOpen(false);
                     }}

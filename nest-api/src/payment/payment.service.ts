@@ -46,13 +46,13 @@ export class PaymentService {
     private notificationsService: NotificationsService,
     @Inject(forwardRef(() => ProductsService)) private productsService: ProductsService,
   ) {
-    /* 
+    /*
      ===========================================================================
      RAZORPAY PAYMENT GATEWAY CONFIGURATION
      ===========================================================================
     */
     this.keyId = this.config.get<string>('RAZORPAY_KEY_ID') || process.env.RAZORPAY_KEY_ID || 'rzp_test_Tl2nTBopDxOys3';
-    this.keySecret = this.config.get<string>('RAZORPAY_KEY_SECRET') || process.env.RAZORPAY_KEY_SECRET || 'etLGxPhuEDOmz9g5WfyZU3mK';
+    this.keySecret = this.config.get<string>('RAZORPAY_KEY_SECRET') || process.env.RAZORPAY_KEY_SECRET || '';
     this.currency = this.config.get<string>('RAZORPAY_CURRENCY') || process.env.RAZORPAY_CURRENCY || 'INR';
 
     this.razorpay = new Razorpay({
@@ -65,6 +65,15 @@ export class PaymentService {
 
   private generateOrderNumber(): string {
     return `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  }
+
+  /** Ensure Razorpay credentials exist before creating a pending order. */
+  async assertPaymentGatewayReady(): Promise<void> {
+    if (!this.keyId || !this.keySecret) {
+      throw new BadRequestException(
+        'Online payment is not configured (Razorpay keys missing). Please use Cash on Delivery or contact support.',
+      );
+    }
   }
 
   async initiatePayment(userId: number, user: any, body: any) {
@@ -654,12 +663,33 @@ export class PaymentService {
   }
 
   async testCredentials() {
+    let merchant_status: 'active' | 'inactive' | 'unknown' = 'unknown';
+    let merchant_detail: any = null;
+
+    if (!this.keyId || !this.keySecret) {
+      merchant_status = 'inactive';
+      merchant_detail = { error: 'Razorpay keys missing' };
+    } else {
+      try {
+        await this.razorpay.orders.all({ count: 1 });
+        merchant_status = 'active';
+        merchant_detail = { message: 'Razorpay API reachable with configured keys' };
+      } catch (e: any) {
+        merchant_status = 'inactive';
+        merchant_detail = {
+          error: e?.error?.description || e?.message || 'Razorpay API check failed',
+        };
+      }
+    }
+
     return {
       gateway: 'razorpay',
       key_id: this.keyId,
       key_secret_preview: this.keySecret ? this.keySecret.substring(0, 8) + '...' : 'not-set',
       currency: this.currency,
       credentials_loaded: !!(this.keyId && this.keySecret),
+      merchant_status,
+      merchant_detail,
     };
   }
 

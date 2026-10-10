@@ -169,7 +169,7 @@ const OrdersPage = () => {
       <div className="min-h-[60vh] bg-surface flex items-center justify-center py-20">
         <div className="text-center">
           <ZeltonLoader size="lg" variant="brand" />
-          <p className="label-caps text-[10px] text-body-slate mt-4">Loading your archive…</p>
+          <p className="label-caps text-[10px] text-body-slate mt-4">Loading your orders…</p>
         </div>
       </div>
     );
@@ -182,10 +182,10 @@ const OrdersPage = () => {
           <div className="w-14 h-14 bg-surface-ivory text-primary flex items-center justify-center mx-auto mb-5">
             <ShoppingBag className="w-7 h-7" />
           </div>
-          <p className="label-caps text-primary mb-2">Private Archive</p>
+          <p className="label-caps text-primary mb-2">My Account</p>
           <h1 className="display-section text-on-surface mb-3">Sign in to view orders</h1>
           <p className="text-sm text-body-slate mb-8 leading-relaxed">
-            Track shipments, open your dossiers, and manage deliveries from your client account.
+            Track shipments, view your orders, and manage deliveries from your account.
           </p>
           <button type="button" onClick={() => openAuthModal("login")} className="sv-btn-primary w-full">
             Sign In
@@ -222,13 +222,13 @@ const OrdersPage = () => {
             </div>
             <div className="flex items-center gap-2 label-caps text-[10px] text-body-slate tracking-wider">
               <Lock className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden />
-              <span className="hidden sm:inline">Encrypted Checkout</span>
+              <span className="hidden sm:inline">Secure Checkout</span>
             </div>
             <Link
               href="/cart"
               className="label-caps text-[10px] text-body-slate hover:text-on-surface transition-colors tracking-wider"
             >
-              Return to Bag
+              Back to Cart
             </Link>
           </div>
         </div>
@@ -261,7 +261,7 @@ const OrdersPage = () => {
           </>
         )}
 
-        {/* Archive list */}
+        {/* Orders list */}
         <section id="orders-archive" className={showDossier ? "pt-4 pb-8" : "py-10 md:py-14"}>
           <div className="relative flex items-end justify-between gap-4 mb-8 md:mb-10">
             <div>
@@ -275,13 +275,11 @@ const OrdersPage = () => {
                   Back
                 </button>
               )}
-              <p className="label-caps text-primary mb-2">Client Archive</p>
-              <h2 className="display-section text-on-surface">
-                {showDossier ? "Your Orders" : "Your Orders"}
-              </h2>
+              <p className="label-caps text-primary mb-2">Order History</p>
+              <h2 className="display-section text-on-surface">Your Orders</h2>
               {!loading && (
                 <p className="text-sm text-body-slate mt-2">
-                  {orders.length} dossier{orders.length === 1 ? "" : "s"} in this view
+                  {orders.length} order{orders.length === 1 ? "" : "s"} in this view
                 </p>
               )}
             </div>
@@ -303,10 +301,10 @@ const OrdersPage = () => {
               </div>
               <h3 className="text-lg font-semibold text-on-surface mb-2">No orders yet</h3>
               <p className="text-sm text-body-slate mb-8">
-                Your acquisition archive is empty. Begin with the current collection.
+                You have not placed any orders yet. Browse our collection and shop your first saree.
               </p>
               <Link href="/products" className="sv-btn-primary">
-                Explore SVastra
+                Shop Now
               </Link>
             </div>
           ) : (
@@ -366,7 +364,7 @@ const OrdersPage = () => {
                         )}
                       </div>
                       <span>
-                        {orderItemsList.length} piece{orderItemsList.length === 1 ? "" : "s"}
+                        {orderItemsList.length} item{orderItemsList.length === 1 ? "" : "s"}
                       </span>
                     </div>
 
@@ -425,10 +423,10 @@ const OrdersPage = () => {
                       <button
                         type="button"
                         onClick={() => router.push(`/orders/${slug}`)}
-                        className="sv-btn-primary !min-h-[40px] !py-2 !px-4 !text-[11px] flex-1 sm:flex-none"
+                        className="sv-btn-primary !min-h-[40px] !py-2 !px-4 !text-[11px] !gap-2 flex-1 sm:flex-none"
                       >
-                        View Dossier
-                        <ChevronRight className="w-3.5 h-3.5" />
+                        <span>View Order Details</span>
+                        <ChevronRight className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                       </button>
                       <button
                         type="button"

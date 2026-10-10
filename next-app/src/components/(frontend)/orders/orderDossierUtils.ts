@@ -43,10 +43,10 @@ export function paymentLabel(method?: string | null, status?: string | null) {
   return { base, paid, isCod };
 }
 
-/** Atelier lifecycle: 4 stages matching confirmation mock */
+/** Order progress: 4 simple stages for customer-facing status */
 export function getLifecycle(status?: string | null) {
   const s = (status || "").toLowerCase();
-  const stages = ["Authenticated", "Atelier Review", "Bespoke Packing", "Dispatch"] as const;
+  const stages = ["Order Placed", "Confirmed", "Packed", "Shipped"] as const;
 
   let index = 0; // 0-based active stage
   if (["cancelled"].includes(s)) {
@@ -70,7 +70,7 @@ export function getLifecycle(status?: string | null) {
   return {
     stages,
     index,
-    label: `Stage ${String(index + 1).padStart(2, "0")} of 04 · ${stages[index]}`,
+    label: `Step ${index + 1} of 4 · ${stages[index]}`,
     progress,
     cancelled: false,
     done,
@@ -103,9 +103,9 @@ export function getShippingParts(order: any) {
   }
   const text = raw ? String(raw) : "";
   return {
-    name: "Shipping destination",
+    name: "Delivery address",
     phone: "",
-    lines: text ? text.split(/\n+/).filter(Boolean) : ["Address on file"],
+    lines: text ? text.split(/\n+/).filter(Boolean) : ["No address on file"],
     raw: text || null,
   };
 }

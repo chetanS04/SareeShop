@@ -65,10 +65,13 @@ upstream sareeshop_api {
     }
 {% endmacro %}
 
+{# ssl_certificate_exists is set by site.yml — only turn on 443 after certs exist #}
+{% set ssl_on = (enable_ssl | bool) and (ssl_certificate_exists | default(false) | bool) %}
+
 server {
     listen 80;
     listen [::]:80;
-    server_name {{ app_domain }} www.{{ app_domain }};
+    server_name {{ app_domain }} www.{{ app_domain }}{% if nginx_extra_server_names is defined and nginx_extra_server_names %} {{ nginx_extra_server_names }}{% endif %};
     client_max_body_size 50M;
 
     location ^~ /.well-known/acme-challenge/ {
@@ -76,7 +79,7 @@ server {
         default_type "text/plain";
     }
 
-{% if enable_ssl | bool %}
+{% if ssl_on %}
     location / {
         return 301 https://$host$request_uri;
     }
@@ -85,11 +88,11 @@ server {
 {% endif %}
 }
 
-{% if enable_ssl | bool %}
+{% if ssl_on %}
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
-    server_name {{ app_domain }} www.{{ app_domain }};
+    server_name {{ app_domain }} www.{{ app_domain }}{% if nginx_extra_server_names is defined and nginx_extra_server_names %} {{ nginx_extra_server_names }}{% endif %};
     client_max_body_size 50M;
 
     ssl_certificate     /etc/letsencrypt/live/{{ app_domain }}/fullchain.pem;

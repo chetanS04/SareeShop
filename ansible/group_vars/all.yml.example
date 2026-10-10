@@ -1,0 +1,79 @@
+---
+# ============================================================
+# SareeShop — Ansible deploy variables (EXAMPLE — no secrets)
+# Copy to all.yml and fill in real values (all.yml is gitignored):
+#   cp group_vars/all.yml.example group_vars/all.yml
+# ============================================================
+
+# --- Domain / URLs ---
+app_domain: "svastrastore.com"
+frontend_url: "https://{{ app_domain }}"
+api_public_url: "{{ frontend_url }}/api"
+upload_public_url: "{{ frontend_url }}"
+
+enable_ssl: true
+letsencrypt_email: "you@example.com"
+allow_example_domain: false
+nginx_extra_server_names: "YOUR_SERVER_IP"
+
+deploy_user: "sareeshop"
+app_root: "/var/www/sareeshop"
+api_dir: "{{ app_root }}/nest-api"
+web_dir: "{{ app_root }}/next-app"
+storage_dir: "{{ app_root }}/storage/api/public/storage"
+backup_dir: "{{ app_root }}/backups"
+sql_dump_remote: "{{ app_root }}/saree-app.sql"
+
+local_project_root: "{{ playbook_dir }}/.."
+local_sql_dump: "{{ local_project_root }}/saree-app.sql"
+local_storage_src: "{{ local_project_root }}/Saree-app-storage/api/public/storage/"
+
+node_major: "22"
+api_port: 8001
+web_port: 3000
+
+mysql_root_password: "CHANGE_ME_mysql_root"
+db_name: "saree_app"
+db_user: "sareeshop"
+db_password: "CHANGE_ME_db_password"
+db_host: "127.0.0.1"
+db_port: 3306
+
+jwt_secret: "CHANGE_ME_jwt_secret"
+jwt_expires_in: "7d"
+admin_email: "admin@example.com"
+admin_name: "Admin User"
+admin_password: "CHANGE_ME_admin_password"
+
+google_client_id: "your_google_client_id.apps.googleusercontent.com"
+google_client_secret: "your_google_client_secret"
+mail_host: "smtp.gmail.com"
+mail_port: 587
+mail_user: "your_email@gmail.com"
+mail_pass: "your_email_app_password"
+mail_from_name: "SVastra"
+mail_from_address: "{{ mail_user }}"
+
+payment_gateway: "razorpay"
+razorpay_key_id: "rzp_test_XXXXXXXXXXXX"
+razorpay_key_secret: "your_razorpay_key_secret"
+razorpay_currency: "INR"
+
+delhivery_api_key: "your_delhivery_api_key"
+delhivery_base_url: "https://track.delhivery.com/api"
+delhivery_client_name: "SVastra"
+delhivery_pickup_location: "YOUR_PICKUP_NAME"
+delhivery_return_address: "Your return address"
+delhivery_return_city: "City"
+delhivery_return_state: "State"
+delhivery_return_pin: "000000"
+delhivery_return_phone: "0000000000"
+delhivery_test_mode: "false"
+
+import_sql_dump: true
+run_db_migrate_seed: false
+sync_storage: true
+run_npm_ci: true
+build_apps: true
+configure_firewall: true
+open_ssh_port: 22

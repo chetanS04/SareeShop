@@ -176,7 +176,7 @@ const CartPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface overflow-x-hidden">
       {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
       {successMessage && <SuccessMessage message={successMessage} onClose={() => setSuccessMessage(null)} />}
 
@@ -289,7 +289,7 @@ const CartPage = () => {
                           ) : (
                             <span className="label-caps text-[10px] text-primary font-bold">In Archive</span>
                           )}
-                          <span className="text-[17px] font-semibold text-on-surface tracking-tight whitespace-nowrap">
+                          <span className="text-[15px] sm:text-[17px] font-semibold text-on-surface tracking-tight shrink-0">
                             {formatINR(item.total)}
                           </span>
                         </div>

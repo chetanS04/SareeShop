@@ -414,7 +414,7 @@ const LikesPage = () => {
               </div>
 
               <p className="pt-5 pb-6 text-[13px] text-body-slate leading-relaxed">
-                Move pieces to your bag when ready, or open each dossier to select the exact weave
+                Move pieces to your bag when ready, or open each item to select the exact weave
                 and fit.
               </p>
 

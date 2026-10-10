@@ -29,7 +29,7 @@ export default function SvastraIndependentCut({ products, loading }: Props) {
             </p>
           </div>
           <Link href="/products" className="label-caps text-body-slate hover:text-primary transition-colors">
-            View The Edit →
+            View Collections →
           </Link>
         </div>
 
@@ -52,7 +52,7 @@ export default function SvastraIndependentCut({ products, loading }: Props) {
           <div className="border border-border-line bg-surface-subtle p-10 text-center">
             <p className="text-body-slate mb-4">No products in the collection yet.</p>
             <Link href="/products" className="sv-btn-primary">
-              Browse The Edit
+              Browse Collections
             </Link>
           </div>
         )}

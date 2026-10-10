@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import axios from "../../../../../../utils/axios";
 import ProductCard from "@/components/(frontend)/ProductCard";
+import { categoryDescriptionOrFallback } from "../../../../../../utils/textUtils";
 
 type SubCategory = {
   id: number;
@@ -52,11 +53,6 @@ const QUICK_TAGS = [
   "Black",
 ];
 
-function stripHtml(html?: string | null) {
-  if (!html) return "";
-  return html.replace(/<[^>]*>?/gm, "").trim();
-}
-
 export default function SubCategoriesPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -93,8 +89,10 @@ export default function SubCategoriesPage() {
 
   const displayTitle = activeSub?.name || parentName || "Collection";
   const displayDescription =
-    stripHtml(activeSub?.description) || stripHtml(parentDescription) ||
-    "Curated handloom pieces from this edit. Refine by category, price, or fabric mood.";
+    categoryDescriptionOrFallback(
+      activeSub?.description || parentDescription,
+      "Curated handloom pieces from this collection."
+    );
 
   useEffect(() => {
     if (!parentIdOrSlug) return;
@@ -415,7 +413,7 @@ export default function SubCategoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface pb-20">
+    <div className="min-h-screen bg-surface pb-20 overflow-x-hidden">
       {/* Breadcrumb */}
       <div className="border-b border-border-line bg-pure-white">
         <div className="max-w-site mx-auto site-pad py-3.5 flex flex-wrap items-center gap-2 label-caps text-body-slate">

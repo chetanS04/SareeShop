@@ -1,6 +1,7 @@
 import axios from "./axios";
 import { getImageUrl } from "./imageUtils";
 import { getCategorySlug } from "./slugUtils";
+import { sanitizeCategoryDescription } from "./textUtils";
 import type { ArchetypeConfig } from "@/data/archetypes";
 import { ARCHETYPES } from "@/data/archetypes";
 
@@ -276,9 +277,7 @@ async function buildFacetCards(
     cards.push({
       id: Number(cat.id),
       name: String(cat.name || "Collection"),
-      description: String(cat.description || "")
-        .replace(/<[^>]+>/g, "")
-        .trim(),
+      description: sanitizeCategoryDescription(cat.description),
       imageUrl,
       productCount: count,
       href: `/categories/subcategories/${getCategorySlug(cat)}`,

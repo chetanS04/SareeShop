@@ -6,6 +6,7 @@ import {
   loadShopWhoYouAreFacets,
   type ShopFacetCard,
 } from "@/utils/archetypeCatalog";
+import { categoryDescriptionOrFallback } from "@/utils/textUtils";
 
 const FALLBACK = "/svastra/logo-mark.png";
 const WHO_YOU_ARE_LIMIT = 4;
@@ -34,7 +35,7 @@ export default function SvastraWhoYouAre() {
   return (
     <section
       id="shop-who"
-      className="w-full bg-surface border-b border-border-line scroll-mt-24"
+      className="w-full min-w-0 bg-surface border-b border-border-line scroll-mt-24"
       aria-labelledby="who-title"
     >
       <div className="max-w-site mx-auto site-pad section-y">
@@ -51,8 +52,8 @@ export default function SvastraWhoYouAre() {
               Shop Who You Are
             </h2>
             <p className="text-[15px] sm:text-[17px] leading-[1.6] text-body-slate mt-3">
-              Categories from our archive — real weaves, real names, updated from the atelier
-              catalog.
+              Browse sarees by category — from everyday cottons to elegant silks. Find what suits
+              your style.
             </p>
           </div>
           <Link
@@ -90,19 +91,16 @@ export default function SvastraWhoYouAre() {
               const src = facet.imageUrl || FALLBACK;
               const roleNo = String(index + 1).padStart(2, "0");
               return (
-                <article
+                <Link
                   key={facet.id}
-                  className="bg-surface border border-border-line flex flex-col group hover:border-on-surface transition-colors w-full"
+                  href={facet.href}
+                  className="bg-surface border border-border-line flex flex-col group hover:border-on-surface transition-colors w-full h-full cursor-pointer"
+                  aria-label={`Shop ${facet.name}`}
                 >
-                  <div className="media-frame facet-media relative">
-                    <Link
-                      href={facet.href}
-                      className="absolute inset-0 z-[1]"
-                      aria-label={`Shop ${facet.name}`}
-                    />
+                  <div className="media-frame facet-media relative overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      alt={facet.name}
+                      alt=""
                       className="group-hover:scale-105 transition-transform duration-700 object-cover object-top w-full h-full"
                       loading="lazy"
                       decoding="async"
@@ -110,7 +108,7 @@ export default function SvastraWhoYouAre() {
                       height={800}
                       src={src}
                     />
-                    <div className="absolute top-3 left-3 z-[2] bg-surface-dark text-surface px-2 py-1 text-[10px] font-semibold tracking-widest uppercase">
+                    <div className="absolute top-3 left-3 bg-surface-dark text-surface px-2 py-1 text-[10px] font-semibold tracking-widest uppercase">
                       {roleNo}
                     </div>
                   </div>
@@ -119,36 +117,24 @@ export default function SvastraWhoYouAre() {
                     <span className="text-[10px] font-semibold tracking-[0.14em] uppercase text-primary block mb-2">
                       Category
                     </span>
-                    <h3 className="text-lg sm:text-xl font-bold uppercase tracking-[-0.015em] text-on-surface">
-                      <Link href={facet.href} className="hover:text-primary transition-colors">
-                        {facet.name}
-                      </Link>
+                    <h3 className="text-lg sm:text-xl font-bold uppercase tracking-[-0.015em] text-on-surface group-hover:text-primary transition-colors">
+                      {facet.name}
                     </h3>
-                    {facet.description ? (
-                      <p className="text-[14px] leading-[1.6] text-body-slate mt-3 line-clamp-3">
-                        {facet.description}
-                      </p>
-                    ) : (
-                      <p className="text-[14px] leading-[1.6] text-body-slate mt-3 line-clamp-3">
-                        Archive pieces from this category — open the edit to browse the full weave
-                        selection.
-                      </p>
-                    )}
+                    <p className="text-[14px] leading-[1.6] text-body-slate mt-3 line-clamp-3">
+                      {categoryDescriptionOrFallback(facet.description)}
+                    </p>
 
-                    <Link
-                      href={facet.href}
-                      className="mt-auto pt-5 border-t border-border-line/60 flex items-center justify-between text-[11px] font-semibold tracking-[0.1em] uppercase text-on-surface group-hover:text-primary transition-colors"
-                    >
-                      <span>Shop Category</span>
+                    <div className="mt-auto pt-5 border-t border-border-line/60 flex items-center justify-between text-[11px] font-semibold tracking-[0.1em] uppercase text-on-surface group-hover:text-primary transition-colors">
+                      <span>Shop Now</span>
                       <span
                         className="group-hover:translate-x-1 transition-transform"
                         aria-hidden="true"
                       >
                         →
                       </span>
-                    </Link>
+                    </div>
                   </div>
-                </article>
+                </Link>
               );
             })}
           </div>

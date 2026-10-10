@@ -315,12 +315,19 @@
       register: pm2_startup
       changed_when: "'systemd' in pm2_startup.stdout or 'command' in pm2_startup.stdout"
 
-    # ---------- 10) Nginx ----------
-    - name: Deploy Nginx site config
+    # ---------- 10) Nginx (HTTP first; SSL after certbot) ----------
+    - name: Check existing Let's Encrypt certificate
+      ansible.builtin.stat:
+        path: /etc/letsencrypt/live/{{ app_domain }}/fullchain.pem
+      register: le_fullchain
+
+    - name: Deploy Nginx site config (HTTP; SSL only if cert already exists)
       ansible.builtin.template:
         src: nginx-sareeshop.conf.j2
         dest: /etc/nginx/sites-available/sareeshop.conf
         mode: "0644"
+      vars:
+        ssl_certificate_exists: "{{ le_fullchain.stat.exists | default(false) }}"
       notify: Reload nginx
 
     - name: Enable sareeshop site
@@ -346,6 +353,9 @@
         state: started
         enabled: true
 
+    - name: Flush handlers (reload nginx before certbot ACME challenge)
+      ansible.builtin.meta: flush_handlers
+
     # ---------- 11) Firewall ----------
     - name: Configure UFW allow SSH / HTTP / HTTPS
       community.general.ufw:
@@ -365,7 +375,7 @@
         direction: incoming
       when: configure_firewall | bool
 
-    # ---------- 12) Optional SSL ----------
+    # ---------- 12) Optional SSL (cert first, then enable HTTPS nginx) ----------
     - name: Install Certbot
       ansible.builtin.apt:
         name:
@@ -374,19 +384,84 @@
         state: present
       when: enable_ssl | bool
 
-    - name: Obtain Let's Encrypt certificate
+    - name: Ensure certbot webroot exists
+      ansible.builtin.file:
+        path: /var/www/certbot
+        state: directory
+        mode: "0755"
+      when: enable_ssl | bool
+
+    - name: Obtain Let's Encrypt certificate (webroot — apex + www)
       ansible.builtin.command: >
-        certbot --nginx
+        certbot certonly --webroot
+        -w /var/www/certbot
         -d {{ app_domain }}
         -d www.{{ app_domain }}
         --non-interactive
         --agree-tos
         -m {{ letsencrypt_email }}
-        --redirect
+        --keep-until-expiring
       when: enable_ssl | bool
       register: certbot_result
-      changed_when: "'Successfully' in certbot_result.stdout or 'Certificate not yet due' in certbot_result.stdout or certbot_result.rc == 0"
-      failed_when: false
+      changed_when: >
+        certbot_result.rc == 0 and (
+          'Successfully' in (certbot_result.stdout | default(''))
+          or 'Certificate not yet due' in (certbot_result.stdout | default(''))
+          or 'Certificate is saved' in (certbot_result.stdout | default(''))
+        )
+
+    - name: Ensure Let's Encrypt nginx SSL options file exists
+      ansible.builtin.copy:
+        dest: /etc/letsencrypt/options-ssl-nginx.conf
+        mode: "0644"
+        force: false
+        content: |
+          ssl_session_cache shared:le_nginx_SSL:10m;
+          ssl_session_timeout 1440m;
+          ssl_session_tickets off;
+          ssl_protocols TLSv1.2 TLSv1.3;
+          ssl_prefer_server_ciphers off;
+          ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
+      when: enable_ssl | bool
+
+    - name: Ensure ssl-dhparams.pem exists
+      ansible.builtin.command: openssl dhparam -out /etc/letsencrypt/ssl-dhparams.pem 2048
+      args:
+        creates: /etc/letsencrypt/ssl-dhparams.pem
+      when: enable_ssl | bool
+
+    - name: Re-check Let's Encrypt certificate after certbot
+      ansible.builtin.stat:
+        path: /etc/letsencrypt/live/{{ app_domain }}/fullchain.pem
+      register: le_fullchain_after
+      when: enable_ssl | bool
+
+    - name: Deploy Nginx site config with HTTPS
+      ansible.builtin.template:
+        src: nginx-sareeshop.conf.j2
+        dest: /etc/nginx/sites-available/sareeshop.conf
+        mode: "0644"
+      vars:
+        ssl_certificate_exists: true
+      when:
+        - enable_ssl | bool
+        - le_fullchain_after.stat.exists | default(false)
+      notify: Reload nginx
+
+    - name: Test Nginx config after SSL
+      ansible.builtin.command: nginx -t
+      changed_when: false
+      when:
+        - enable_ssl | bool
+        - le_fullchain_after.stat.exists | default(false)
+
+    - name: Reload Nginx after SSL
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+      when:
+        - enable_ssl | bool
+        - le_fullchain_after.stat.exists | default(false)
 
     # ---------- 13) Health checks ----------
     - name: Wait for API port
@@ -421,6 +496,7 @@
           - "App root: {{ app_root }}"
           - "Admin: {{ admin_email }}"
           - "SSL enabled: {{ enable_ssl }}"
+          - "Cert present: {{ le_fullchain_after.stat.exists | default(le_fullchain.stat.exists) | default(false) }}"
           - "Next: open {{ frontend_url }} and login to /dashboard"
 
   handlers:

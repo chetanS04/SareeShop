@@ -7,6 +7,7 @@ import SvastraHowYouFeel from "@/components/(frontend)/svastra/SvastraHowYouFeel
 import SvastraIndependentCut from "@/components/(frontend)/svastra/SvastraIndependentCut";
 import SvastraManifesto from "@/components/(frontend)/svastra/SvastraManifesto";
 import SvastraVoices from "@/components/(frontend)/svastra/SvastraVoices";
+import SvastraFoundationalPrinciples from "@/components/(frontend)/svastra/SvastraFoundationalPrinciples";
 import SvastraConcierge from "@/components/(frontend)/svastra/SvastraConcierge";
 import { fetchProductsList } from "@/utils/archetypeCatalog";
 
@@ -34,13 +35,14 @@ export default function HomeUI() {
   }, []);
 
   return (
-    <div className="w-full bg-surface">
+    <div className="w-full min-w-0 bg-surface overflow-x-hidden">
       <SvastraHero />
       <SvastraWhoYouAre />
       <SvastraHowYouFeel />
       <SvastraIndependentCut products={products} loading={loading} />
       <SvastraManifesto />
       <SvastraVoices />
+      <SvastraFoundationalPrinciples />
       <SvastraConcierge />
     </div>
   );

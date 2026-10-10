@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Script from 'next/script';
+import Script from "next/script";
 import Link from "next/link";
 import axios from "../../../../utils/axios";
 import { useCart } from "@/context/CartContext";
@@ -708,19 +708,19 @@ function CheckoutPageContent() {
 
     return (
         <div className="min-h-screen bg-surface">
-            <div className="max-w-site mx-auto site-pad py-8 sm:py-12 lg:py-14 space-y-8">
+            <div className="max-w-site mx-auto site-pad py-8 sm:py-10 lg:py-12 space-y-7">
 
                 {/* Top strip */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border-line">
-                    <div className="flex items-center gap-2 label-caps text-body-slate">
-                        <span className="text-primary">SVASTRA</span>
-                        <span className="opacity-40">|</span>
-                        <span className="text-on-surface">Checkout</span>
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-on-surface/15">
+                    <div className="flex items-center gap-3">
+                        <span className="text-primary font-semibold tracking-tight text-lg">SVastra</span>
+                        <span className="h-4 w-px bg-on-surface/20" aria-hidden="true" />
+                        <span className="label-caps text-on-surface">Secure Checkout</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-4">
                         <p className="label-caps text-[10px] text-body-slate inline-flex items-center gap-1.5">
                             <Lock className="w-3.5 h-3.5 text-primary" strokeWidth={1.5} />
-                            Encrypted Checkout
+                            Encrypted · PCI-DSS
                         </p>
                         <Link
                             href="/cart"
@@ -733,11 +733,11 @@ function CheckoutPageContent() {
                 </div>
 
                 {/* Progress */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <p className="label-caps text-[10px] text-body-slate">
-                        Checkout Step {String(currentStep).padStart(2, "0")} of 03
+                        Step {String(currentStep).padStart(2, "0")} of 03
                     </p>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
                         {steps.map(({ step, label }) => {
                             const isDone = currentStep > step;
                             const isCurrent = currentStep === step;
@@ -754,7 +754,7 @@ function CheckoutPageContent() {
                                                 : "border-border-line bg-surface-subtle opacity-70 cursor-default"
                                         }`}
                                 >
-                                    <div className="flex items-center gap-2 mb-1">
+                                    <div className="flex items-center gap-2">
                                         <span
                                             className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold border ${isCurrent
                                                     ? "bg-on-surface text-surface border-on-surface"
@@ -776,7 +776,7 @@ function CheckoutPageContent() {
                 </div>
 
                 {hasInsufficientStockItems && (
-                    <div className="bg-surface-ivory border border-primary p-4 flex items-start gap-3">
+                    <div className="bg-surface border border-primary p-4 flex items-start gap-3">
                         <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                         <div>
                             <h4 className="label-caps text-primary">Unavailable Items Detected</h4>
@@ -796,29 +796,32 @@ function CheckoutPageContent() {
 
                 {errorMessage && (
                     <div className="bg-surface-ivory border border-primary p-4 flex items-start justify-between gap-3 text-[13px] text-on-surface">
-                        <div className="flex items-start gap-2">
-                            <X className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                            <span>{errorMessage}</span>
+                        <div className="flex items-start gap-2.5">
+                            <X className="w-5 h-5 text-primary shrink-0 mt-0.5" strokeWidth={2} />
+                            <div>
+                                <p className="label-caps text-[10px] text-primary mb-1">Checkout notice</p>
+                                <span className="text-on-surface/90 leading-relaxed">{errorMessage}</span>
+                            </div>
                         </div>
                         <button
                             type="button"
                             onClick={() => setErrorMessage(null)}
-                            className="label-caps text-[10px] text-body-slate hover:text-primary"
+                            className="label-caps text-[10px] text-body-slate hover:text-primary shrink-0"
                         >
                             Dismiss
                         </button>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-                    <div className="lg:col-span-8 space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                    <div className="lg:col-span-8 space-y-5">
 
                         {/* STEP 1: Delivery */}
                         {currentStep === 1 && (
-                            <div className="bg-surface border border-border-line p-6 sm:p-8 space-y-6">
+                            <div className="bg-surface-ivory border border-border-line p-6 sm:p-8 space-y-6">
                                 <div className="flex items-center justify-between pb-4 border-b border-border-line">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-surface-ivory text-primary border border-border-line flex items-center justify-center shrink-0">
+                                        <div className="w-10 h-10 bg-surface text-primary border border-border-line flex items-center justify-center shrink-0">
                                             <MapPin className="w-5 h-5" strokeWidth={1.5} />
                                         </div>
                                         <div>
@@ -1020,7 +1023,7 @@ function CheckoutPageContent() {
 
                         {/* STEP 2: Payment */}
                         {currentStep === 2 && (
-                            <div className="bg-surface border border-border-line p-6 sm:p-8">
+                            <div className="bg-surface-ivory border border-border-line p-6 sm:p-8">
                                 <SecurePaymentPanel
                                     paymentMethod={paymentMethod}
                                     onChange={(m) => setPaymentMethod(m)}
@@ -1045,10 +1048,10 @@ function CheckoutPageContent() {
 
                         {/* STEP 3: Review */}
                         {currentStep === 3 && (
-                            <div className="bg-surface border border-border-line p-6 sm:p-8 space-y-6">
+                            <div className="bg-surface-ivory border border-border-line p-6 sm:p-8 space-y-6">
                                 <div className="flex items-center justify-between pb-4 border-b border-border-line">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-surface-ivory text-primary border border-border-line flex items-center justify-center shrink-0">
+                                        <div className="w-10 h-10 bg-surface text-primary border border-border-line flex items-center justify-center shrink-0">
                                             <CheckCircle2 className="w-5 h-5" strokeWidth={1.5} />
                                         </div>
                                         <div>
@@ -1060,7 +1063,7 @@ function CheckoutPageContent() {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="p-4 bg-surface-ivory border border-border-line">
+                                    <div className="p-4 bg-surface border border-border-line">
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2 text-on-surface font-bold text-sm">
                                                 <MapPin className="w-4 h-4 text-primary" />
@@ -1084,7 +1087,7 @@ function CheckoutPageContent() {
                                         <p className="text-[12px] text-on-surface font-medium mt-1">{currentFormData.phoneNumber}</p>
                                     </div>
 
-                                    <div className="p-4 bg-surface-ivory border border-border-line">
+                                    <div className="p-4 bg-surface border border-border-line">
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2 text-on-surface font-bold text-sm">
                                                 <CreditCard className="w-4 h-4 text-primary" />
@@ -1113,7 +1116,7 @@ function CheckoutPageContent() {
                                     <h4 className="label-caps text-[10px] text-on-surface">
                                         Items to be delivered ({count})
                                     </h4>
-                                    <div className="divide-y divide-border-line border border-border-line bg-pure-white">
+                                    <div className="divide-y divide-border-line border border-border-line bg-surface">
                                         {items.map((item) => {
                                             const imgSrc = resolveItemImage(
                                                 item.variant?.image_url || item.product?.image_url || null
@@ -1188,8 +1191,8 @@ function CheckoutPageContent() {
 
                     {/* Sidebar */}
                     <aside className="lg:col-span-4 lg:sticky lg:top-24 space-y-4">
-                        <div className="bg-surface-ivory border border-[#E4D9C6] p-6 sm:p-7 space-y-5">
-                            <div className="flex items-center justify-between pb-4 border-b border-on-surface/10">
+                        <div className="bg-surface-ivory border border-border-line p-6 sm:p-7 space-y-5">
+                            <div className="flex items-center justify-between pb-4 border-b border-border-line">
                                 <h2 className="text-base font-bold uppercase tracking-tight text-on-surface">Order Summary</h2>
                                 <span className="label-caps text-[9px] text-body-slate">
                                     {count} {count === 1 ? "Item" : "Items"}
@@ -1258,7 +1261,7 @@ function CheckoutPageContent() {
                                 })}
                             </div>
 
-                            <div className="space-y-2.5 text-[13px] text-body-slate border-t border-on-surface/10 pt-4">
+                            <div className="space-y-2.5 text-[13px] text-body-slate border-t border-border-line pt-4">
                                 <div className="flex justify-between">
                                     <span>Items Base Price</span>
                                     <span className="font-semibold text-on-surface">{formatINR(taxableSubtotal)}</span>
@@ -1275,7 +1278,7 @@ function CheckoutPageContent() {
                                         <span className="label-caps text-[10px] text-primary font-bold">FREE</span>
                                     )}
                                 </div>
-                                <div className="pt-3 border-t border-on-surface/10 flex justify-between items-baseline gap-3">
+                                <div className="pt-3 border-t border-border-line flex justify-between items-baseline gap-3">
                                     <div>
                                         <span className="text-sm font-bold uppercase tracking-tight text-on-surface block">Total Payable</span>
                                         <span className="label-caps text-[9px] text-body-slate">All taxes &amp; shipping included</span>
@@ -1390,7 +1393,7 @@ function CheckoutPageContent() {
                             )}
                         </div>
 
-                        <div className="bg-surface-subtle border border-border-line px-5 py-4 flex items-center justify-between gap-3">
+                        <div className="bg-surface border border-border-line px-5 py-4 flex items-center justify-between gap-3">
                             <div>
                                 <p className="label-caps text-[10px] text-on-surface">Dedicated Concierge</p>
                                 <p className="text-[12px] text-body-slate mt-0.5">Need help with your edit?</p>

@@ -83,7 +83,7 @@ export default function OrderDetailPage() {
       <div className="min-h-[60vh] bg-surface flex items-center justify-center py-20">
         <div className="text-center">
           <div className="w-10 h-10 border-2 border-surface-ivory border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <p className="label-caps text-[10px] text-body-slate">Opening dossier…</p>
+          <p className="label-caps text-[10px] text-body-slate">Opening order…</p>
         </div>
       </div>
     );
@@ -96,7 +96,7 @@ export default function OrderDetailPage() {
           <AlertTriangle className="w-12 h-12 text-primary mx-auto mb-4" />
           <h3 className="display-section text-on-surface mb-2">Order not found</h3>
           <p className="text-sm text-body-slate mb-8 leading-relaxed">
-            This dossier does not exist or you do not have permission to view it.
+            This order does not exist or you do not have permission to view it.
           </p>
           <button type="button" onClick={() => router.push("/orders")} className="sv-btn-primary">
             Back to Orders
